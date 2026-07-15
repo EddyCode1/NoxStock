@@ -1,12 +1,12 @@
-import React from 'react'
+﻿import React from 'react'
 
 const palette = {
-  background: '#111827',
-  tabActive: '#0f1c3f',
-  tabInactive: '#1e3a6d',
-  textPrimary: '#F5F6F8',
-  textSecondary: '#8A8F98',
-  border: '#1e3a6d',
+  background: '#0D244F',
+  tabActive: '#3B82F6',
+  tabInactive: 'transparent',
+  textPrimary: '#E2E8F0',
+  textSecondary: '#94A3B8',
+  border: '#1F3A66',
 }
 
 export default function ReportFilter({ active = 'summary', onChange = () => {} }) {
@@ -17,7 +17,7 @@ export default function ReportFilter({ active = 'summary', onChange = () => {} }
   ]
 
   return (
-    <div style={{ background: palette.background, border: `1px solid ${palette.border}` }} className="inline-flex rounded-3xl p-1">
+    <div style={{ background: palette.background, border: `1px solid ${palette.border}` }} className="inline-flex rounded-[2rem] p-1 shadow-[0_15px_40px_-30px_rgba(15,23,42,0.65)]">
       {tabs.map((tab) => {
         const isActive = active === tab.key
         return (
@@ -26,10 +26,10 @@ export default function ReportFilter({ active = 'summary', onChange = () => {} }
             type="button"
             onClick={() => onChange(tab.key)}
             style={{
-              background: isActive ? palette.tabActive : 'transparent',
-              color: isActive ? '#F5F6F8' : palette.textSecondary,
+              background: isActive ? palette.tabActive : palette.tabInactive,
+              color: isActive ? '#FFFFFF' : palette.textSecondary,
             }}
-            className="px-4 py-2 rounded-3xl text-sm font-semibold transition"
+            className="px-4 py-2 rounded-[1.5rem] text-sm font-semibold transition"
           >
             {tab.label}
           </button>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import noxReportsService from '../../../shared/api/services/noxReportsService'
 import { useWarehouse } from '../../../shared/hooks/useWarehouse'
 import ReportFilter from '../components/ReportFilter'
@@ -6,12 +6,14 @@ import ReportTable from '../components/ReportTable'
 import ExportButton from '../components/ExportButton'
 
 const palette = {
-  background: '#0b0e14',
-  container: '#111827',
-  border: '#1e3a6d',
-  textPrimary: '#F5F6F8',
-  textSecondary: '#8A8F98',
-  accent: '#0f1c3f',
+  background: '#071424',
+  container: '#152A4C',
+  border: '#1F3A66',
+  header: '#0D1F3A',
+  textPrimary: '#E2E8F0',
+  textSecondary: '#94A3B8',
+  accent: '#3B82F6',
+  accentSoft: '#60A5FA',
 }
 
 function mapCategoriesToRows(categories = []) {
@@ -118,11 +120,11 @@ export default function ReportsPage() {
 
     return {
       total: inventory.totalEstimatedValue ?? 0,
-      avgTx: inventory.totalSoldUnits ?? 0,
-      best: alerts.lowStockCount != null ? `${alerts.lowStockCount} bajo stock` : '-',
+      sold: inventory.totalSoldUnits ?? 0,
+      lowStock: alerts.lowStockCount ?? 0,
       products: inventory.totalProducts ?? 0,
       categories: inventory.totalCategories ?? 0,
-      sold: inventory.totalSoldUnits ?? 0,
+      best: alerts.lowStockCount != null ? `${alerts.lowStockCount} bajo stock` : '-',
     }
   }, [summary])
 
@@ -140,15 +142,14 @@ export default function ReportsPage() {
   }
 
   return (
-    <div style={{ background: palette.background, color: palette.textPrimary }} className="min-h-full rounded-2xl p-6">
+    <div style={{ background: palette.background, color: palette.textPrimary }} className="min-h-full rounded-[2rem] p-6">
       <div className="mx-auto max-w-7xl">
         <header className="mb-6 flex flex-col items-start justify-between gap-4 lg:flex-row">
           <div>
-            <h1 style={{ color: palette.textPrimary }} className="text-3xl font-semibold">
-              Reportes de inventario
-            </h1>
-            <p style={{ color: palette.textSecondary }} className="mt-2 max-w-2xl text-sm">
-              Datos de {selectedWarehouse?.nombre || 'la bodega activa'} — resumen, categorías y top ventas.
+            <p className="mb-2 text-xs uppercase tracking-[0.35em] text-sky-300/80">Reportes</p>
+            <h1 className="text-3xl font-semibold">Panel de inventario</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-400">
+              Datos de {selectedWarehouse?.nombre || 'la bodega activa'} — resumen de productos, categorías y ventas con estilo azul marino.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -158,58 +159,41 @@ export default function ReportsPage() {
         </header>
 
         {error && (
-          <div className="mb-4 rounded-2xl border border-red-800 bg-red-950 px-4 py-3 text-sm text-red-200">
+          <div className="mb-4 rounded-3xl border border-red-800/70 bg-[#2B1D25] px-4 py-3 text-sm text-red-200">
             {error}
           </div>
         )}
 
         {loading ? (
-          <p style={{ color: palette.textSecondary }}>Cargando reportes...</p>
+          <p className="text-slate-400">Cargando reportes...</p>
         ) : (
           <>
-            <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div
-                style={{ background: palette.container, border: `1px solid ${palette.border}`, color: palette.textPrimary }}
-                className="rounded-3xl p-5 shadow-sm"
-              >
-                <div style={{ color: palette.textSecondary }} className="text-xs uppercase tracking-[0.24em]">
-                  Valor estimado
-                </div>
-                <div className="mt-4 text-3xl font-semibold">${kpis.total.toLocaleString()}</div>
+            <section className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-4">
+              <div className="rounded-[1.75rem] border border-slate-700 bg-[#0E1F3B] p-5 shadow-[0_20px_80px_-55px_rgba(0,0,0,0.7)]">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Valor estimado</div>
+                <div className="mt-4 text-3xl font-semibold text-slate-100">${kpis.total.toLocaleString()}</div>
               </div>
-              <div
-                style={{ background: palette.container, border: `1px solid ${palette.border}`, color: palette.textPrimary }}
-                className="rounded-3xl p-5 shadow-sm"
-              >
-                <div style={{ color: palette.textSecondary }} className="text-xs uppercase tracking-[0.24em]">
-                  Unidades vendidas
-                </div>
-                <div className="mt-4 text-3xl font-semibold">{kpis.sold}</div>
+              <div className="rounded-[1.75rem] border border-slate-700 bg-[#0E1F3B] p-5 shadow-[0_20px_80px_-55px_rgba(0,0,0,0.7)]">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Unidades vendidas</div>
+                <div className="mt-4 text-3xl font-semibold text-slate-100">{kpis.sold}</div>
               </div>
-              <div
-                style={{ background: palette.container, border: `1px solid ${palette.border}`, color: palette.textPrimary }}
-                className="rounded-3xl p-5 shadow-sm"
-              >
-                <div style={{ color: palette.textSecondary }} className="text-xs uppercase tracking-[0.24em]">
-                  Productos / Categorías
-                </div>
-                <div className="mt-4 text-3xl font-semibold">
-                  {kpis.products} / {kpis.categories}
-                </div>
+              <div className="rounded-[1.75rem] border border-slate-700 bg-[#0E1F3B] p-5 shadow-[0_20px_80px_-55px_rgba(0,0,0,0.7)]">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Bajo stock</div>
+                <div className="mt-4 text-3xl font-semibold text-slate-100">{kpis.lowStock}</div>
+              </div>
+              <div className="rounded-[1.75rem] border border-slate-700 bg-[#0E1F3B] p-5 shadow-[0_20px_80px_-55px_rgba(0,0,0,0.7)]">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Productos / Categorías</div>
+                <div className="mt-4 text-3xl font-semibold text-slate-100">{kpis.products} / {kpis.categories}</div>
               </div>
             </section>
 
             <section className="space-y-4">
-              <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
+              <div className="flex flex-col gap-3 rounded-[1.75rem] border border-slate-700 bg-[#112349] p-6 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 style={{ color: palette.textPrimary }} className="text-xl font-semibold">
-                    {filter === 'categories' ? 'Por categoría' : filter === 'top' ? 'Top ventas' : 'Resumen de ventas'}
-                  </h2>
-                  <p style={{ color: palette.textSecondary }} className="mt-1 text-sm">
-                    Datos en vivo desde inventory-service vía reports-service.
-                  </p>
+                  <h2 className="text-xl font-semibold">{filter === 'categories' ? 'Por categoría' : filter === 'top' ? 'Top ventas' : 'Resumen de ventas'}</h2>
+                  <p className="mt-1 text-sm text-slate-400">Datos en vivo desde inventory-service vía reports-service.</p>
                 </div>
-                <div style={{ color: palette.textSecondary }} className="text-sm">
+                <div className="rounded-full border border-slate-700 bg-slate-950/80 px-4 py-2 text-sm text-slate-300">
                   Mostrando {tableData.length} registros
                 </div>
               </div>
@@ -220,10 +204,7 @@ export default function ReportsPage() {
         )}
 
         {exported && (
-          <div
-            style={{ background: palette.accent, color: '#ffffff' }}
-            className="fixed bottom-6 right-6 rounded-2xl px-5 py-3 shadow-xl"
-          >
+          <div className="fixed bottom-6 right-6 rounded-2xl bg-blue-600 px-5 py-3 text-sm text-white shadow-xl">
             Archivo exportado
           </div>
         )}
