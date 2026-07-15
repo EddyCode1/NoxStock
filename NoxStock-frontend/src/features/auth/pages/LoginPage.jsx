@@ -46,7 +46,7 @@ const LoginPage = () => {
       ))}
 
       <div className="login-box">
-        <h2>Omakase</h2>
+        <h2>NoxStock</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="input-box">
             <input
