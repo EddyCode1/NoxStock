@@ -24,13 +24,17 @@ export function useEstadisticas() {
     setError(null);
 
     try {
-      const result = await statisticsService.getStatistics();
+      const result = await statisticsService.getStatistics(selectedWarehouseId);
       setData(result);
     } catch (err) {
+      const apiMessage = err.response?.data?.message;
+      const isNotFound = err.response?.status === 404 || err.response?.data?.error === 'NOT_FOUND';
       setError(
-        err.response?.data?.message ||
-          err.message ||
-          'No se pudieron cargar las estadísticas del dashboard'
+        isNotFound
+          ? 'El servicio de inventario no expone /statistics. Reinicia el backend (pnpm start:all) e intenta de nuevo.'
+          : apiMessage ||
+            err.message ||
+            'No se pudieron cargar las estadísticas del dashboard'
       );
     } finally {
       setLoading(false);
@@ -50,16 +54,20 @@ export function useEstadisticas() {
 
     (async () => {
       try {
-        const result = await statisticsService.getStatistics();
+        const result = await statisticsService.getStatistics(selectedWarehouseId);
         if (isMounted) {
           setData(result);
         }
       } catch (err) {
         if (isMounted) {
+          const apiMessage = err.response?.data?.message;
+          const isNotFound = err.response?.status === 404 || err.response?.data?.error === 'NOT_FOUND';
           setError(
-            err.response?.data?.message ||
-              err.message ||
-              'No se pudieron cargar las estadísticas del dashboard'
+            isNotFound
+              ? 'El servicio de inventario no expone /statistics. Reinicia el backend (pnpm start:all) e intenta de nuevo.'
+              : apiMessage ||
+                err.message ||
+                'No se pudieron cargar las estadísticas del dashboard'
           );
         }
       } finally {
