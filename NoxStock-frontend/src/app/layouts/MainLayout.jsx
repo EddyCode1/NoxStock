@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import NoxStockSidebar from '../components/NoxStockSidebar';
 import NavbarBlack from '../components/NavbarBlack';
+import PageTransition from '../../shared/components/PageTransition';
 
 const MainLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -17,7 +18,9 @@ const MainLayout = () => {
         />
 
         <main className="flex-1 overflow-auto p-4 md:p-6">
-          <Outlet />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </main>
       </div>
     </div>

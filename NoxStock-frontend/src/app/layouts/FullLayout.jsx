@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import PageTransition from '../../shared/components/PageTransition'
 
 /**
  * Layout de pantalla completa con sidebar y botón flotante
@@ -23,7 +24,8 @@ const FullLayout = () => {
       <button
         type="button"
         onClick={handleToggleSidebar}
-        className="absolute top-6 z-50 inline-flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-400 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:border-gray-300 hover:text-white transition-all duration-300 font-bold text-lg"
+        className="absolute top-6 z-50 inline-flex items-center justify-center w-12 h-12 rounded-lg border-2 border-[#4b5563] bg-[#0f1c3f] text-gray-300 hover:bg-[#1e3a6d] hover:border-gray-300 hover:text-white transition-all duration-300 font-bold text-lg"
+
         style={{
           left: '24px',
           marginLeft: isSidebarOpen ? '288px' : '0px'
@@ -37,7 +39,9 @@ const FullLayout = () => {
 
       {/* Página a pantalla completa */}
       <main className="w-full h-full overflow-auto">
-        <Outlet />
+        <PageTransition className="w-full h-full">
+          <Outlet />
+        </PageTransition>
       </main>
     </div>
   )

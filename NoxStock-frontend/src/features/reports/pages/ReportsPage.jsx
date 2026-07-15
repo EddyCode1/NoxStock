@@ -5,12 +5,12 @@ import ReportTable from '../components/ReportTable'
 import ExportButton from '../components/ExportButton'
 
 const palette = {
-  background: '#1E2022',
-  container: '#2B2D30',
-  border: '#3F4245',
+  background: '#0b0e14',
+  container: '#111827',
+  border: '#1e3a6d',
   textPrimary: '#F5F6F8',
   textSecondary: '#8A8F98',
-  accent: '#8B1E1E',
+  accent: '#0f1c3f',
 }
 
 function mapCategoriesToRows(categories = []) {

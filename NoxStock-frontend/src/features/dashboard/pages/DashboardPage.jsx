@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import noxReportsService from '../../../shared/api/services/noxReportsService';
+import Reveal from '../../../shared/components/Reveal';
+
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({

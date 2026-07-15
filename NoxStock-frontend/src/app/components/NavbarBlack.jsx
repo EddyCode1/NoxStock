@@ -18,14 +18,14 @@ const NAVBAR_TITLE = 'Panel de inventario NoxStock'
  */
 const NavbarBlack = ({ isSidebarOpen = true, onToggleSidebar }) => {
     return (
-        <header className="border-b border-gray-800 py-6 px-6 bg-black">
+        <header className="border-b border-[#1e3a6d] py-6 px-6 bg-[#0b0e14]">
             <nav className="flex flex-col gap-6">
                 {/* Botón toggle y título superior */}
                 <div className="flex items-center justify-center px-0 relative">
                     <button
                         type="button"
                         onClick={onToggleSidebar}
-                        className="absolute left-0 z-50 inline-flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-400 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:border-gray-300 hover:text-white transition-all duration-300 font-bold text-lg"
+                        className="absolute left-0 z-50 inline-flex items-center justify-center w-12 h-12 rounded-lg border-2 border-[#4b5563] bg-[#0f1c3f] text-gray-300 hover:bg-[#1e3a6d] hover:border-gray-300 hover:text-white transition-all duration-300 font-bold text-lg"
                         style={{
                             marginLeft: isSidebarOpen ? '288px' : '0px'
                         }}

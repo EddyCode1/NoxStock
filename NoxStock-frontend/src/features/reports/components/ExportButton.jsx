@@ -1,8 +1,8 @@
 import React from 'react'
 
 const palette = {
-  background: '#8B1E1E',
-  backgroundDisabled: '#5B1A1A',
+  background: '#0f1c3f',
+  backgroundDisabled: '#1e3a6d',
   text: '#F5F6F8',
 }
 

@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 
 const palette = {
-  background: '#2B2D30',
-  border: '#3F4245',
-  headerBackground: '#232528',
+  background: '#111827',
+  border: '#1e3a6d',
+  headerBackground: '#0b0e14',
   textPrimary: '#F5F6F8',
   textSecondary: '#8A8F98',
-  accent: '#8B1E1E',
+  accent: '#3b5bab',
 }
 
 export default function ReportTable({ data = [] }) {
@@ -41,7 +41,7 @@ export default function ReportTable({ data = [] }) {
         <tbody>
           {data.map((row, idx) => (
             <React.Fragment key={`${row.period}-${idx}`}>
-              <tr style={{ borderBottom: `1px solid ${palette.border}` }} className="hover:bg-[#232528]">
+              <tr style={{ borderBottom: `1px solid ${palette.border}` }} className="hover:bg-[#0f1c3f]/20">
                 <td style={{ color: palette.textPrimary }} className="whitespace-nowrap px-4 py-4 text-sm">{row.period}</td>
                 <td style={{ color: palette.textPrimary }} className="whitespace-nowrap px-4 py-4 text-right text-sm">{row.transactions}</td>
                 <td style={{ color: palette.textPrimary }} className="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold">${Number(row.total || 0).toLocaleString()}</td>
@@ -68,7 +68,7 @@ export default function ReportTable({ data = [] }) {
                 </td>
               </tr>
               {expanded === idx && (
-                <tr style={{ background: '#242629' }}>
+                <tr style={{ background: '#0f1424' }}>
                   <td colSpan="5" className="px-4 py-4 text-sm">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div>
