@@ -28,6 +28,11 @@ const purchaseOrderSchema = new mongoose.Schema(
       ref: 'Supplier',
       required: [true, 'El proveedor es obligatorio'],
     },
+    warehouseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Warehouse',
+      required: [true, 'La bodega es obligatoria'],
+    },
     items: {
       type: [purchaseOrderItemSchema],
       validate: {

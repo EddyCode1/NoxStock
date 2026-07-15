@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import inventoryService from '../../../shared/api/services/inventoryService';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 const estadoLabel = {
   borrador: 'Borrador',
@@ -22,8 +23,13 @@ export default function PurchaseOrdersPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
 
   const loadData = useCallback(async () => {
+    if (!selectedWarehouseId) {
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -40,7 +46,7 @@ export default function PurchaseOrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedWarehouseId]);
 
   useEffect(() => {
     loadData();

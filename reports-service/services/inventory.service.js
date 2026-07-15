@@ -129,13 +129,14 @@ export function normalizeEntry(raw = {}) {
     };
 }
 
-async function requestCollection(candidatePaths, preferredKeys, authHeader) {
+async function requestCollection(candidatePaths, preferredKeys, authHeader, warehouseId) {
     let lastError = null;
     const headers = buildAuthHeaders(authHeader);
+    const params = warehouseId ? { warehouseId } : undefined;
 
     for (const path of candidatePaths) {
         try {
-            const response = await http.get(path, { headers });
+            const response = await http.get(path, { headers, params });
             return response.data;
         } catch (error) {
             lastError = error;
@@ -158,13 +159,13 @@ function getMockOutputs() {
     return normalizeCollection(mockOutputs, normalizeOutput);
 }
 
-export async function getProductsFromInventory(authHeader) {
+export async function getProductsFromInventory(authHeader, warehouseId) {
     if (env.useMockInventory) {
         return getMockProducts();
     }
 
     try {
-        const payload = await requestCollection(['/products'], ['products'], authHeader);
+        const payload = await requestCollection(['/products'], ['products'], authHeader, warehouseId);
         return extractCollection(payload, ['products']).map((raw) => normalizeProduct(raw, env.lowStockThreshold));
     } catch (error) {
         if (env.allowMockFallback) {
@@ -176,13 +177,13 @@ export async function getProductsFromInventory(authHeader) {
     }
 }
 
-export async function getOutputsFromInventory(authHeader) {
+export async function getOutputsFromInventory(authHeader, warehouseId) {
     if (env.useMockInventory) {
         return getMockOutputs();
     }
 
     try {
-        const payload = await requestCollection(['/outputs', '/movements/outputs', '/inventory/outputs'], ['outputs'], authHeader);
+        const payload = await requestCollection(['/outputs', '/movements/outputs', '/inventory/outputs'], ['outputs'], authHeader, warehouseId);
         return extractCollection(payload, ['outputs']).map(normalizeOutput);
     } catch (error) {
         if (env.allowMockFallback) {
@@ -194,13 +195,13 @@ export async function getOutputsFromInventory(authHeader) {
     }
 }
 
-export async function getEntriesFromInventory(authHeader) {
+export async function getEntriesFromInventory(authHeader, warehouseId) {
     if (env.useMockInventory) {
         return [];
     }
 
     try {
-        const payload = await requestCollection(['/entries', '/movements/entries', '/inventory/entries'], ['entries'], authHeader);
+        const payload = await requestCollection(['/entries', '/movements/entries', '/inventory/entries'], ['entries'], authHeader, warehouseId);
         return extractCollection(payload, ['entries']).map(normalizeEntry);
     } catch (error) {
         if (env.allowMockFallback) {

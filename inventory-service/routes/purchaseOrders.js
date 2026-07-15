@@ -28,6 +28,7 @@ router.get(
   [
     query('estado').optional().isIn(['borrador', 'enviada', 'recibida', 'cancelada']),
     query('supplierId').optional().isMongoId(),
+    query('warehouseId').optional().isMongoId(),
     handleValidationErrors,
   ],
   getPurchaseOrders
@@ -43,6 +44,7 @@ router.post(
   '/',
   [
     body('supplierId').isMongoId().withMessage('ID de proveedor inválido'),
+    body('warehouseId').isMongoId().withMessage('warehouseId es obligatorio'),
     body('notas').optional().isString().trim().isLength({ max: 300 }),
     ...itemValidators,
     handleValidationErrors,

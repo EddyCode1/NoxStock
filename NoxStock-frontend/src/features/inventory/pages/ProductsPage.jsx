@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useInventory } from '../hooks/useInventory';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 export default function ProductsPage() {
   const { products, loading, error, loadProducts } = useInventory();
+  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
   const [showLowStock, setShowLowStock] = useState(false);
 
   const handleFilter = () => {
@@ -20,7 +22,9 @@ export default function ProductsPage() {
       <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Inventario - Productos</h1>
-          <p className="text-sm text-gray-500">Lista con stock mínimo por producto</p>
+          <p className="text-sm text-gray-500">
+            Stock en {selectedWarehouse?.nombre || 'la bodega activa'}
+          </p>
         </div>
         <Link to="/loby/inventory/new" className="rounded bg-black px-4 py-2 text-white">
           Nuevo producto

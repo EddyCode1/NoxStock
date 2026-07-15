@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import noxReportsService from '../../../shared/api/services/noxReportsService'
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore'
 import ReportFilter from '../components/ReportFilter'
 import ReportTable from '../components/ReportTable'
 import ExportButton from '../components/ExportButton'
@@ -68,8 +69,14 @@ export default function ReportsPage() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [exported, setExported] = useState(false)
+  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId)
+  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse())
 
   useEffect(() => {
+    if (!selectedWarehouseId) {
+      return
+    }
+
     const loadReports = async () => {
       setLoading(true)
       setError(null)
@@ -92,7 +99,7 @@ export default function ReportsPage() {
     }
 
     loadReports()
-  }, [])
+  }, [selectedWarehouseId])
 
   const tableData = useMemo(() => {
     if (filter === 'categories') {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 const emptyForm = {
   nombre: '',
@@ -17,9 +18,11 @@ export default function ProductFormPage() {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
+  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
 
   useEffect(() => {
-    if (!isEdit) return;
+    if (!isEdit || !selectedWarehouseId) return;
 
     const loadProduct = async () => {
       setLoading(true);
@@ -41,7 +44,7 @@ export default function ProductFormPage() {
     };
 
     loadProduct();
-  }, [id, isEdit]);
+  }, [id, isEdit, selectedWarehouseId]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -83,7 +86,9 @@ export default function ProductFormPage() {
     <section className="max-w-xl space-y-4">
       <header>
         <h1 className="text-2xl font-bold">{isEdit ? 'Editar producto' : 'Nuevo producto'}</h1>
-        <p className="text-sm text-gray-500">Formulario base sin diseño final</p>
+        <p className="text-sm text-gray-500">
+          Stock en {selectedWarehouse?.nombre || 'la bodega activa'}
+        </p>
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-3 rounded border p-4">

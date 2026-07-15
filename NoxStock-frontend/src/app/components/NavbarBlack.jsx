@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import WarehouseSelector from './WarehouseSelector'
 
 // Datos del Menú Principal
 const menuItems = [
@@ -38,6 +39,10 @@ const NavbarBlack = ({ isSidebarOpen = true, onToggleSidebar }) => {
                     <span className="text-gray-400 text-xs uppercase ">
                         {NAVBAR_TITLE}
                     </span>
+                </div>
+
+                <div className="flex justify-center">
+                    <WarehouseSelector />
                 </div>
 
                 {/* Fila de Menús */}

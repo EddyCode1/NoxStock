@@ -12,6 +12,21 @@ Authorization: Bearer <JWT>
 
 El JWT lo entrega `auth-service` en `POST /auth/login`.
 
+## Contexto de bodega (obligatorio en inventario)
+
+Cada sucursal/bodega tiene **stock, movimientos, ventas y OC propios**. En casi todos los endpoints de productos, entradas, salidas, ventas y órdenes de compra debes enviar:
+
+```
+warehouseId=<ObjectId de la bodega activa>
+```
+
+- **GET**: como query `?warehouseId=...`
+- **POST**: en el body `{ warehouseId, ... }`
+
+El frontend guarda la bodega seleccionada en `useWarehouseStore` y la inyecta automáticamente vía interceptores HTTP.
+
+`GET /warehouses` lista las bodegas para el selector global del navbar.
+
 ---
 
 ## Backend NO tiene vistas
@@ -50,24 +65,24 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
 | Método | Ruta | Auth | Body / Query |
 |--------|------|------|--------------|
 | `GET` | `/health` | No | — |
-| `GET` | `/products` | Sí | `?q=nombre&categoria=valor&bajoStock=true` |
-| `GET` | `/products/:id` | Sí | — |
-| `POST` | `/products` | Sí | `{ nombre, categoria, precio, existencia?, stockMinimo? }` |
+| `GET` | `/products` | Sí | `?warehouseId=...&q=nombre&categoria=valor&bajoStock=true` |
+| `GET` | `/products/:id` | Sí | `?warehouseId=...` |
+| `POST` | `/products` | Sí | `{ warehouseId, nombre, categoria, precio, existencia?, stockMinimo? }` |
 | `PUT` | `/products/:id` | Sí | `{ nombre?, categoria?, precio?, stockMinimo? }` |
 | `DELETE` | `/products/:id` | Sí | — |
 | `GET` | `/categories` | Sí | — |
-| `GET` | `/entries` | Sí | `?productId=opcional` |
-| `POST` | `/entries` | Sí | `{ productId, cantidad, motivo? }` |
-| `GET` | `/outputs` | Sí | `?productId=opcional` |
-| `POST` | `/outputs` | Sí | `{ productId, cantidad, motivo? }` |
+| `GET` | `/entries` | Sí | `?warehouseId=...&productId=opcional` |
+| `POST` | `/entries` | Sí | `{ warehouseId, productId, cantidad, motivo? }` |
+| `GET` | `/outputs` | Sí | `?warehouseId=...&productId=opcional` |
+| `POST` | `/outputs` | Sí | `{ warehouseId, productId, cantidad, motivo? }` |
 | `GET` | `/suppliers` | Sí | `?q=nombre&activo=true|false` |
 | `GET` | `/suppliers/:id` | Sí | — |
 | `POST` | `/suppliers` | Sí | `{ nombre, contacto?, email?, telefono?, categorias?, activo? }` |
 | `PUT` | `/suppliers/:id` | Sí | campos opcionales del proveedor |
 | `DELETE` | `/suppliers/:id` | Sí | — (409 si tiene OC abiertas) |
-| `GET` | `/purchase-orders` | Sí | `?estado=borrador|enviada|recibida|cancelada&supplierId=` |
+| `GET` | `/purchase-orders` | Sí | `?warehouseId=...&estado=borrador|enviada|recibida|cancelada&supplierId=` |
 | `GET` | `/purchase-orders/:id` | Sí | — |
-| `POST` | `/purchase-orders` | Sí | `{ supplierId, items[{productId, cantidad, precioUnitario}], notas? }` |
+| `POST` | `/purchase-orders` | Sí | `{ warehouseId, supplierId, items[{productId, cantidad, precioUnitario}], notas? }` |
 | `PUT` | `/purchase-orders/:id` | Sí | solo en estado `borrador` |
 | `POST` | `/purchase-orders/:id/send` | Sí | borrador → enviada |
 | `POST` | `/purchase-orders/:id/receive` | Sí | enviada → recibida (crea entradas + stock) |
@@ -77,9 +92,9 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
 | `POST` | `/customers` | Sí | `{ nombre, email?, telefono?, nit?, activo? }` |
 | `PUT` | `/customers/:id` | Sí | campos opcionales del cliente |
 | `DELETE` | `/customers/:id` | Sí | — (409 si tiene ventas en borrador) |
-| `GET` | `/sales` | Sí | `?estado=borrador|confirmada|cancelada&customerId=` |
+| `GET` | `/sales` | Sí | `?warehouseId=...&estado=borrador|confirmada|cancelada&customerId=` |
 | `GET` | `/sales/:id` | Sí | — |
-| `POST` | `/sales` | Sí | `{ customerId, items[{productId, cantidad, precioUnitario}], notas? }` |
+| `POST` | `/sales` | Sí | `{ warehouseId, customerId, items[{productId, cantidad, precioUnitario}], notas? }` |
 | `PUT` | `/sales/:id` | Sí | solo en estado `borrador` |
 | `POST` | `/sales/:id/confirm` | Sí | borrador → confirmada (crea salidas + stock) |
 | `POST` | `/sales/:id/cancel` | Sí | borrador → cancelada |

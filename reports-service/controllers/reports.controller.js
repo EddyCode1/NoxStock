@@ -10,12 +10,18 @@ import {
     sumBy,
 } from '../utils/report.utils.js';
 
+function resolveWarehouseId(req) {
+    const warehouseId = req.query.warehouseId;
+    return typeof warehouseId === 'string' && warehouseId.trim() ? warehouseId.trim() : null;
+}
+
 export async function getTopProductsReport(req, res, next) {
     try {
         const authHeader = req.headers.authorization;
+        const warehouseId = resolveWarehouseId(req);
         const [products, outputs] = await Promise.all([
-            getProductsFromInventory(authHeader),
-            getOutputsFromInventory(authHeader),
+            getProductsFromInventory(authHeader, warehouseId),
+            getOutputsFromInventory(authHeader, warehouseId),
         ]);
 
         const productLookup = buildProductLookup(products);
@@ -33,7 +39,8 @@ export async function getTopProductsReport(req, res, next) {
 
 export async function getCategoriesReport(req, res, next) {
     try {
-        const products = await getProductsFromInventory(req.headers.authorization);
+        const warehouseId = resolveWarehouseId(req);
+        const products = await getProductsFromInventory(req.headers.authorization, warehouseId);
 
         return res.status(200).json({
             success: true,
@@ -48,9 +55,10 @@ export async function getCategoriesReport(req, res, next) {
 export async function getSummaryReport(req, res, next) {
     try {
         const authHeader = req.headers.authorization;
+        const warehouseId = resolveWarehouseId(req);
         const [products, outputs] = await Promise.all([
-            getProductsFromInventory(authHeader),
-            getOutputsFromInventory(authHeader),
+            getProductsFromInventory(authHeader, warehouseId),
+            getOutputsFromInventory(authHeader, warehouseId),
         ]);
 
         const categories = groupProductsByCategory(products);
@@ -95,11 +103,12 @@ export async function getRotationReport(req, res, next) {
             ? Number(req.query.days)
             : env.reportMovementDays;
         const authHeader = req.headers.authorization;
+        const warehouseId = resolveWarehouseId(req);
 
         const [products, entries, outputs] = await Promise.all([
-            getProductsFromInventory(authHeader),
-            getEntriesFromInventory(authHeader),
-            getOutputsFromInventory(authHeader),
+            getProductsFromInventory(authHeader, warehouseId),
+            getEntriesFromInventory(authHeader, warehouseId),
+            getOutputsFromInventory(authHeader, warehouseId),
         ]);
 
         const data = buildRotationReport(products, entries, outputs, days);
@@ -121,10 +130,11 @@ export async function getNoMovementReport(req, res, next) {
             ? Number(req.query.days)
             : env.reportMovementDays;
         const authHeader = req.headers.authorization;
+        const warehouseId = resolveWarehouseId(req);
 
         const [products, outputs] = await Promise.all([
-            getProductsFromInventory(authHeader),
-            getOutputsFromInventory(authHeader),
+            getProductsFromInventory(authHeader, warehouseId),
+            getOutputsFromInventory(authHeader, warehouseId),
         ]);
 
         const data = buildNoMovementReport(products, outputs, days);

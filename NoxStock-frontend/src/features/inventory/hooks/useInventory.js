@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import inventoryService from '../../../shared/api/services/inventoryService';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 export function useInventory() {
   const [products, setProducts] = useState([]);
@@ -8,8 +9,14 @@ export function useInventory() {
   const [outputs, setOutputs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
 
   const loadProducts = useCallback(async (params = {}) => {
+    if (!selectedWarehouseId) {
+      setProducts([]);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -21,7 +28,7 @@ export function useInventory() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedWarehouseId]);
 
   const loadCategories = useCallback(async () => {
     const data = await inventoryService.getCategories();
@@ -29,6 +36,12 @@ export function useInventory() {
   }, []);
 
   const loadMovements = useCallback(async () => {
+    if (!selectedWarehouseId) {
+      setEntries([]);
+      setOutputs([]);
+      return;
+    }
+
     const [entriesData, outputsData] = await Promise.all([
       inventoryService.getEntries(),
       inventoryService.getOutputs(),
@@ -36,7 +49,7 @@ export function useInventory() {
 
     setEntries(entriesData.entries || []);
     setOutputs(outputsData.outputs || []);
-  }, []);
+  }, [selectedWarehouseId]);
 
   useEffect(() => {
     loadProducts();
@@ -50,6 +63,7 @@ export function useInventory() {
     outputs,
     loading,
     error,
+    selectedWarehouseId,
     loadProducts,
     loadCategories,
     loadMovements,

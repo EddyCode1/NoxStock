@@ -6,6 +6,7 @@ import PurchaseOrder from '../models/PurchaseOrder.js';
 import Customer from '../models/Customer.js';
 import Sale from '../models/Sale.js';
 import Warehouse from '../models/Warehouse.js';
+import WarehouseStock from '../models/WarehouseStock.js';
 import { shouldRunSeed } from './seedUtils.js';
 
 const PRODUCTS = [
@@ -74,6 +75,7 @@ const SUPPLIERS = [
 const PURCHASE_ORDERS = [
   {
     supplierName: 'TechSupply Guatemala',
+    warehouseName: 'Bodega Central Zona 10',
     notas: 'SEED-OC-01 Pedido electronica Q3',
     estado: 'borrador',
     items: [
@@ -107,6 +109,7 @@ const CUSTOMERS = [
 const SALES = [
   {
     customerName: 'Comercial El Faro',
+    warehouseName: 'Sucursal Mixco',
     notas: 'SEED-VENTA-01 Pedido mostrador',
     estado: 'borrador',
     items: [{ productName: 'Pack Boligrafos x12', cantidad: 5, precioUnitario: 4.5 }],
@@ -267,9 +270,15 @@ async function seedPurchaseOrders() {
     }
 
     const supplier = await Supplier.findOne({ nombre: orderData.supplierName });
+    const warehouse = await Warehouse.findOne({ nombre: orderData.warehouseName || 'Bodega Central Zona 10' });
 
     if (!supplier) {
       console.warn(`[inventory-service] Proveedor no encontrado para OC: ${orderData.supplierName}`);
+      continue;
+    }
+
+    if (!warehouse) {
+      console.warn(`[inventory-service] Bodega no encontrada para OC: ${orderData.warehouseName}`);
       continue;
     }
 
@@ -296,6 +305,7 @@ async function seedPurchaseOrders() {
 
     await PurchaseOrder.create({
       supplierId: supplier._id,
+      warehouseId: warehouse._id,
       items,
       notas: orderData.notas,
       estado: orderData.estado,
@@ -336,9 +346,15 @@ async function seedSales() {
     }
 
     const customer = await Customer.findOne({ nombre: saleData.customerName });
+    const warehouse = await Warehouse.findOne({ nombre: saleData.warehouseName || 'Sucursal Mixco' });
 
     if (!customer) {
       console.warn(`[inventory-service] Cliente no encontrado para venta: ${saleData.customerName}`);
+      continue;
+    }
+
+    if (!warehouse) {
+      console.warn(`[inventory-service] Bodega no encontrada para venta: ${saleData.warehouseName}`);
       continue;
     }
 
@@ -365,6 +381,7 @@ async function seedSales() {
 
     await Sale.create({
       customerId: customer._id,
+      warehouseId: warehouse._id,
       items,
       notas: saleData.notas,
       estado: saleData.estado,
@@ -394,6 +411,49 @@ async function seedWarehouses() {
   return created;
 }
 
+async function seedWarehouseStock() {
+  const warehouses = await Warehouse.find().sort({ nombre: 1 });
+
+  if (warehouses.length === 0) {
+    return 0;
+  }
+
+  const products = await Product.find();
+  const splits = [0.5, 0.3, 0.2];
+  let updated = 0;
+  const defaultWarehouseId = warehouses[0]._id;
+
+  for (const product of products) {
+    let assigned = 0;
+
+    for (let index = 0; index < warehouses.length; index += 1) {
+      const isLast = index === warehouses.length - 1;
+      const portion = isLast
+        ? Math.max(product.existencia - assigned, 0)
+        : Math.floor(product.existencia * (splits[index] || 0.1));
+
+      await WarehouseStock.findOneAndUpdate(
+        { productId: product._id, warehouseId: warehouses[index]._id },
+        { existencia: portion },
+        { upsert: true, new: true, runValidators: true }
+      );
+
+      assigned += portion;
+      updated += 1;
+    }
+  }
+
+  await Entry.updateMany({ warehouseId: { $exists: false } }, { warehouseId: defaultWarehouseId });
+  await Output.updateMany({ warehouseId: { $exists: false } }, { warehouseId: defaultWarehouseId });
+  await PurchaseOrder.updateMany({ warehouseId: { $exists: false } }, { warehouseId: defaultWarehouseId });
+  await Sale.updateMany(
+    { warehouseId: { $exists: false } },
+    { warehouseId: warehouses[1]?._id || defaultWarehouseId }
+  );
+
+  return updated;
+}
+
 export const seedInventory = async () => {
   if (!shouldRunSeed()) {
     return { skipped: true };
@@ -408,6 +468,7 @@ export const seedInventory = async () => {
   const customersCreated = await seedCustomers();
   const salesCreated = await seedSales();
   const warehousesCreated = await seedWarehouses();
+  const warehouseStockSynced = await seedWarehouseStock();
 
   const [products, entries, outputs, suppliers, purchaseOrders, customers, sales, warehouses] = await Promise.all([
     Product.countDocuments(),
@@ -427,7 +488,7 @@ export const seedInventory = async () => {
   console.log(`[inventory-service] Ordenes de compra: ${purchaseOrders} (nuevas: ${purchaseOrdersCreated})`);
   console.log(`[inventory-service] Clientes: ${customers} (nuevos: ${customersCreated})`);
   console.log(`[inventory-service] Ventas: ${sales} (nuevas: ${salesCreated})`);
-  console.log(`[inventory-service] Bodegas: ${warehouses} (nuevas: ${warehousesCreated})`);
+  console.log(`[inventory-service] Bodegas: ${warehouses} (nuevas: ${warehousesCreated}, stock sync: ${warehouseStockSynced})`);
 
   return {
     products,
@@ -447,6 +508,7 @@ export const seedInventory = async () => {
     customersCreated,
     salesCreated,
     warehousesCreated,
+    warehouseStockSynced,
   };
 };
 

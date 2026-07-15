@@ -27,6 +27,7 @@ router.get(
   [
     query('estado').optional().isIn(['borrador', 'confirmada', 'cancelada']),
     query('customerId').optional().isMongoId(),
+    query('warehouseId').optional().isMongoId(),
     handleValidationErrors,
   ],
   getSales
@@ -43,6 +44,7 @@ router.post(
   [
     body('customerId').isMongoId().withMessage('ID de cliente inválido'),
     body('notas').optional().isString().trim().isLength({ max: 300 }),
+    body('warehouseId').isMongoId().withMessage('warehouseId es obligatorio'),
     ...itemValidators,
     handleValidationErrors,
   ],

@@ -1,10 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import NoxStockSidebar from '../components/NoxStockSidebar';
 import NavbarBlack from '../components/NavbarBlack';
+import inventoryService from '../../shared/api/services/inventoryService';
+import useWarehouseStore from '../../shared/stores/useWarehouseStore';
 
 const MainLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const setWarehouses = useWarehouseStore((state) => state.setWarehouses);
+
+  useEffect(() => {
+    const loadWarehouses = async () => {
+      try {
+        const data = await inventoryService.getWarehouses();
+        setWarehouses(data.warehouses || []);
+      } catch (error) {
+        console.error('Error cargando bodegas:', error);
+      }
+    };
+
+    loadWarehouses();
+  }, [setWarehouses]);
 
   return (
     <div className="flex h-screen bg-[var(--bg)]">

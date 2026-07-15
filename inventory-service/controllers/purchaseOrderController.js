@@ -5,12 +5,18 @@ import PurchaseOrder from '../models/PurchaseOrder.js';
 import Entry from '../models/Entry.js';
 import { increaseStock } from '../helpers/stock.js';
 import { getAuditUser } from '../helpers/audit.js';
+import {
+  ensureWarehouseExists,
+  requireWarehouseId,
+  resolveWarehouseId,
+} from '../helpers/warehouseContext.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const populateOptions = [
   { path: 'supplierId', select: 'nombre contacto email telefono' },
+  { path: 'warehouseId', select: 'nombre direccion lat lng' },
   { path: 'items.productId', select: 'nombre categoria precio existencia' },
 ];
 
@@ -44,6 +50,11 @@ export const getPurchaseOrders = async (req, res, next) => {
         return errorResponse(res, 400, 'ID de proveedor inválido', 'INVALID_ID');
       }
       filter.supplierId = supplierId;
+    }
+
+    const warehouseId = resolveWarehouseId(req);
+    if (warehouseId) {
+      filter.warehouseId = warehouseId;
     }
 
     const orders = await PurchaseOrder.find(filter)
@@ -82,6 +93,13 @@ export const getPurchaseOrderById = async (req, res, next) => {
 export const createPurchaseOrder = async (req, res, next) => {
   try {
     const { supplierId, items, notas } = req.body;
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
+
+    const warehouse = await ensureWarehouseExists(warehouseId);
+    if (!warehouse) {
+      return errorResponse(res, 404, 'Bodega no encontrada', 'WAREHOUSE_NOT_FOUND');
+    }
 
     if (!isValidObjectId(supplierId)) {
       return errorResponse(res, 400, 'ID de proveedor inválido', 'INVALID_ID');
@@ -101,6 +119,7 @@ export const createPurchaseOrder = async (req, res, next) => {
 
     const order = await PurchaseOrder.create({
       supplierId,
+      warehouseId,
       items,
       notas: notas || '',
       creadoPor: req.user?.email || req.user?.id || '',
@@ -231,14 +250,15 @@ export const receivePurchaseOrder = async (req, res, next) => {
     const supplierName = order.supplierId?.nombre || 'proveedor';
 
     for (const item of order.items) {
-      const product = await increaseStock(item.productId, item.cantidad);
+      const stock = await increaseStock(item.productId, order.warehouseId, item.cantidad);
 
-      if (!product) {
+      if (!stock) {
         return errorResponse(res, 404, 'Producto no encontrado al recibir orden', 'PRODUCT_NOT_FOUND');
       }
 
       const entry = await Entry.create({
         productId: item.productId,
+        warehouseId: order.warehouseId,
         cantidad: item.cantidad,
         motivo: `OC-${order._id} recepción ${supplierName}`,
         registradoPor: getAuditUser(req),

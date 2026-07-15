@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import noxReportsService from '../../../shared/api/services/noxReportsService';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 export default function InventoryInsightsPage() {
   const [days, setDays] = useState(30);
@@ -7,8 +8,14 @@ export default function InventoryInsightsPage() {
   const [noMovement, setNoMovement] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
+  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
 
   const loadReports = async (period = days) => {
+    if (!selectedWarehouseId) {
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -27,7 +34,7 @@ export default function InventoryInsightsPage() {
 
   useEffect(() => {
     loadReports(days);
-  }, []);
+  }, [selectedWarehouseId]);
 
   const handleApply = (event) => {
     event.preventDefault();
@@ -38,7 +45,9 @@ export default function InventoryInsightsPage() {
     <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">Análisis de inventario</h1>
-        <p className="text-sm text-gray-500">Rotación y productos sin movimiento reciente</p>
+        <p className="text-sm text-gray-500">
+          Rotación y sin movimiento en {selectedWarehouse?.nombre || 'la bodega activa'}
+        </p>
       </header>
 
       <form onSubmit={handleApply} className="flex flex-wrap items-end gap-3 rounded border p-4">

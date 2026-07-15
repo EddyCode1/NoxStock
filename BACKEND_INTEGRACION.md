@@ -211,3 +211,5 @@ Ver `BACKEND_SMOKE.md` para probar el flujo completo en PowerShell.
 - Auditoría: entradas/salidas registran `registradoPor` con el email del JWT
 - Clientes y ventas: `/customers` y `/sales` con flujo `borrador → confirmada`
 - Bodegas/sucursales: `/warehouses` con coordenadas para mapa Leaflet
+- **Stock por bodega**: modelo `WarehouseStock` (`productId` + `warehouseId` + `existencia`). Productos, entradas, salidas, ventas y OC requieren `warehouseId`. El total en `Product.existencia` es la suma de todas las bodegas.
+- **Reports-service**: alertas y reportes aceptan `?warehouseId=` para filtrar por sucursal.

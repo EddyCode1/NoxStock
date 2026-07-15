@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import inventoryService from '../../../shared/api/services/inventoryService';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 const estadoLabel = {
   borrador: 'Borrador',
@@ -21,8 +22,14 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
+  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
 
   const loadData = useCallback(async () => {
+    if (!selectedWarehouseId) {
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -39,7 +46,7 @@ export default function SalesPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedWarehouseId]);
 
   useEffect(() => {
     loadData();
@@ -95,7 +102,9 @@ export default function SalesPage() {
     <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">Ventas / Pedidos</h1>
-        <p className="text-sm text-gray-500">Flujo borrador → confirmada (descuenta stock)</p>
+        <p className="text-sm text-gray-500">
+          Bodega: {selectedWarehouse?.nombre || '—'} · borrador → confirmada (descuenta stock)
+        </p>
       </header>
 
       <form onSubmit={handleCreate} className="grid max-w-3xl gap-3 rounded border p-4 md:grid-cols-2">

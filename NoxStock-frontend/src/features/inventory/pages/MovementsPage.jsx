@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useInventory } from '../hooks/useInventory';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 export default function MovementsPage() {
   const { products, entries, outputs, loadMovements, inventoryService } = useInventory();
+  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
   const [form, setForm] = useState({
     type: 'entry',
     productId: '',
@@ -49,7 +51,9 @@ export default function MovementsPage() {
     <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">Movimientos de inventario</h1>
-        <p className="text-sm text-gray-500">Entradas y salidas con auditoría (registradoPor)</p>
+        <p className="text-sm text-gray-500">
+          Entradas y salidas en {selectedWarehouse?.nombre || 'la bodega activa'}
+        </p>
       </header>
 
       <form onSubmit={handleSubmit} className="grid max-w-2xl gap-3 rounded border p-4 md:grid-cols-2">

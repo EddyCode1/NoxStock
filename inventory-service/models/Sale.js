@@ -28,6 +28,11 @@ const saleSchema = new mongoose.Schema(
       ref: 'Customer',
       required: [true, 'El cliente es obligatorio'],
     },
+    warehouseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Warehouse',
+      required: [true, 'La bodega es obligatoria'],
+    },
     items: {
       type: [saleItemSchema],
       validate: {
