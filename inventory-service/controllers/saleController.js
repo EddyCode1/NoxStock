@@ -11,7 +11,6 @@ import {
   ensureWarehouseExists,
   rejectCentralWrite,
   requireWarehouseId,
-  resolveWarehouseId,
 } from '../helpers/warehouseContext.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
 
@@ -57,8 +56,11 @@ async function validateStock(items, warehouseId) {
 
 export const getSales = async (req, res, next) => {
   try {
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
+
     const { estado, customerId } = req.query;
-    const filter = {};
+    const filter = await buildWarehouseScopeFilter(warehouseId);
 
     if (estado) {
       filter.estado = estado;
@@ -69,12 +71,6 @@ export const getSales = async (req, res, next) => {
         return errorResponse(res, 400, 'ID de cliente inválido', 'INVALID_ID');
       }
       filter.customerId = customerId;
-    }
-
-    const warehouseId = resolveWarehouseId(req);
-    if (warehouseId) {
-      const scopeFilter = await buildWarehouseScopeFilter(warehouseId);
-      Object.assign(filter, scopeFilter);
     }
 
     const sales = await Sale.find(filter).populate(populateOptions).sort({ createdAt: -1 });
@@ -128,10 +124,10 @@ export const createSale = async (req, res, next) => {
       return errorResponse(res, 400, 'ID de cliente inválido', 'INVALID_ID');
     }
 
-    const customer = await Customer.findById(customerId);
+    const customer = await Customer.findOne({ _id: customerId, warehouseId });
 
     if (!customer) {
-      return errorResponse(res, 404, 'Cliente no encontrado', 'CUSTOMER_NOT_FOUND');
+      return errorResponse(res, 404, 'Cliente no encontrado en esta bodega', 'CUSTOMER_NOT_FOUND');
     }
 
     const itemError = await validateItems(items);
@@ -194,10 +190,10 @@ export const updateSale = async (req, res, next) => {
         return errorResponse(res, 400, 'ID de cliente inválido', 'INVALID_ID');
       }
 
-      const customer = await Customer.findById(req.body.customerId);
+      const customer = await Customer.findOne({ _id: req.body.customerId, warehouseId: sale.warehouseId });
 
       if (!customer) {
-        return errorResponse(res, 404, 'Cliente no encontrado', 'CUSTOMER_NOT_FOUND');
+        return errorResponse(res, 404, 'Cliente no encontrado en esta bodega', 'CUSTOMER_NOT_FOUND');
       }
 
       sale.customerId = req.body.customerId;
