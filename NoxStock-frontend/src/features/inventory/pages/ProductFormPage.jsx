@@ -1,7 +1,16 @@
 ﻿import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
+import {
+  PageShell,
+  PageHeader,
+  PageCard,
+  PageInput,
+  PageButton,
+  PageLinkButton,
+  PageMessage,
+} from '../../../shared/components/ui';
 
 const emptyForm = {
   nombre: '',
@@ -82,34 +91,34 @@ export default function ProductFormPage() {
   };
 
   return (
-    <section className="max-w-xl space-y-4">
-      <header>
-        <h1 className="text-2xl font-bold">{isEdit ? 'Editar producto' : 'Nuevo producto'}</h1>
-        <p className="text-sm text-gray-500">
-          Stock en {selectedWarehouse?.nombre || 'la bodega activa'}
-        </p>
-      </header>
+    <PageShell className="max-w-xl">
+      <PageHeader
+        title={isEdit ? 'Editar producto' : 'Nuevo producto'}
+        subtitle={`Stock en ${selectedWarehouse?.nombre || 'la bodega activa'}`}
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-3 rounded border p-4">
-        <input name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre" className="w-full rounded border px-3 py-2" required />
-        <input name="categoria" value={form.categoria} onChange={handleChange} placeholder="Categor├¡a" className="w-full rounded border px-3 py-2" required />
-        <input name="precio" type="number" value={form.precio} onChange={handleChange} placeholder="Precio" className="w-full rounded border px-3 py-2" required />
-        <input name="stockMinimo" type="number" value={form.stockMinimo} onChange={handleChange} placeholder="Stock m├¡nimo" className="w-full rounded border px-3 py-2" min="0" />
-        {!isEdit && (
-          <input name="existencia" type="number" value={form.existencia} onChange={handleChange} placeholder="Existencia inicial" className="w-full rounded border px-3 py-2" />
-        )}
+      <PageCard>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <PageInput name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre" required />
+          <PageInput name="categoria" value={form.categoria} onChange={handleChange} placeholder="Categoría" required />
+          <PageInput name="precio" type="number" value={form.precio} onChange={handleChange} placeholder="Precio" required />
+          <PageInput name="stockMinimo" type="number" value={form.stockMinimo} onChange={handleChange} placeholder="Stock mínimo" min="0" />
+          {!isEdit && (
+            <PageInput name="existencia" type="number" value={form.existencia} onChange={handleChange} placeholder="Existencia inicial" />
+          )}
 
-        {error && <p className="text-red-600">{error}</p>}
+          {error && <PageMessage tone="danger">{error}</PageMessage>}
 
-        <div className="flex gap-2">
-          <button type="submit" disabled={loading} className="rounded bg-black px-4 py-2 text-white">
-            {loading ? 'Guardando...' : 'Guardar'}
-          </button>
-          <Link to="/loby/inventory" className="rounded border px-4 py-2">
-            Cancelar
-          </Link>
-        </div>
-      </form>
-    </section>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <PageButton type="submit" disabled={loading}>
+              {loading ? 'Guardando...' : 'Guardar'}
+            </PageButton>
+            <PageLinkButton to="/loby/inventory" variant="secondary">
+              Cancelar
+            </PageLinkButton>
+          </div>
+        </form>
+      </PageCard>
+    </PageShell>
   );
 }

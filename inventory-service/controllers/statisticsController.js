@@ -1,9 +1,22 @@
 import Product from '../models/Product.js';
 import Entry from '../models/Entry.js';
 import Output from '../models/Output.js';
-import { successResponse } from '../helpers/response.js';
+import {
+  attachWarehouseStock,
+  getAggregatedStockMap,
+  getAllBranchCatalogProductIds,
+  getCatalogProductIds,
+  getStockMapForWarehouse,
+} from '../helpers/warehouseStock.js';
+import {
+  buildWarehouseScopeFilter,
+  ensureWarehouseExists,
+  isCentralWarehouse,
+  requireWarehouseId,
+} from '../helpers/warehouseContext.js';
+import { successResponse, errorResponse } from '../helpers/response.js';
 
-const LOW_STOCK_THRESHOLD = Number(process.env.LOW_STOCK_THRESHOLD ?? 10);
+const DEFAULT_LOW_STOCK_THRESHOLD = Number(process.env.LOW_STOCK_THRESHOLD ?? 10);
 const DAYS_RANGE = 7;
 
 const startOfDay = (date) => {
@@ -28,27 +41,89 @@ const buildLastNDays = (n) => {
   return days;
 };
 
+const getMinStock = (product) => product.stockMinimo ?? DEFAULT_LOW_STOCK_THRESHOLD;
+
+const buildScopedProducts = async (warehouseId, centralView) => {
+  const catalogProductIds = centralView
+    ? await getAllBranchCatalogProductIds()
+    : await getCatalogProductIds(warehouseId);
+
+  if (catalogProductIds.length === 0) {
+    return [];
+  }
+
+  const products = await Product.find({ _id: { $in: catalogProductIds } }).lean();
+  const stockMap = centralView
+    ? await getAggregatedStockMap(catalogProductIds)
+    : await getStockMapForWarehouse(warehouseId, catalogProductIds);
+
+  return attachWarehouseStock(products, stockMap, warehouseId);
+};
+
+const buildEmptyPayload = (warehouse, centralView) => ({
+  warehouse: {
+    _id: warehouse._id,
+    nombre: warehouse.nombre,
+    esCentral: centralView,
+  },
+  vistaConsolidada: centralView,
+  resumen: {
+    totalProductos: 0,
+    stockDisponible: 0,
+    bajoStock: 0,
+    sinStock: 0,
+  },
+  gananciaPorCategoria: {
+    totalValorEstimado: 0,
+    categorias: [],
+  },
+  resumenOrdenes: {
+    totalSemana: 0,
+    serie: buildLastNDays(DAYS_RANGE).map((d) => ({
+      fecha: d.toISOString().slice(0, 10),
+      dia: formatDayLabel(d),
+      total: 0,
+    })),
+  },
+  movimientosPorCategoria: [],
+  nivelStock: {
+    porcentaje: 0,
+    totalStock: 0,
+    productos: [],
+  },
+  proximoReabastecimiento: [],
+  productos: [],
+});
+
 /**
- * GET /statistics
- * Devuelve las métricas clave del dashboard:
- * - Totales de productos, stock disponible, bajo stock y sin stock
- * - Agrupación de productos por categoría (para gráfico de dona)
- * - Serie de movimientos (entradas + salidas) de los últimos 7 días (para gráfico de línea)
- * - Movimientos de entradas/salidas agrupados por categoría (para panel lateral)
- * - Listado de productos con bajo stock ordenado (para "Próximo Reabastecimiento")
+ * GET /statistics?warehouseId=...
+ * Métricas del dashboard filtradas por sucursal.
+ * Central = vista consolidada (suma de todas las sucursales operativas).
  */
 export const getStatistics = async (req, res, next) => {
   try {
-    const products = await Product.find().lean();
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
+
+    const warehouse = await ensureWarehouseExists(warehouseId);
+    if (!warehouse) {
+      return errorResponse(res, 404, 'Bodega no encontrada', 'WAREHOUSE_NOT_FOUND');
+    }
+
+    const centralView = await isCentralWarehouse(warehouseId);
+    const products = await buildScopedProducts(warehouseId, centralView);
+
+    if (products.length === 0) {
+      return successResponse(res, 200, 'Estadísticas obtenidas correctamente', buildEmptyPayload(warehouse, centralView));
+    }
 
     const totalProducts = products.length;
     const availableStock = products.reduce((sum, p) => sum + (p.existencia || 0), 0);
     const lowStockProducts = products.filter(
-      (p) => p.existencia > 0 && p.existencia <= LOW_STOCK_THRESHOLD
+      (p) => p.existencia > 0 && p.existencia <= getMinStock(p)
     );
     const outOfStockProducts = products.filter((p) => p.existencia === 0);
 
-    // Agrupación por categoría (gráfico de dona - "Ganancia por Categoría")
     const categoryMap = new Map();
     for (const product of products) {
       const categoria = product.categoria || 'Sin categoría';
@@ -75,17 +150,20 @@ export const getStatistics = async (req, res, next) => {
         totalValorEstimado > 0 ? Number(((c.valorEstimado / totalValorEstimado) * 100).toFixed(1)) : 0,
     }));
 
-    // Serie de movimientos de los últimos 7 días (gráfico de línea - "Resumen de Órdenes")
     const days = buildLastNDays(DAYS_RANGE);
     const rangeStart = days[0];
+    const movementScope = await buildWarehouseScopeFilter(warehouseId);
 
     const [entriesInRange, outputsInRange] = await Promise.all([
-      Entry.find({ fecha: { $gte: rangeStart } }).populate('productId', 'precio categoria').lean(),
-      Output.find({ fecha: { $gte: rangeStart } }).populate('productId', 'precio categoria').lean(),
+      Entry.find({ fecha: { $gte: rangeStart }, ...movementScope })
+        .populate('productId', 'precio categoria')
+        .lean(),
+      Output.find({ fecha: { $gte: rangeStart }, ...movementScope })
+        .populate('productId', 'precio categoria')
+        .lean(),
     ]);
 
     const dayKey = (date) => startOfDay(date).getTime();
-
     const dailyTotals = new Map(days.map((d) => [dayKey(d), 0]));
 
     for (const entry of entriesInRange) {
@@ -112,7 +190,6 @@ export const getStatistics = async (req, res, next) => {
 
     const totalMovimientoSemana = resumenOrdenes.reduce((sum, d) => sum + d.total, 0);
 
-    // Movimientos por categoría (entradas vs salidas) - panel "Movimientos por Categoría"
     const movCategoriaMap = new Map();
 
     for (const entry of entriesInRange) {
@@ -140,9 +217,8 @@ export const getStatistics = async (req, res, next) => {
       porcentaje: Number(((c.total / totalMovimientosCategoria) * 100).toFixed(1)),
     }));
 
-    // Próximo reabastecimiento: productos con menor existencia primero
     const proximoReabastecimiento = [...products]
-      .filter((p) => p.existencia <= LOW_STOCK_THRESHOLD)
+      .filter((p) => p.existencia <= getMinStock(p))
       .sort((a, b) => a.existencia - b.existencia)
       .slice(0, 6)
       .map((p) => ({
@@ -153,16 +229,20 @@ export const getStatistics = async (req, res, next) => {
         precio: p.precio,
       }));
 
-    // Nivel de stock general
-    const stockMaximoReferencia = products.reduce((sum, p) => sum + Math.max(p.existencia, LOW_STOCK_THRESHOLD * 2), 0);
+    const stockMaximoReferencia = products.reduce(
+      (sum, p) => sum + Math.max(p.existencia, getMinStock(p) * 2),
+      0
+    );
     const stockLevelPorcentaje =
-      stockMaximoReferencia > 0 ? Number(((availableStock / stockMaximoReferencia) * 100).toFixed(1)) : 0;
+      stockMaximoReferencia > 0
+        ? Number(((availableStock / stockMaximoReferencia) * 100).toFixed(1))
+        : 0;
 
     const nivelStockProductos = [...products]
       .sort((a, b) => a.existencia - b.existencia)
       .slice(0, 5)
       .map((p) => {
-        const referencia = Math.max(p.existencia, LOW_STOCK_THRESHOLD * 2, 1);
+        const referencia = Math.max(p.existencia, getMinStock(p) * 2, 1);
         return {
           _id: p._id,
           nombre: p.nombre,
@@ -173,6 +253,12 @@ export const getStatistics = async (req, res, next) => {
       });
 
     return successResponse(res, 200, 'Estadísticas obtenidas correctamente', {
+      warehouse: {
+        _id: warehouse._id,
+        nombre: warehouse.nombre,
+        esCentral: centralView,
+      },
+      vistaConsolidada: centralView,
       resumen: {
         totalProductos: totalProducts,
         stockDisponible: availableStock,
@@ -200,7 +286,12 @@ export const getStatistics = async (req, res, next) => {
         categoria: p.categoria,
         precio: p.precio,
         existencia: p.existencia,
-        estado: p.existencia === 0 ? 'Sin stock' : p.existencia <= LOW_STOCK_THRESHOLD ? 'Bajo stock' : 'Disponible',
+        estado:
+          p.existencia === 0
+            ? 'Sin stock'
+            : p.existencia <= getMinStock(p)
+              ? 'Bajo stock'
+              : 'Disponible',
       })),
     });
   } catch (error) {

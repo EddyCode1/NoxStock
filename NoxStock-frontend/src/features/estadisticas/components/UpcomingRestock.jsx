@@ -16,7 +16,7 @@ const initials = (name = '') =>
 export default function UpcomingRestock({ productos = [] }) {
   return (
     <div
-      className="rounded-2xl border p-5 h-full flex flex-col gap-4"
+      className="nox-card-hover rounded-2xl border p-5 h-full flex flex-col gap-4"
       style={{ background: palette.surface, borderColor: palette.border }}
     >
       <div className="flex items-center justify-between">

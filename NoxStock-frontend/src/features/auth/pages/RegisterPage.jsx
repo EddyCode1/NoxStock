@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { authService } from '../../../shared/api/services/authService'
+import NoxLogo from '../../../shared/components/NoxLogo'
 
 /**
  * Página de Registro
@@ -53,11 +54,14 @@ const RegisterPage = () => {
       <div className="pointer-events-none absolute -left-14 bottom-8 h-28 w-28 rounded-full bg-zinc-500/20 blur-2xl" />
 
       <div className="mb-7">
+        <div className="mb-4 flex justify-center">
+          <NoxLogo size="lg" animated />
+        </div>
         <span className="inline-flex rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-700">
           Nuevo acceso
         </span>
         <h1 className="mt-4 text-3xl font-bold text-zinc-900">Crear cuenta</h1>
-        <p className="mt-2 text-sm text-zinc-600">Regístrate para gestionar tus pedidos y reservas.</p>
+        <p className="mt-2 text-sm text-zinc-600">Regístrate para gestionar inventario y sucursales en NoxStock.</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

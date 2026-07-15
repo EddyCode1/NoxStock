@@ -11,7 +11,7 @@ export default function StockLevel({ porcentaje = 0, totalStock = 0, productos =
 
   return (
     <div
-      className="rounded-2xl border p-5 h-full flex flex-col gap-5"
+      className="nox-card-hover rounded-2xl border p-5 h-full flex flex-col gap-5"
       style={{ background: palette.surface, borderColor: palette.border }}
     >
       <div className="flex items-center justify-between">

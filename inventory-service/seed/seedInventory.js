@@ -9,6 +9,7 @@ import Warehouse from '../models/Warehouse.js';
 import WarehouseStock from '../models/WarehouseStock.js';
 import { syncProductTotal } from '../helpers/warehouseStock.js';
 import { shouldRunSeed } from './seedUtils.js';
+import { seedHistoricalData } from './seedHistoricalData.js';
 
 const WAREHOUSE_CATALOGS = [
   {
@@ -65,6 +66,24 @@ const WAREHOUSE_CATALOGS = [
       { productName: 'Clavos 2 pulgadas caja', cantidad: 12, motivo: 'SEED-OUTPUT-ANT-02 Venta ferreteria' },
     ],
   },
+  {
+    warehouseName: 'Pamp',
+    products: [
+      { nombre: 'Agua Purificada 1L', categoria: 'Bebidas', precio: 6, existencia: 120, stockMinimo: 30 },
+      { nombre: 'Gaseosa Cola 2L', categoria: 'Bebidas', precio: 14, existencia: 80, stockMinimo: 20 },
+      { nombre: 'Papas Fritas Familiar', categoria: 'Snacks', precio: 18, existencia: 65, stockMinimo: 15 },
+      { nombre: 'Galletas Surtidas', categoria: 'Snacks', precio: 9, existencia: 95, stockMinimo: 25 },
+      { nombre: 'Cafe Molido 500g', categoria: 'Despensa', precio: 32, existencia: 40, stockMinimo: 10 },
+    ],
+    entries: [
+      { productName: 'Agua Purificada 1L', cantidad: 50, motivo: 'SEED-ENTRY-PAMP-01 Reposicion bebidas' },
+      { productName: 'Papas Fritas Familiar', cantidad: 25, motivo: 'SEED-ENTRY-PAMP-02 Entrada snacks' },
+    ],
+    outputs: [
+      { productName: 'Gaseosa Cola 2L', cantidad: 12, motivo: 'SEED-OUTPUT-PAMP-01 Venta mostrador' },
+      { productName: 'Cafe Molido 500g', cantidad: 6, motivo: 'SEED-OUTPUT-PAMP-02 Venta despensa' },
+    ],
+  },
 ];
 
 const ALL_CATALOG_PRODUCTS = WAREHOUSE_CATALOGS.flatMap((catalog) => catalog.products);
@@ -100,6 +119,16 @@ const WAREHOUSE_SUPPLIERS = [
       categorias: ['Alambres', 'Ferreteria'],
     },
   },
+  {
+    warehouseName: 'Pamp',
+    supplier: {
+      nombre: 'Distribuidora Pamp',
+      contacto: 'Luis Ortega',
+      email: 'ventas@pamp.gt',
+      telefono: '502-555-0404',
+      categorias: ['Bebidas', 'Snacks', 'Despensa'],
+    },
+  },
 ];
 
 const PURCHASE_ORDERS = [
@@ -133,6 +162,16 @@ const PURCHASE_ORDERS = [
       { productName: 'Tornillo Drywall x100', cantidad: 25, precioUnitario: 14 },
     ],
   },
+  {
+    supplierName: 'Distribuidora Pamp',
+    warehouseName: 'Pamp',
+    notas: 'SEED-OC-PAMP-01 Pedido abarrotes',
+    estado: 'borrador',
+    items: [
+      { productName: 'Agua Purificada 1L', cantidad: 60, precioUnitario: 4.5 },
+      { productName: 'Galletas Surtidas', cantidad: 40, precioUnitario: 7 },
+    ],
+  },
 ];
 
 const WAREHOUSE_CUSTOMERS = [
@@ -163,6 +202,15 @@ const WAREHOUSE_CUSTOMERS = [
       nit: '5566778-9',
     },
   },
+  {
+    warehouseName: 'Pamp',
+    customer: {
+      nombre: 'Minisuper Pamp',
+      email: 'compras@minisuperpamp.gt',
+      telefono: '502-555-1104',
+      nit: '9988776-5',
+    },
+  },
 ];
 
 const SALES = [
@@ -186,6 +234,13 @@ const SALES = [
     notas: 'SEED-VENTA-ANT-01 Pedido ferreteria',
     estado: 'borrador',
     items: [{ productName: 'Clavos 2 pulgadas caja', cantidad: 8, precioUnitario: 20 }],
+  },
+  {
+    customerName: 'Minisuper Pamp',
+    warehouseName: 'Pamp',
+    notas: 'SEED-VENTA-PAMP-01 Pedido abarrotes',
+    estado: 'borrador',
+    items: [{ productName: 'Galletas Surtidas', cantidad: 15, precioUnitario: 8 }],
   },
 ];
 
@@ -664,6 +719,7 @@ export const seedInventory = async () => {
   const customersCreated = await seedCustomers();
   const purchaseOrdersCreated = await seedPurchaseOrders();
   const salesCreated = await seedSales();
+  const historical = await seedHistoricalData(WAREHOUSE_CATALOGS);
 
   const [products, entries, outputs, suppliers, purchaseOrders, customers, sales, warehouses] = await Promise.all([
     Product.countDocuments(),
@@ -683,6 +739,11 @@ export const seedInventory = async () => {
   console.log(`[inventory-service] Clientes: ${customers} (nuevos: ${customersCreated})`);
   console.log(`[inventory-service] Ventas: ${sales} (nuevas: ${salesCreated})`);
   console.log(`[inventory-service] Bodegas: ${warehouses} (nuevas: ${warehousesCreated}, stock sync: ${warehouseStockSynced})`);
+  if (!historical.skipped) {
+    console.log(
+      `[inventory-service] Historico ~3 meses: +${historical.movements} movimientos, +${historical.sales} ventas, +${historical.purchaseOrders} OC`
+    );
+  }
 
   return {
     products,
@@ -702,6 +763,7 @@ export const seedInventory = async () => {
     salesCreated,
     warehousesCreated,
     warehouseStockSynced,
+    historical,
   };
 };
 

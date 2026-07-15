@@ -2,18 +2,67 @@
 import { useInventory } from '../hooks/useInventory';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 import useAuthStore from '../../../shared/stores/useAuthStore';
+import {
+  PageShell,
+  PageHeader,
+  PageCard,
+  PageInput,
+  PageSelect,
+  PageLabel,
+  PageButton,
+  PageAlert,
+  PageMessage,
+  PageEmpty,
+  StatusBadge,
+} from '../../../shared/components/ui';
+import { palette } from '../../../shared/theme/noxTheme';
+
+function MovementPanel({ title, count, tone, items, emptyMessage, sign }) {
+  const headerBg = tone === 'entry' ? palette.navy : palette.surfaceElevated;
+
+  return (
+    <PageCard className="overflow-hidden p-0">
+      <div className="flex items-center gap-2 px-5 py-4" style={{ background: headerBg }}>
+        <h2 className="text-lg font-semibold" style={{ color: palette.textPrimary }}>{title}</h2>
+        <StatusBadge tone={tone === 'entry' ? 'navy' : 'neutral'}>{count}</StatusBadge>
+      </div>
+      <div className="space-y-3 p-4">
+        {items.length === 0 ? (
+          <PageEmpty message={emptyMessage} />
+        ) : (
+          items.map((item) => (
+            <div
+              key={item._id}
+              className="rounded-xl border p-3"
+              style={{
+                borderColor: palette.border,
+                background: palette.surfaceAlt,
+                borderLeft: `4px solid ${tone === 'entry' ? palette.success : palette.danger}`,
+              }}
+            >
+              <p className="font-semibold">{item.productId?.nombre || 'Producto'}</p>
+              <p className="mt-1 text-sm" style={{ color: tone === 'entry' ? palette.successText : palette.dangerText }}>
+                {sign}{item.cantidad} unidades
+              </p>
+              {item.motivo && <p className="mt-1 text-xs" style={{ color: palette.textSecondary }}>{item.motivo}</p>}
+              {item.registradoPor && <p className="mt-1 text-xs" style={{ color: palette.textMuted }}>Por: {item.registradoPor}</p>}
+              <p className="mt-2 text-xs" style={{ color: palette.textMuted }}>
+                {item.fecha ? new Date(item.fecha).toLocaleString('es-ES') : 'Sin fecha'}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+    </PageCard>
+  );
+}
 
 export default function MovementsPage() {
   const { products, entries, outputs, loadMovements, loadProducts, inventoryService } = useInventory();
   const { selectedWarehouse, selectedWarehouseId, version, isCentral } = useWarehouse();
   const user = useAuthStore((state) => state.user);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    type: 'entry',
-    productId: '',
-    cantidad: '',
-    motivo: '',
-  });
+  const [form, setForm] = useState({ type: 'entry', productId: '', cantidad: '', motivo: '' });
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -40,27 +89,20 @@ export default function MovementsPage() {
     }
 
     const cantidad = Number(form.cantidad);
-
     if (!Number.isInteger(cantidad) || cantidad <= 0) {
-      setMessage('Ingrese una cantidad v├ílida mayor a 0');
+      setMessage('Ingrese una cantidad válida mayor a 0');
       return;
     }
 
-    const payload = {
-      productId: form.productId,
-      cantidad,
-      motivo: form.motivo,
-    };
+    const payload = { productId: form.productId, cantidad, motivo: form.motivo };
 
     try {
       setSubmitting(true);
-
       if (form.type === 'entry') {
         await inventoryService.registerEntry(payload);
       } else {
         await inventoryService.registerOutput(payload);
       }
-
       setMessage('Movimiento registrado correctamente');
       setForm((prev) => ({ ...prev, cantidad: '', motivo: '' }));
       await Promise.all([loadMovements(), loadProducts()]);
@@ -72,198 +114,74 @@ export default function MovementsPage() {
   };
 
   return (
-    <section className="space-y-6 rounded-lg bg-gray-50 p-6">
-      <header className="border-b-2 border-blue-900 pb-4">
-        <h1 className="text-3xl font-bold text-blue-900">Movimientos de Inventario</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          {isCentral
+    <PageShell>
+      <PageHeader
+        title="Movimientos de inventario"
+        subtitle={
+          isCentral
             ? 'Historial consolidado de todas las sucursales (solo lectura)'
-            : `Entradas y salidas en ${selectedWarehouse?.nombre || 'la bodega activa'}`}
+            : `Entradas y salidas en ${selectedWarehouse?.nombre || 'la bodega activa'}`
+        }
+      />
+      {user && (
+        <p className="text-xs uppercase tracking-[0.16em]" style={{ color: palette.textMuted }}>
+          Usuario: {user.nombre || user.email}
         </p>
-        {user && (
-          <p className="mt-2 text-xs text-gray-500">
-            Usuario: <span className="font-semibold">{user.nombre || user.email}</span>
-          </p>
-        )}
-      </header>
+      )}
 
       {!isCentral && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <span className="h-6 w-1 rounded bg-blue-900" />
-            Registrar Movimiento
-          </h3>
-
+        <PageCard title="Registrar movimiento">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Tipo de Movimiento</label>
-                <select
-                  name="type"
-                  value={form.type}
-                  onChange={handleChange}
-                  className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
-                >
+                <PageLabel className="mb-2 block">Tipo</PageLabel>
+                <PageSelect name="type" value={form.type} onChange={handleChange}>
                   <option value="entry">Entrada</option>
                   <option value="output">Salida</option>
-                </select>
+                </PageSelect>
               </div>
-
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Producto</label>
-                <select
-                  name="productId"
-                  value={form.productId}
-                  onChange={handleChange}
-                  className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
-                  required
-                >
-                  <option value="">-- Seleccionar producto --</option>
+                <PageLabel className="mb-2 block">Producto</PageLabel>
+                <PageSelect name="productId" value={form.productId} onChange={handleChange} required>
+                  <option value="">Seleccionar producto</option>
                   {products.map((product) => (
                     <option key={product._id} value={product._id}>
                       {product.nombre} (Stock: {product.existencia})
                     </option>
                   ))}
-                </select>
+                </PageSelect>
               </div>
-
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Cantidad</label>
-                <input
-                  name="cantidad"
-                  type="number"
-                  value={form.cantidad}
-                  onChange={handleChange}
-                  placeholder="0"
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
-                  required
-                />
+                <PageLabel className="mb-2 block">Cantidad</PageLabel>
+                <PageInput name="cantidad" type="number" value={form.cantidad} onChange={handleChange} placeholder="0" required />
               </div>
-
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Motivo</label>
-                <input
-                  name="motivo"
-                  value={form.motivo}
-                  onChange={handleChange}
-                  placeholder="Ej: Compra, Devoluci├│n, Ajuste..."
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
-                />
+                <PageLabel className="mb-2 block">Motivo</PageLabel>
+                <PageInput name="motivo" value={form.motivo} onChange={handleChange} placeholder="Compra, devolución, ajuste..." />
               </div>
             </div>
 
             {message && (
-              <div
-                className={`rounded p-3 text-sm ${
-                  message.includes('correctamente')
-                    ? 'border border-green-200 bg-green-50 text-green-800'
-                    : 'border border-red-200 bg-red-50 text-red-800'
-                }`}
-              >
-                {message}
-              </div>
+              <PageMessage tone={message.includes('correctamente') ? 'success' : 'danger'}>{message}</PageMessage>
             )}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full rounded bg-blue-900 px-4 py-2 font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {submitting ? 'Procesando...' : 'Registrar Movimiento'}
-            </button>
+            <PageButton type="submit" disabled={submitting} className="w-full md:w-auto">
+              {submitting ? 'Procesando...' : 'Registrar movimiento'}
+            </PageButton>
           </form>
-        </div>
+        </PageCard>
       )}
 
       {isCentral && (
-        <p className="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <PageAlert tone="warning">
           Para registrar movimientos, seleccione una sucursal operativa (no Central).
-        </p>
+        </PageAlert>
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div className="bg-gradient-to-r from-blue-900 to-blue-800 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-              Entradas
-              <span className="ml-auto rounded bg-white px-2 py-1 text-sm font-bold text-blue-900">
-                {entries.length}
-              </span>
-            </h2>
-          </div>
-          <div className="p-4">
-            {entries.length === 0 ? (
-              <p className="py-8 text-center text-sm text-gray-500">No hay entradas registradas</p>
-            ) : (
-              <ul className="space-y-3">
-                {entries.map((entry) => (
-                  <li
-                    key={entry._id}
-                    className="rounded-lg border-l-4 border-green-500 bg-gradient-to-r from-green-50 to-blue-50 p-3"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900">{entry.productId?.nombre || 'Producto'}</div>
-                        <div className="mt-1 text-xs text-gray-600">
-                          <span className="font-bold text-green-700">+{entry.cantidad} unidades</span>
-                        </div>
-                        {entry.motivo && <div className="mt-1 text-xs text-gray-600">{entry.motivo}</div>}
-                        {entry.registradoPor && (
-                          <div className="mt-1 text-xs text-gray-500">Por: {entry.registradoPor}</div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
-                      {entry.fecha ? new Date(entry.fecha).toLocaleString('es-ES') : 'Sin fecha'}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div className="bg-gradient-to-r from-gray-800 to-gray-700 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-              Salidas
-              <span className="ml-auto rounded bg-white px-2 py-1 text-sm font-bold text-gray-800">
-                {outputs.length}
-              </span>
-            </h2>
-          </div>
-          <div className="p-4">
-            {outputs.length === 0 ? (
-              <p className="py-8 text-center text-sm text-gray-500">No hay salidas registradas</p>
-            ) : (
-              <ul className="space-y-3">
-                {outputs.map((output) => (
-                  <li
-                    key={output._id}
-                    className="rounded-lg border-l-4 border-red-500 bg-gradient-to-r from-red-50 to-gray-50 p-3"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900">{output.productId?.nombre || 'Producto'}</div>
-                        <div className="mt-1 text-xs text-gray-600">
-                          <span className="font-bold text-red-700">-{output.cantidad} unidades</span>
-                        </div>
-                        {output.motivo && <div className="mt-1 text-xs text-gray-600">{output.motivo}</div>}
-                        {output.registradoPor && (
-                          <div className="mt-1 text-xs text-gray-500">Por: {output.registradoPor}</div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
-                      {output.fecha ? new Date(output.fecha).toLocaleString('es-ES') : 'Sin fecha'}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+        <MovementPanel title="Entradas" count={entries.length} tone="entry" items={entries} emptyMessage="No hay entradas registradas" sign="+" />
+        <MovementPanel title="Salidas" count={outputs.length} tone="output" items={outputs} emptyMessage="No hay salidas registradas" sign="-" />
       </div>
-    </section>
+    </PageShell>
   );
 }

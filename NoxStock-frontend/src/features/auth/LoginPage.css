@@ -53,6 +53,14 @@
   margin-bottom: 10px;
 }
 
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+}
+
 .input-box {
   position: relative;
   margin: 15px 0;

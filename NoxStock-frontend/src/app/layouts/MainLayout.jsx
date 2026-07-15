@@ -5,6 +5,8 @@ import NavbarBlack from '../components/NavbarBlack';
 import inventoryService from '../../shared/api/services/inventoryService';
 import { useWarehouse } from '../../shared/hooks/useWarehouse';
 import useWarehouseStore from '../../shared/stores/useWarehouseStore';
+import PageTransition from '../../shared/components/PageTransition';
+import { palette } from '../../shared/theme/noxTheme';
 
 const MainLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -28,20 +30,25 @@ const MainLayout = () => {
   const canRenderPages = hasHydrated && isReady && selectedWarehouseId;
 
   return (
-    <div className="flex h-screen bg-[var(--bg)]">
+    <div className="nox-lobby-bg flex h-screen" style={{ background: palette.bgPage }}>
       <NoxStockSidebar isOpen={isSidebarOpen} />
 
-      <div className={`${isSidebarOpen ? 'ml-64' : 'ml-0'} flex flex-1 flex-col overflow-hidden transition-all duration-300`}>
+      <div className={`${isSidebarOpen ? 'ml-64' : 'ml-0'} flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-out`}>
         <NavbarBlack
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
         />
 
-        <main className="flex-1 overflow-auto p-4 md:p-6">
+        <main className="nox-dark-scroll flex-1 overflow-auto p-4 md:p-6">
           {canRenderPages ? (
-            <Outlet key={selectedWarehouseId} />
+            <PageTransition>
+              <Outlet key={selectedWarehouseId} />
+            </PageTransition>
           ) : (
-            <p className="text-sm text-gray-500">Cargando contexto de bodega...</p>
+            <div className="flex items-center gap-3">
+              <span className="nox-spinner" />
+              <p className="text-sm" style={{ color: palette.textMuted }}>Cargando contexto de bodega...</p>
+            </div>
           )}
         </main>
       </div>

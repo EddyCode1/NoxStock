@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
+import {
+  PageShell,
+  PageHeader,
+  PageCard,
+  PageInput,
+  PageButton,
+  PageTable,
+  PageTableHead,
+  PageTableRow,
+  PageTableCell,
+  PageTableHeaderCell,
+  PageAlert,
+  PageMessage,
+  PageLoading,
+  PageEmpty,
+} from '../../../shared/components/ui';
 
-const emptyForm = {
-  nombre: '',
-  email: '',
-  telefono: '',
-  nit: '',
-};
+const emptyForm = { nombre: '', email: '', telefono: '', nit: '' };
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
@@ -18,10 +29,7 @@ export default function CustomersPage() {
   const { selectedWarehouseId, selectedWarehouse, version, isReady, isCentral } = useWarehouse();
 
   const loadCustomers = useCallback(async () => {
-    if (!isReady || !selectedWarehouseId) {
-      return;
-    }
-
+    if (!isReady || !selectedWarehouseId) return;
     setLoading(true);
     setError('');
     try {
@@ -54,7 +62,6 @@ export default function CustomersPage() {
     event.preventDefault();
     setMessage('');
     setError('');
-
     try {
       await inventoryService.createCustomer(form);
       setForm(emptyForm);
@@ -66,68 +73,71 @@ export default function CustomersPage() {
   };
 
   return (
-    <section className="space-y-6 rounded-lg bg-gray-50 p-6">
-      <header className="border-b-2 border-blue-900 pb-4">
-        <h1 className="text-3xl font-bold text-blue-900">Clientes</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          {isCentral
+    <PageShell>
+      <PageHeader
+        title="Clientes"
+        subtitle={
+          isCentral
             ? 'Clientes de todas las sucursales (solo lectura)'
-            : `Clientes de ${selectedWarehouse?.nombre || 'la bodega activa'}`}
-        </p>
-      </header>
+            : `Clientes de ${selectedWarehouse?.nombre || 'la bodega activa'}`
+        }
+      />
 
       {isCentral && (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <PageAlert tone="warning">
           En Central ves el consolidado. Para registrar clientes, selecciona una sucursal operativa.
-        </p>
+        </PageAlert>
       )}
 
       {!isCentral && (
-        <form onSubmit={handleSubmit} className="grid max-w-3xl gap-3 rounded-lg border border-gray-200 bg-white p-4 md:grid-cols-2">
-          <input name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre *" className="rounded border px-3 py-2" required />
-          <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="rounded border px-3 py-2" />
-          <input name="telefono" value={form.telefono} onChange={handleChange} placeholder="Teléfono" className="rounded border px-3 py-2" />
-          <input name="nit" value={form.nit} onChange={handleChange} placeholder="NIT" className="rounded border px-3 py-2" />
-          <button type="submit" className="rounded bg-blue-900 px-4 py-2 text-white md:col-span-2">
-            Agregar cliente
-          </button>
-        </form>
+        <PageCard title="Nuevo cliente">
+          <form onSubmit={handleSubmit} className="grid gap-3 md:grid-cols-2">
+            <PageInput name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre *" required />
+            <PageInput name="email" value={form.email} onChange={handleChange} placeholder="Email" />
+            <PageInput name="telefono" value={form.telefono} onChange={handleChange} placeholder="Teléfono" />
+            <PageInput name="nit" value={form.nit} onChange={handleChange} placeholder="NIT" />
+            <div className="md:col-span-2">
+              <PageButton type="submit">Agregar cliente</PageButton>
+            </div>
+          </form>
+        </PageCard>
       )}
 
-      {message && <p className="text-green-700">{message}</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      {loading && <p className="text-sm text-gray-500">Cargando clientes...</p>}
-
+      {message && <PageMessage tone="success">{message}</PageMessage>}
+      {error && <PageMessage tone="danger">{error}</PageMessage>}
+      {loading && <PageLoading message="Cargando clientes..." />}
       {!loading && !error && customers.length === 0 && (
-        <p className="text-sm text-gray-500">
-          {isCentral
-            ? 'No hay clientes registrados en las sucursales.'
-            : 'Esta sucursal aún no tiene clientes.'}
-        </p>
+        <PageEmpty
+          message={
+            isCentral
+              ? 'No hay clientes registrados en las sucursales.'
+              : 'Esta sucursal aún no tiene clientes.'
+          }
+        />
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100">
+      {customers.length > 0 && (
+        <PageTable>
+          <PageTableHead>
             <tr>
-              <th className="px-3 py-2 text-left">Nombre</th>
-              <th className="px-3 py-2 text-left">Email</th>
-              <th className="px-3 py-2 text-left">Teléfono</th>
-              <th className="px-3 py-2 text-left">NIT</th>
+              <PageTableHeaderCell>Nombre</PageTableHeaderCell>
+              <PageTableHeaderCell>Email</PageTableHeaderCell>
+              <PageTableHeaderCell>Teléfono</PageTableHeaderCell>
+              <PageTableHeaderCell>NIT</PageTableHeaderCell>
             </tr>
-          </thead>
+          </PageTableHead>
           <tbody>
             {customers.map((customer) => (
-              <tr key={customer._id} className="border-t">
-                <td className="px-3 py-2">{customer.nombre}</td>
-                <td className="px-3 py-2">{customer.email || '-'}</td>
-                <td className="px-3 py-2">{customer.telefono || '-'}</td>
-                <td className="px-3 py-2">{customer.nit || '-'}</td>
-              </tr>
+              <PageTableRow key={customer._id}>
+                <PageTableCell>{customer.nombre}</PageTableCell>
+                <PageTableCell>{customer.email || '—'}</PageTableCell>
+                <PageTableCell>{customer.telefono || '—'}</PageTableCell>
+                <PageTableCell>{customer.nit || '—'}</PageTableCell>
+              </PageTableRow>
             ))}
           </tbody>
-        </table>
-      </div>
-    </section>
+        </PageTable>
+      )}
+    </PageShell>
   );
 }

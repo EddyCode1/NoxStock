@@ -6,13 +6,21 @@
   --font-body: 'Roboto', 'Segoe UI', sans-serif;
   --font-accent: 'Raleway', 'Segoe UI', sans-serif;
 
+  /* Paleta: Gris, Azul marino y Negro */
+  --navy: #0f1c3f;
+  --navy-dark: #0a1329;
+  --navy-light: #1e3a6d;
+  --black: #0b0e14;
+
   --bg: #f3f4f6;
   --surface: #ffffff;
-  --surface-dark: #111111;
-  --primary: #111111;
-  --accent: #6b7280;
+  --surface-dark: #0b0e14;
+  --primary: #0f1c3f;
+  --primary-dark: #0a1329;
+  --primary-soft: #e2e6f0;
+  --accent: #4b5563;
   --accent-soft: #d1d5db;
-  --text: #111111;
+  --text: #111827;
   --muted: #6b7280;
   --danger: #b02a2a;
 
@@ -26,6 +34,7 @@
   --theme-button-font-size: 13px;
   --theme-button-letter-spacing: 0.03em;
 }
+
 
 /* Estilos globales personalizados */
 
@@ -111,13 +120,14 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #6b7280;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #0f1c3f;
 }
+
 
 /* Animaciones */
 @keyframes fadeIn {
@@ -152,6 +162,66 @@ html {
   animation: lobbyPan 24s linear infinite;
 }
 
+/* ------------------------------------------------------------------ */
+/* Transiciones de vista (estilo navegación iOS: fade + slide)          */
+/* ------------------------------------------------------------------ */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-18px) scale(0.99);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-exit {
+  animation: pageExit 0.16s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Reveal: aparición escalonada (stagger) de elementos internos         */
+/* ------------------------------------------------------------------ */
+@keyframes revealItem {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-item {
+  animation: revealItem 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .page-exit,
+  .reveal-item {
+    animation: none !important;
+  }
+}
+
+
 /* Utilities personalizadas */
 .glass-morphism {
   background: rgba(255, 255, 255, 0.25);
@@ -166,8 +236,9 @@ html {
 }
 
 .btn-primary:hover {
-  background: #000000;
+  background: var(--primary-dark);
 }
+
 
 .btn-secondary {
   @apply px-4 py-2 rounded-lg font-semibold transition;
@@ -194,22 +265,20 @@ html {
   background: var(--surface);
 }
 
-/* Form fields: asegurar texto y placeholders en negro SOLO dentro de formularios */
-form input,
-form textarea,
-form select {
+/* Form fields: texto oscuro SOLO en login/auth y modales legacy */
+.auth-layout form input,
+.auth-layout form textarea,
+.auth-layout form select {
   color: #000000 !important;
 }
 
-/* Placeholders en inputs/textarea dentro de formularios */
-form input::placeholder,
-form textarea::placeholder {
+.auth-layout form input::placeholder,
+.auth-layout form textarea::placeholder {
   color: #000000 !important;
   opacity: 1;
 }
 
-/* Opciones de select dentro de formularios */
-form select option {
+.auth-layout form select option {
   color: #000000 !important;
 }
 
@@ -230,44 +299,54 @@ form select option {
   color: #000000 !important;
 }
 
-/* Tema de formularios: negro, blanco y plateado */
-form input:not([type='checkbox']):not([type='radio']),
-form textarea,
-form select {
+/* Tema de formularios auth: negro, blanco y plateado */
+.auth-layout form input:not([type='checkbox']):not([type='radio']),
+.auth-layout form textarea,
+.auth-layout form select {
   background: #ffffff !important;
   border: 1px solid #c4c8cf !important;
-  color: #111111 !important;
+  color: #111827 !important;
 }
 
-form input:not([type='checkbox']):not([type='radio'])::placeholder,
-form textarea::placeholder {
+.auth-layout form input:not([type='checkbox']):not([type='radio'])::placeholder,
+.auth-layout form textarea::placeholder {
   color: #707783 !important;
   opacity: 1;
 }
 
-form input:not([type='checkbox']):not([type='radio']):focus,
-form textarea:focus,
-form select:focus {
+.auth-layout form input:not([type='checkbox']):not([type='radio']):focus,
+.auth-layout form textarea:focus,
+.auth-layout form select:focus {
   border-color: #111111 !important;
   box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.35) !important;
 }
 
-form button[type='submit'] {
+.auth-layout form button[type='submit'] {
   background: #111111 !important;
   border-color: #111111 !important;
   color: #ffffff !important;
 }
 
-form button[type='submit']:hover {
+.auth-layout form button[type='submit']:hover {
   background: #000000 !important;
 }
 
-form button[type='button']:not([class*='red']):not([class*='danger']) {
+.auth-layout form button[type='button']:not([class*='red']):not([class*='danger']) {
   background: #e5e7eb !important;
   border-color: #c4c8cf !important;
-  color: #111111 !important;
+  color: #111827 !important;
 }
 
-form button[type='button']:not([class*='red']):not([class*='danger']):hover {
+.auth-layout form button[type='button']:not([class*='red']):not([class*='danger']):hover {
   background: #d1d5db !important;
+}
+
+/* Lobby oscuro: preservar estilos de NoxUi */
+.nox-page-shell input,
+.nox-page-shell textarea,
+.nox-page-shell select,
+.nox-page input,
+.nox-page textarea,
+.nox-page select {
+  color: inherit;
 }

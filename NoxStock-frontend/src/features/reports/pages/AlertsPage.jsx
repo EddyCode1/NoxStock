@@ -1,6 +1,18 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import noxReportsService from '../../../shared/api/services/noxReportsService';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
+
+const palette = {
+  background: '#071524',
+  container: '#12233D',
+  border: '#1F2F53',
+  card: '#0E203C',
+  textPrimary: '#E2E8F0',
+  textSecondary: '#94A3B8',
+  accent: '#3B82F6',
+  badgeWarning: 'bg-sky-500/10 text-sky-300 border-sky-500/20',
+  badgeCritical: 'bg-slate-500/10 text-slate-200 border-slate-500/20',
+};
 
 export default function AlertsPage() {
   const [lowStock, setLowStock] = useState([]);
@@ -37,129 +49,115 @@ export default function AlertsPage() {
     loadAlerts();
   }, [isReady, selectedWarehouseId, version]);
 
+  const tableData = useMemo(
+    () => [
+      ...lowStock.map((item) => ({
+        id: item.id || `${item.name}-low`,
+        name: item.name || 'Producto',
+        category: item.category || 'General',
+        stock: item.stock ?? 0,
+        type: 'Bajo stock',
+        state: 'Advertencia',
+        badgeClass: palette.badgeWarning,
+      })),
+      ...outOfStock.map((item) => ({
+        id: item.id || `${item.name}-out`,
+        name: item.name || 'Producto',
+        category: item.category || 'General',
+        stock: item.stock ?? 0,
+        type: 'Agotado',
+        state: 'Crítico',
+        badgeClass: palette.badgeCritical,
+      })),
+    ],
+    [lowStock, outOfStock],
+  );
+
   return (
-    <section className="space-y-6 rounded-lg bg-gray-50 p-6">
-      <header className="border-b-2 border-blue-900 pb-4">
-        <h1 className="text-3xl font-bold text-blue-900">Alertas de Inventario</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          Productos con bajo stock y agotados en {selectedWarehouse?.nombre || 'la bodega activa'}
-        </p>
-      </header>
-
-      {loading && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-blue-800">
-          Cargando alertas...
-        </div>
-      )}
-
-      {error && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">
-          <span className="font-semibold">Error:</span> {error}
-        </div>
-      )}
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-              Bajo Inventario
-              <span className="ml-auto rounded bg-white px-2 py-1 text-sm font-bold text-yellow-600">
-                {lowStock.length}
-              </span>
-            </h2>
+    <div style={{ background: palette.background, color: palette.textPrimary }} className="min-h-full rounded-[2rem] p-6">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-6 flex flex-col items-start justify-between gap-4 lg:flex-row">
+          <div>
+            <p className="mb-2 text-xs uppercase tracking-[0.35em] text-sky-300/70">Alertas</p>
+            <h1 className="text-3xl font-semibold">Inventario con atención</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-400">
+              Revisa los productos en bajo stock y los artículos agotados en {selectedWarehouse?.nombre || 'la bodega activa'}.
+            </p>
           </div>
-          <div className="p-4">
-            {lowStock.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-sm text-gray-500">No hay productos con bajo stock</p>
-              </div>
-            ) : (
-              <ul className="space-y-3">
-                {lowStock.map((item) => (
-                  <li
-                    key={item.id || item.name}
-                    className="rounded-lg border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-50 to-orange-50 p-3 transition hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900">{item.name}</div>
-                        <div className="mt-1 text-xs text-gray-600">
-                          Stock actual: <span className="font-bold text-yellow-700">{item.stock}</span>
-                        </div>
-                        <div className="mt-1 text-xs text-gray-600">
-                          Alerta en:{' '}
-                          <span className="font-bold text-yellow-700">
-                            {item.minStock ?? '(global)'}
-                          </span>
-                        </div>
-                        {item.category && (
-                          <div className="mt-1 text-xs text-gray-500">{item.category}</div>
-                        )}
-                      </div>
-                      <div className="text-2xl">ÔÜá´©Å</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+        </header>
 
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-              Agotados
-              <span className="ml-auto rounded bg-white px-2 py-1 text-sm font-bold text-red-600">
-                {outOfStock.length}
-              </span>
-            </h2>
+        {error && (
+          <div className="mb-4 rounded-3xl border border-red-800/80 bg-[#2B1D25] px-4 py-3 text-sm text-red-200">
+            {error}
           </div>
-          <div className="p-4">
-            {outOfStock.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-sm text-gray-500">No hay productos agotados</p>
-              </div>
-            ) : (
-              <ul className="space-y-3">
-                {outOfStock.map((item) => (
-                  <li
-                    key={item.id || item.name}
-                    className="rounded-lg border-l-4 border-red-500 bg-gradient-to-r from-red-50 to-pink-50 p-3 transition hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900">{item.name}</div>
-                        <div className="mt-1 text-xs text-gray-600">
-                          Stock: <span className="font-bold text-red-700">{item.stock}</span>
-                        </div>
-                        {item.category && (
-                          <div className="mt-1 text-xs text-gray-500">{item.category}</div>
-                        )}
-                      </div>
-                      <div className="text-2xl">­ƒÜ½</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+        )}
+
+        <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-[1.75rem] border border-slate-700 bg-[#102A4F] p-5 shadow-[0_20px_80px_-50px_rgba(0,0,0,0.55)]">
+            <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Total alertas</div>
+            <div className="mt-4 text-3xl font-semibold text-slate-100">{tableData.length}</div>
           </div>
-        </div>
+          <div className="rounded-[1.75rem] border border-slate-700 bg-[#102A4F] p-5 shadow-[0_20px_80px_-50px_rgba(0,0,0,0.55)]">
+            <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Bajo stock</div>
+            <div className="mt-4 text-3xl font-semibold text-slate-100">{lowStock.length}</div>
+          </div>
+          <div className="rounded-[1.75rem] border border-slate-700 bg-[#102A4F] p-5 shadow-[0_20px_80px_-50px_rgba(0,0,0,0.55)]">
+            <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Agotados</div>
+            <div className="mt-4 text-3xl font-semibold text-slate-100">{outOfStock.length}</div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex flex-col gap-3 rounded-[1.75rem] border border-slate-700 bg-[#111E36] p-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Resumen de alertas</h2>
+              <p className="mt-1 text-sm text-slate-400">Panel en tiempo real conectado a reports-service e inventory-service.</p>
+            </div>
+            <div className="rounded-full border border-slate-700 bg-slate-950/70 px-4 py-2 text-sm text-slate-300">
+              Mostrando {tableData.length} artículos
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-[2rem] border border-slate-700 bg-[#111E36] shadow-[0_20px_80px_-55px_rgba(0,0,0,0.7)]">
+            <table className="min-w-full">
+              <thead className="bg-[#0E1A34]">
+                <tr>
+                  <th className="px-4 py-4 text-left text-xs uppercase tracking-[0.18em] text-slate-500">Producto</th>
+                  <th className="px-4 py-4 text-left text-xs uppercase tracking-[0.18em] text-slate-500">Categoría</th>
+                  <th className="px-4 py-4 text-right text-xs uppercase tracking-[0.18em] text-slate-500">Stock</th>
+                  <th className="px-4 py-4 text-left text-xs uppercase tracking-[0.18em] text-slate-500">Tipo</th>
+                  <th className="px-4 py-4 text-center text-xs uppercase tracking-[0.18em] text-slate-500">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-400">Cargando alertas...</td>
+                  </tr>
+                ) : tableData.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-400">No hay alertas disponibles.</td>
+                  </tr>
+                ) : (
+                  tableData.map((item) => (
+                    <tr key={item.id} className="border-b border-slate-700 last:border-b-0 hover:bg-[#14294C]">
+                      <td className="px-4 py-4 text-sm text-slate-100">{item.name}</td>
+                      <td className="px-4 py-4 text-sm text-slate-400">{item.category}</td>
+                      <td className="px-4 py-4 text-right text-sm text-slate-100">{item.stock}</td>
+                      <td className="px-4 py-4 text-sm text-slate-100">{item.type}</td>
+                      <td className="px-4 py-4 text-center text-sm">
+                        <span className={`${item.badgeClass} inline-flex rounded-full border px-3 py-1 text-xs font-semibold`}>
+                          {item.state}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
-
-      {!loading && !error && (
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg border border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100 p-4">
-            <div className="text-sm text-blue-900">
-              <span className="font-semibold">Total de alertas:</span> {lowStock.length + outOfStock.length}
-            </div>
-          </div>
-          <div className="rounded-lg border border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-            <div className="text-sm text-gray-900">
-              <span className="font-semibold">Bodega activa:</span> {selectedWarehouse?.nombre || 'ÔÇö'}
-            </div>
-          </div>
-        </div>
-      )}
-    </section>
+    </div>
   );
 }

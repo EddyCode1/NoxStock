@@ -7,7 +7,7 @@ import { palette } from '../theme';
 export default function ChartCard({ title, subtitle, headerRight = null, children, className = '' }) {
   return (
     <div
-      className={`rounded-2xl border p-5 flex flex-col gap-4 ${className}`}
+      className={`nox-card-hover nox-reveal-child rounded-2xl border p-5 flex flex-col gap-4 ${className}`}
       style={{ background: palette.surface, borderColor: palette.border }}
     >
       <div className="flex items-start justify-between gap-3">

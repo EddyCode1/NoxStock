@@ -1,12 +1,11 @@
 import { useWarehouse } from '../../shared/hooks/useWarehouse';
+import { palette } from '../../shared/theme/noxTheme';
 
 const WarehouseSelector = () => {
   const { warehouses, selectedWarehouseId, selectedWarehouse, isCentral, setSelectedWarehouseId } = useWarehouse();
 
   if (warehouses.length === 0) {
-    return (
-      <span className="text-xs text-gray-500">Cargando bodegas...</span>
-    );
+    return <span className="text-xs" style={{ color: palette.textMuted }}>Cargando bodegas...</span>;
   }
 
   const sortedWarehouses = [...warehouses].sort((a, b) => {
@@ -16,15 +15,20 @@ const WarehouseSelector = () => {
   });
 
   return (
-    <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-3">
-      <label htmlFor="warehouse-selector" className="text-xs uppercase tracking-wider text-gray-400">
+    <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-3">
+      <label htmlFor="warehouse-selector" className="text-xs uppercase tracking-[0.2em]" style={{ color: palette.textSecondary }}>
         Bodega activa
       </label>
       <select
         id="warehouse-selector"
         value={selectedWarehouseId || ''}
         onChange={(event) => setSelectedWarehouseId(event.target.value)}
-        className="min-w-[220px] rounded border border-gray-600 bg-gray-900 px-3 py-2 text-sm text-gray-100 focus:border-gray-400 focus:outline-none"
+        className="min-w-[220px] rounded-full px-4 py-2 text-sm outline-none"
+        style={{
+          background: palette.surfaceAlt,
+          border: `1px solid ${palette.border}`,
+          color: palette.textPrimary,
+        }}
       >
         {sortedWarehouses.map((warehouse) => (
           <option key={warehouse._id} value={warehouse._id}>
@@ -33,11 +37,11 @@ const WarehouseSelector = () => {
         ))}
       </select>
       {isCentral ? (
-        <span className="hidden text-xs text-amber-400 lg:inline">
-          Vista consolidada de todas las sucursales
+        <span className="hidden text-xs lg:inline" style={{ color: palette.warningText }}>
+          Vista consolidada
         </span>
       ) : selectedWarehouse?.direccion ? (
-        <span className="hidden text-xs text-gray-500 lg:inline">
+        <span className="hidden text-xs lg:inline" style={{ color: palette.textMuted }}>
           {selectedWarehouse.direccion}
         </span>
       ) : null}
