@@ -1,6 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
+import {
+  PageShell,
+  PageHeader,
+  PageCard,
+  PageInput,
+  PageSelect,
+  PageButton,
+  PageAlert,
+  PageMessage,
+  PageLoading,
+  StatusBadge,
+} from '../../../shared/components/ui';
+import { palette } from '../../../shared/theme/noxTheme';
 
 const estadoLabel = {
   borrador: 'Borrador',
@@ -25,10 +38,7 @@ export default function SalesPage() {
   const { selectedWarehouseId, selectedWarehouse, version, isReady, isCentral } = useWarehouse();
 
   const loadData = useCallback(async () => {
-    if (!isReady || !selectedWarehouseId) {
-      return;
-    }
-
+    if (!isReady || !selectedWarehouseId) return;
     setLoading(true);
     setError('');
     try {
@@ -68,7 +78,6 @@ export default function SalesPage() {
     event.preventDefault();
     setMessage('');
     setError('');
-
     try {
       await inventoryService.createSale({
         customerId: form.customerId,
@@ -105,78 +114,85 @@ export default function SalesPage() {
   const saleTotal = (sale) =>
     (sale.items || []).reduce((sum, item) => sum + item.cantidad * item.precioUnitario, 0);
 
-  return (
-    <section className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold">Ventas / Pedidos</h1>
-        <p className="text-sm text-gray-500">
-          {isCentral
-            ? 'Ventas de todas las sucursales (solo lectura)'
-            : `Bodega: ${selectedWarehouse?.nombre || '—'} · borrador → confirmada`}
-        </p>
-      </header>
+  const estadoTone = (estado) => {
+    if (estado === 'confirmada') return 'success';
+    if (estado === 'cancelada') return 'danger';
+    return 'warning';
+  };
 
-      {!isCentral && (
-      <form onSubmit={handleCreate} className="grid max-w-3xl gap-3 rounded border p-4 md:grid-cols-2">
-        <select name="customerId" value={form.customerId} onChange={handleChange} className="rounded border px-3 py-2" required>
-          <option value="">Cliente *</option>
-          {customers.map((c) => (
-            <option key={c._id} value={c._id}>{c.nombre}</option>
-          ))}
-        </select>
-        <select name="productId" value={form.productId} onChange={handleChange} className="rounded border px-3 py-2" required>
-          <option value="">Producto *</option>
-          {products.map((p) => (
-            <option key={p._id} value={p._id}>{p.nombre} (stock: {p.existencia})</option>
-          ))}
-        </select>
-        <input name="cantidad" type="number" value={form.cantidad} onChange={handleChange} placeholder="Cantidad *" className="rounded border px-3 py-2" required />
-        <input name="precioUnitario" type="number" value={form.precioUnitario} onChange={handleChange} placeholder="Precio unitario *" className="rounded border px-3 py-2" required />
-        <input name="notas" value={form.notas} onChange={handleChange} placeholder="Notas" className="rounded border px-3 py-2 md:col-span-2" />
-        <button type="submit" className="rounded bg-black px-4 py-2 text-white md:col-span-2">
-          Crear venta (borrador)
-        </button>
-      </form>
+  return (
+    <PageShell>
+      <PageHeader
+        title="Ventas / Pedidos"
+        subtitle={
+          isCentral
+            ? 'Ventas de todas las sucursales (solo lectura)'
+            : `Bodega: ${selectedWarehouse?.nombre || '—'} · borrador → confirmada`
+        }
+      />
+
+      {isCentral && (
+        <PageAlert tone="warning">Central es solo lectura. Cambia a una sucursal para crear ventas.</PageAlert>
       )}
 
-      {message && <p className="text-green-700">{message}</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      {loading && <p>Cargando...</p>}
+      {!isCentral && (
+        <PageCard title="Nueva venta">
+          <form onSubmit={handleCreate} className="grid gap-3 md:grid-cols-2">
+            <PageSelect name="customerId" value={form.customerId} onChange={handleChange} required>
+              <option value="">Cliente *</option>
+              {customers.map((c) => (
+                <option key={c._id} value={c._id}>{c.nombre}</option>
+              ))}
+            </PageSelect>
+            <PageSelect name="productId" value={form.productId} onChange={handleChange} required>
+              <option value="">Producto *</option>
+              {products.map((p) => (
+                <option key={p._id} value={p._id}>{p.nombre} (stock: {p.existencia})</option>
+              ))}
+            </PageSelect>
+            <PageInput name="cantidad" type="number" value={form.cantidad} onChange={handleChange} placeholder="Cantidad *" required />
+            <PageInput name="precioUnitario" type="number" value={form.precioUnitario} onChange={handleChange} placeholder="Precio unitario *" required />
+            <PageInput name="notas" value={form.notas} onChange={handleChange} placeholder="Notas" className="md:col-span-2" />
+            <div className="md:col-span-2">
+              <PageButton type="submit">Crear venta (borrador)</PageButton>
+            </div>
+          </form>
+        </PageCard>
+      )}
+
+      {message && <PageMessage tone="success">{message}</PageMessage>}
+      {error && <PageMessage tone="danger">{error}</PageMessage>}
+      {loading && <PageLoading />}
 
       <div className="space-y-3">
         {sales.map((sale) => (
-          <article key={sale._id} className="rounded border p-4">
+          <PageCard key={sale._id}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="font-semibold">{sale.customerId?.nombre || 'Cliente'}</p>
-                <p className="text-sm text-gray-500">
-                  {estadoLabel[sale.estado] || sale.estado} · Total Q{saleTotal(sale).toFixed(2)}
+                <p className="mt-1 text-sm" style={{ color: palette.textSecondary }}>
+                  <StatusBadge tone={estadoTone(sale.estado)}>{estadoLabel[sale.estado] || sale.estado}</StatusBadge>
+                  <span className="ml-2">Total Q{saleTotal(sale).toFixed(2)}</span>
                 </p>
-                {sale.notas && <p className="text-sm">{sale.notas}</p>}
+                {sale.notas && <p className="mt-2 text-sm" style={{ color: palette.textMuted }}>{sale.notas}</p>}
               </div>
-              <div className="flex gap-2">
-                {sale.estado === 'borrador' && (
-                  <>
-                    <button type="button" onClick={() => runAction(sale._id, 'confirm')} className="rounded bg-black px-3 py-1 text-sm text-white">
-                      Confirmar
-                    </button>
-                    <button type="button" onClick={() => runAction(sale._id, 'cancel')} className="rounded border px-3 py-1 text-sm text-red-600">
-                      Cancelar
-                    </button>
-                  </>
-                )}
-              </div>
+              {sale.estado === 'borrador' && !isCentral && (
+                <div className="flex gap-2">
+                  <PageButton onClick={() => runAction(sale._id, 'confirm')}>Confirmar</PageButton>
+                  <PageButton variant="ghost" onClick={() => runAction(sale._id, 'cancel')}>Cancelar</PageButton>
+                </div>
+              )}
             </div>
-            <ul className="mt-2 text-sm text-gray-700">
+            <ul className="mt-3 space-y-1 text-sm" style={{ color: palette.textSecondary }}>
               {sale.items?.map((item, index) => (
                 <li key={index}>
                   {item.productId?.nombre || 'Producto'} × {item.cantidad} @ Q{item.precioUnitario}
                 </li>
               ))}
             </ul>
-          </article>
+          </PageCard>
         ))}
       </div>
-    </section>
+    </PageShell>
   );
 }

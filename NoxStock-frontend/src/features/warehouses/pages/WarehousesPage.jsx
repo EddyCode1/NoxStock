@@ -1,21 +1,39 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 import { sortWarehousesForDisplay } from '../utils/warehouseMapUtils';
+import {
+  PageShell,
+  PageHeader,
+  PageCard,
+  PageInput,
+  PageButton,
+  PageLinkButton,
+  PageTable,
+  PageTableHead,
+  PageTableRow,
+  PageTableCell,
+  PageTableHeaderCell,
+  PageMessage,
+  PageLoading,
+  StatusBadge,
+} from '../../../shared/components/ui';
+import { palette } from '../../../shared/theme/noxTheme';
 
 const LocationPickerMap = lazy(() => import('../components/LocationPickerMap'));
 
-const emptyForm = {
-  nombre: '',
-  direccion: '',
-  lat: '',
-  lng: '',
-};
+const emptyForm = { nombre: '', direccion: '', lat: '', lng: '' };
 
 function MapLoader() {
-  return <div className="flex h-60 items-center justify-center rounded border text-sm text-gray-500">Cargando mapa…</div>;
+  return (
+    <div
+      className="flex h-60 items-center justify-center rounded-2xl border text-sm"
+      style={{ borderColor: palette.border, color: palette.textMuted, background: palette.surfaceAlt }}
+    >
+      Cargando mapa…
+    </div>
+  );
 }
 
 export default function WarehousesPage() {
@@ -54,23 +72,17 @@ export default function WarehousesPage() {
 
   const handleSelectPosition = ({ lat, lng }) => {
     setPosition({ lat, lng });
-    setForm((prev) => ({
-      ...prev,
-      lat: lat.toFixed(6),
-      lng: lng.toFixed(6),
-    }));
+    setForm((prev) => ({ ...prev, lat: lat.toFixed(6), lng: lng.toFixed(6) }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setMessage('');
     setError('');
-
     if (!form.lat || !form.lng) {
       setError('Selecciona la ubicación en el mapa');
       return;
     }
-
     try {
       await inventoryService.createWarehouse({
         nombre: form.nombre,
@@ -88,92 +100,68 @@ export default function WarehousesPage() {
   };
 
   return (
-    <section className="space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Bodegas / Sucursales</h1>
-          <p className="text-sm text-gray-500">Registra ubicaciones con mapa (Leaflet + OpenStreetMap)</p>
-        </div>
-        <Link to="/loby/inventory/warehouses/map" className="rounded border px-4 py-2 text-sm">
-          Ver mapa general
-        </Link>
-      </header>
+    <PageShell>
+      <PageHeader
+        title="Bodegas / Sucursales"
+        subtitle="Registra ubicaciones con mapa (Leaflet + OpenStreetMap)"
+        actions={<PageLinkButton to="/loby/inventory/warehouses/map" variant="secondary">Ver mapa general</PageLinkButton>}
+      />
 
-      <form onSubmit={handleSubmit} className="grid gap-4 rounded border p-4 lg:grid-cols-2">
-        <div className="space-y-3">
-          <input
-            name="nombre"
-            value={form.nombre}
-            onChange={handleChange}
-            placeholder="Nombre de bodega *"
-            className="w-full rounded border px-3 py-2"
-            required
-          />
-          <input
-            name="direccion"
-            value={form.direccion}
-            onChange={handleChange}
-            placeholder="Dirección"
-            className="w-full rounded border px-3 py-2"
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <input name="lat" value={form.lat} readOnly placeholder="Latitud" className="rounded border bg-gray-50 px-3 py-2" />
-            <input name="lng" value={form.lng} readOnly placeholder="Longitud" className="rounded border bg-gray-50 px-3 py-2" />
+      <PageCard title="Nueva bodega">
+        <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-2">
+          <div className="space-y-3">
+            <PageInput name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre de bodega *" required />
+            <PageInput name="direccion" value={form.direccion} onChange={handleChange} placeholder="Dirección" />
+            <div className="grid grid-cols-2 gap-2">
+              <PageInput name="lat" value={form.lat} readOnly placeholder="Latitud" />
+              <PageInput name="lng" value={form.lng} readOnly placeholder="Longitud" />
+            </div>
+            <p className="text-xs" style={{ color: palette.textMuted }}>Haz clic en el mapa para fijar la ubicación</p>
+            <PageButton type="submit">Registrar bodega</PageButton>
           </div>
-          <p className="text-xs text-gray-500">Haz clic en el mapa para fijar la ubicación</p>
-          <button type="submit" className="rounded bg-black px-4 py-2 text-white">
-            Registrar bodega
-          </button>
-        </div>
+          <Suspense fallback={<MapLoader />}>
+            <LocationPickerMap selectedPosition={position} onSelectPosition={handleSelectPosition} />
+          </Suspense>
+        </form>
+      </PageCard>
 
-        <Suspense fallback={<MapLoader />}>
-          <LocationPickerMap selectedPosition={position} onSelectPosition={handleSelectPosition} />
-        </Suspense>
-      </form>
+      {message && <PageMessage tone="success">{message}</PageMessage>}
+      {error && <PageMessage tone="danger">{error}</PageMessage>}
+      {loading && <PageLoading />}
 
-      {message && <p className="text-green-700">{message}</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      {loading && <p>Cargando...</p>}
-
-      <div className="overflow-x-auto rounded border">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-3 py-2 text-left">Nombre</th>
-              <th className="px-3 py-2 text-left">Dirección</th>
-              <th className="px-3 py-2 text-left">Coordenadas</th>
-              <th className="px-3 py-2 text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortWarehousesForDisplay(warehouses).map((warehouse) => {
-              const isActive = warehouse._id === selectedWarehouseId;
-
-              return (
-              <tr key={warehouse._id} className={`border-t ${isActive ? 'bg-green-50' : ''}`}>
-                <td className="px-3 py-2">
-                  {warehouse.esCentral ? `★ ${warehouse.nombre}` : warehouse.nombre}
-                </td>
-                <td className="px-3 py-2">{warehouse.direccion || '-'}</td>
-                <td className="px-3 py-2">
+      <PageTable>
+        <PageTableHead>
+          <tr>
+            <PageTableHeaderCell>Nombre</PageTableHeaderCell>
+            <PageTableHeaderCell>Dirección</PageTableHeaderCell>
+            <PageTableHeaderCell>Coordenadas</PageTableHeaderCell>
+            <PageTableHeaderCell align="center">Acciones</PageTableHeaderCell>
+          </tr>
+        </PageTableHead>
+        <tbody>
+          {sortWarehousesForDisplay(warehouses).map((warehouse) => {
+            const isActive = warehouse._id === selectedWarehouseId;
+            return (
+              <PageTableRow key={warehouse._id} highlight={isActive}>
+                <PageTableCell>{warehouse.esCentral ? `★ ${warehouse.nombre}` : warehouse.nombre}</PageTableCell>
+                <PageTableCell>{warehouse.direccion || '—'}</PageTableCell>
+                <PageTableCell>
                   {Number(warehouse.lat).toFixed(5)}, {Number(warehouse.lng).toFixed(5)}
-                </td>
-                <td className="px-3 py-2 text-center">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedWarehouseId(warehouse._id)}
-                    disabled={isActive}
-                    className="rounded bg-blue-900 px-3 py-1 text-xs text-white disabled:bg-green-700"
-                  >
-                    {isActive ? 'Activa' : 'Seleccionar'}
-                  </button>
-                </td>
-              </tr>
+                </PageTableCell>
+                <PageTableCell align="center">
+                  {isActive ? (
+                    <StatusBadge tone="success">Activa</StatusBadge>
+                  ) : (
+                    <PageButton variant="secondary" onClick={() => setSelectedWarehouseId(warehouse._id)}>
+                      Seleccionar
+                    </PageButton>
+                  )}
+                </PageTableCell>
+              </PageTableRow>
             );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </section>
+          })}
+        </tbody>
+      </PageTable>
+    </PageShell>
   );
 }

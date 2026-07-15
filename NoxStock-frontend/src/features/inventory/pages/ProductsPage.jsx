@@ -1,7 +1,24 @@
-﻿import { Link } from 'react-router-dom';
-import { useState } from 'react';
+﻿import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useInventory } from '../hooks/useInventory';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
+import {
+  PageShell,
+  PageHeader,
+  PageCard,
+  PageButton,
+  PageLinkButton,
+  PageTable,
+  PageTableHead,
+  PageTableRow,
+  PageTableCell,
+  PageTableHeaderCell,
+  StatusBadge,
+  PageLoading,
+  PageEmpty,
+  PageMessage,
+} from '../../../shared/components/ui';
+import { palette } from '../../../shared/theme/noxTheme';
 
 export default function ProductsPage() {
   const { products, loading, error, loadProducts } = useInventory();
@@ -18,88 +35,94 @@ export default function ProductsPage() {
   };
 
   return (
-    <section className="space-y-4">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Inventario - Productos</h1>
-          <p className="text-sm text-gray-500">
-            {isCentral
-              ? 'Vista consolidada ÔÇö stock total de todas las sucursales'
-              : `Stock en ${selectedWarehouse?.nombre || 'la bodega activa'}`}
-          </p>
-        </div>
-        {!isCentral && (
-        <Link to="/loby/inventory/new" className="rounded bg-black px-4 py-2 text-white">
-          Nuevo producto
-        </Link>
-        )}
-      </header>
+    <PageShell>
+      <PageHeader
+        title="Inventario — Productos"
+        subtitle={
+          isCentral
+            ? 'Vista consolidada — stock total de todas las sucursales'
+            : `Stock en ${selectedWarehouse?.nombre || 'la bodega activa'}`
+        }
+        actions={!isCentral && <PageLinkButton to="/loby/inventory/new">Nuevo producto</PageLinkButton>}
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={showLowStock}
-            onChange={(e) => setShowLowStock(e.target.checked)}
-          />
-          Solo bajo stock
-        </label>
-        <button type="button" onClick={handleFilter} className="rounded border px-3 py-1">
-          Aplicar filtro
-        </button>
-        <button type="button" onClick={() => { setShowLowStock(false); loadProducts(); }} className="rounded border px-3 py-1">
-          Ver todos
-        </button>
-      </div>
-
-      {loading && <p>Cargando productos...</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      {!loading && !error && products.length === 0 && (
-        <p className="text-sm text-gray-500">
-          Esta bodega a├║n no tiene productos. Crea el primero con &quot;Nuevo producto&quot;.
-        </p>
+      {isCentral && (
+        <PageMessage tone="warning">
+          Central es solo lectura. Selecciona una sucursal operativa para crear o editar productos.
+        </PageMessage>
       )}
 
-      <div className="overflow-x-auto rounded border">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100">
+      <PageCard>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm" style={{ color: palette.textSecondary }}>
+            <input
+              type="checkbox"
+              checked={showLowStock}
+              onChange={(e) => setShowLowStock(e.target.checked)}
+            />
+            Solo bajo stock
+          </label>
+          <PageButton variant="secondary" onClick={handleFilter}>
+            Aplicar filtro
+          </PageButton>
+          <PageButton
+            variant="ghost"
+            onClick={() => {
+              setShowLowStock(false);
+              loadProducts();
+            }}
+          >
+            Ver todos
+          </PageButton>
+        </div>
+      </PageCard>
+
+      {loading && <PageLoading message="Cargando productos..." />}
+      {error && <PageMessage tone="danger">{error}</PageMessage>}
+      {!loading && !error && products.length === 0 && (
+        <PageEmpty message="Esta bodega aún no tiene productos. Crea el primero con «Nuevo producto»." />
+      )}
+
+      {!loading && products.length > 0 && (
+        <PageTable>
+          <PageTableHead>
             <tr>
-              <th className="px-3 py-2 text-left">Nombre</th>
-              <th className="px-3 py-2 text-left">Categor├¡a</th>
-              <th className="px-3 py-2 text-right">Precio</th>
-              <th className="px-3 py-2 text-right">Existencia</th>
-              <th className="px-3 py-2 text-right">Stock m├¡n.</th>
-              <th className="px-3 py-2 text-center">Estado</th>
-              <th className="px-3 py-2 text-center">Acciones</th>
+              <PageTableHeaderCell>Nombre</PageTableHeaderCell>
+              <PageTableHeaderCell>Categoría</PageTableHeaderCell>
+              <PageTableHeaderCell align="right">Precio</PageTableHeaderCell>
+              <PageTableHeaderCell align="right">Existencia</PageTableHeaderCell>
+              <PageTableHeaderCell align="right">Stock mín.</PageTableHeaderCell>
+              <PageTableHeaderCell align="center">Estado</PageTableHeaderCell>
+              <PageTableHeaderCell align="center">Acciones</PageTableHeaderCell>
             </tr>
-          </thead>
+          </PageTableHead>
           <tbody>
             {products.map((product) => (
-              <tr key={product._id} className="border-t">
-                <td className="px-3 py-2">{product.nombre}</td>
-                <td className="px-3 py-2">{product.categoria}</td>
-                <td className="px-3 py-2 text-right">Q{product.precio}</td>
-                <td className="px-3 py-2 text-right">{product.existencia}</td>
-                <td className="px-3 py-2 text-right">{product.stockMinimo ?? 5}</td>
-                <td className="px-3 py-2 text-center">
+              <PageTableRow key={product._id}>
+                <PageTableCell>{product.nombre}</PageTableCell>
+                <PageTableCell>{product.categoria}</PageTableCell>
+                <PageTableCell align="right">Q{product.precio}</PageTableCell>
+                <PageTableCell align="right">{product.existencia}</PageTableCell>
+                <PageTableCell align="right">{product.stockMinimo ?? 5}</PageTableCell>
+                <PageTableCell align="center">
                   {isLowStock(product) ? (
-                    <span className="text-amber-700">Bajo stock</span>
+                    <StatusBadge tone="warning">Bajo stock</StatusBadge>
                   ) : product.existencia === 0 ? (
-                    <span className="text-red-600">Agotado</span>
+                    <StatusBadge tone="danger">Agotado</StatusBadge>
                   ) : (
-                    <span className="text-green-700">OK</span>
+                    <StatusBadge tone="success">OK</StatusBadge>
                   )}
-                </td>
-                <td className="px-3 py-2 text-center">
-                  <Link to={`/loby/inventory/${product._id}/edit`} className="underline">
+                </PageTableCell>
+                <PageTableCell align="center">
+                  <Link to={`/loby/inventory/${product._id}/edit`} style={{ color: palette.navyLight }}>
                     Editar
                   </Link>
-                </td>
-              </tr>
+                </PageTableCell>
+              </PageTableRow>
             ))}
           </tbody>
-        </table>
-      </div>
-    </section>
+        </PageTable>
+      )}
+    </PageShell>
   );
 }

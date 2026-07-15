@@ -1,15 +1,30 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 import { sortWarehousesForDisplay } from '../utils/warehouseMapUtils';
+import {
+  PageShell,
+  PageHeader,
+  PageCard,
+  PageButton,
+  PageLinkButton,
+  PageAlert,
+  PageMessage,
+  PageLoading,
+  StatusBadge,
+} from '../../../shared/components/ui';
+import { palette } from '../../../shared/theme/noxTheme';
 
 const WarehousesMap = lazy(() => import('../components/WarehousesMap'));
 
 function MapLoader() {
   return (
-    <div className="flex h-[480px] items-center justify-center rounded-lg border bg-gray-50 text-sm text-gray-500">
+    <div
+      className="flex h-[480px] items-center justify-center rounded-2xl border text-sm"
+      style={{ borderColor: palette.border, color: palette.textMuted, background: palette.surfaceAlt }}
+    >
       Cargando mapa…
     </div>
   );
@@ -34,7 +49,6 @@ export default function WarehouseMapPage() {
   const refreshWarehouses = useCallback(async () => {
     setLoading(true);
     setError('');
-
     try {
       const data = await inventoryService.getWarehouses();
       const list = data.warehouses || [];
@@ -56,10 +70,7 @@ export default function WarehouseMapPage() {
 
   const handleSelectWarehouse = (warehouseId) => {
     const warehouse = warehouses.find((item) => item._id === warehouseId);
-
-    if (!warehouse) {
-      return;
-    }
+    if (!warehouse) return;
 
     setSelectedWarehouseId(warehouseId);
     setFocusWarehouseId(warehouseId);
@@ -76,47 +87,29 @@ export default function WarehouseMapPage() {
   const sortedWarehouses = sortWarehousesForDisplay(warehouses);
 
   return (
-    <section className="space-y-6 rounded-lg bg-gray-50 p-6">
-      <header className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-blue-900 pb-4">
-        <div>
-          <h1 className="text-3xl font-bold text-blue-900">Mapa de sucursales</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            {ubicadas.length} ubicación(es) en el mapa · selecciona una para cambiar el contexto del sistema
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={refreshWarehouses}
-            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-100"
-          >
-            Actualizar
-          </button>
-          <Link
-            to="/loby/inventory/warehouses"
-            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-100"
-          >
-            Gestionar bodegas
-          </Link>
-        </div>
-      </header>
+    <PageShell>
+      <PageHeader
+        title="Mapa de sucursales"
+        subtitle={`${ubicadas.length} ubicación(es) en el mapa · selecciona una para cambiar el contexto del sistema`}
+        actions={
+          <>
+            <PageButton variant="secondary" onClick={refreshWarehouses}>Actualizar</PageButton>
+            <PageLinkButton to="/loby/inventory/warehouses" variant="secondary">Gestionar bodegas</PageLinkButton>
+          </>
+        }
+      />
 
       {selectedWarehouse && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+        <PageAlert tone="info">
           <span className="font-semibold">Bodega activa:</span>{' '}
           {isCentral ? `★ ${selectedWarehouse.nombre} (consolidada)` : selectedWarehouse.nombre}
           {selectedWarehouse.direccion ? ` — ${selectedWarehouse.direccion}` : ''}
-        </div>
+        </PageAlert>
       )}
 
-      {switchMessage && (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-          {switchMessage}
-        </div>
-      )}
-
-      {loading && <p className="text-sm text-gray-500">Cargando bodegas...</p>}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {switchMessage && <PageMessage tone="success">{switchMessage}</PageMessage>}
+      {loading && <PageLoading message="Cargando bodegas..." />}
+      {error && <PageMessage tone="danger">{error}</PageMessage>}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <Suspense fallback={<MapLoader />}>
@@ -129,10 +122,7 @@ export default function WarehouseMapPage() {
         </Suspense>
 
         <aside className="space-y-4">
-          <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700">
-              Sucursales
-            </h2>
+          <PageCard title="Sucursales">
             <ul className="max-h-[420px] space-y-2 overflow-y-auto">
               {sortedWarehouses.map((warehouse) => {
                 const isActive = warehouse._id === selectedWarehouseId;
@@ -142,88 +132,61 @@ export default function WarehouseMapPage() {
                 return (
                   <li
                     key={warehouse._id}
-                    className={`rounded-lg border p-3 transition ${
-                      isActive
-                        ? 'border-green-300 bg-green-50'
-                        : 'border-gray-200 bg-gray-50 hover:border-blue-200 hover:bg-blue-50'
-                    }`}
+                    className="rounded-xl border p-3"
+                    style={{
+                      borderColor: isActive ? palette.navySoft : palette.border,
+                      background: isActive ? palette.surfaceElevated : palette.surfaceAlt,
+                    }}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-gray-900">
+                        <p className="truncate font-semibold">
                           {warehouse.esCentral ? `★ ${warehouse.nombre}` : warehouse.nombre}
                         </p>
-                        <p className="mt-1 text-xs text-gray-600">
-                          {warehouse.esCentral
-                            ? 'Todas las sucursales'
-                            : warehouse.direccion || 'Sin dirección'}
+                        <p className="mt-1 text-xs" style={{ color: palette.textSecondary }}>
+                          {warehouse.esCentral ? 'Todas las sucursales' : warehouse.direccion || 'Sin dirección'}
                         </p>
                         {!hasLocation && (
-                          <p className="mt-1 text-xs text-amber-700">Sin coordenadas en mapa</p>
+                          <p className="mt-1 text-xs" style={{ color: palette.warningText }}>Sin coordenadas en mapa</p>
                         )}
                       </div>
-                      {isActive && (
-                        <span className="shrink-0 rounded bg-green-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-                          Activa
-                        </span>
-                      )}
+                      {isActive && <StatusBadge tone="success">Activa</StatusBadge>}
                     </div>
-
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleSelectWarehouse(warehouse._id)}
+                      <PageButton
+                        variant={isActive ? 'secondary' : 'primary'}
                         disabled={isActive}
-                        className="rounded bg-blue-900 px-2 py-1 text-xs font-semibold text-white disabled:cursor-default disabled:bg-green-700"
+                        onClick={() => handleSelectWarehouse(warehouse._id)}
                       >
                         {isActive ? 'Seleccionada' : 'Seleccionar'}
-                      </button>
+                      </PageButton>
                       {hasLocation && (
-                        <button
-                          type="button"
-                          onClick={() => setFocusWarehouseId(warehouse._id)}
-                          className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-white"
-                        >
+                        <PageButton variant="ghost" onClick={() => setFocusWarehouseId(warehouse._id)}>
                           Ver en mapa
-                        </button>
+                        </PageButton>
                       )}
                     </div>
                   </li>
                 );
               })}
             </ul>
-          </div>
+          </PageCard>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-gray-700">
-              Acciones rápidas
-            </h2>
+          <PageCard title="Acciones rápidas">
             <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => navigate('/loby')}
-                className="rounded border border-gray-300 px-3 py-2 text-left text-sm hover:bg-gray-50"
-              >
+              <PageButton variant="ghost" className="justify-start" onClick={() => navigate('/loby')}>
                 Ir al dashboard
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/loby/inventory')}
-                className="rounded border border-gray-300 px-3 py-2 text-left text-sm hover:bg-gray-50"
-              >
+              </PageButton>
+              <PageButton variant="ghost" className="justify-start" onClick={() => navigate('/loby/inventory')}>
                 Ver inventario de la sucursal activa
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/loby/alerts')}
-                className="rounded border border-gray-300 px-3 py-2 text-left text-sm hover:bg-gray-50"
-              >
+              </PageButton>
+              <PageButton variant="ghost" className="justify-start" onClick={() => navigate('/loby/alerts')}>
                 Ver alertas de la sucursal activa
-              </button>
+              </PageButton>
             </div>
-          </div>
+          </PageCard>
         </aside>
       </div>
-    </section>
+    </PageShell>
   );
 }

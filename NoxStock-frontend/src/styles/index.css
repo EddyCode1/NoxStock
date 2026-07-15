@@ -265,22 +265,20 @@ html {
   background: var(--surface);
 }
 
-/* Form fields: asegurar texto y placeholders en negro SOLO dentro de formularios */
-form input,
-form textarea,
-form select {
+/* Form fields: texto oscuro SOLO en login/auth y modales legacy */
+.auth-layout form input,
+.auth-layout form textarea,
+.auth-layout form select {
   color: #000000 !important;
 }
 
-/* Placeholders en inputs/textarea dentro de formularios */
-form input::placeholder,
-form textarea::placeholder {
+.auth-layout form input::placeholder,
+.auth-layout form textarea::placeholder {
   color: #000000 !important;
   opacity: 1;
 }
 
-/* Opciones de select dentro de formularios */
-form select option {
+.auth-layout form select option {
   color: #000000 !important;
 }
 
@@ -301,46 +299,54 @@ form select option {
   color: #000000 !important;
 }
 
-/* Tema de formularios: negro, blanco y plateado */
-form input:not([type='checkbox']):not([type='radio']),
-form textarea,
-form select {
+/* Tema de formularios auth: negro, blanco y plateado */
+.auth-layout form input:not([type='checkbox']):not([type='radio']),
+.auth-layout form textarea,
+.auth-layout form select {
   background: #ffffff !important;
   border: 1px solid #c4c8cf !important;
   color: #111827 !important;
 }
 
-form input:not([type='checkbox']):not([type='radio'])::placeholder,
-form textarea::placeholder {
+.auth-layout form input:not([type='checkbox']):not([type='radio'])::placeholder,
+.auth-layout form textarea::placeholder {
   color: #707783 !important;
   opacity: 1;
 }
 
-form input:not([type='checkbox']):not([type='radio']):focus,
-form textarea:focus,
-form select:focus {
-  border-color: #0f1c3f !important;
-  box-shadow: 0 0 0 3px rgba(15, 28, 63, 0.22) !important;
+.auth-layout form input:not([type='checkbox']):not([type='radio']):focus,
+.auth-layout form textarea:focus,
+.auth-layout form select:focus {
+  border-color: #111111 !important;
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.35) !important;
 }
 
-form button[type='submit'] {
-  background: #0f1c3f !important;
-  border-color: #0f1c3f !important;
+.auth-layout form button[type='submit'] {
+  background: #111111 !important;
+  border-color: #111111 !important;
   color: #ffffff !important;
 }
 
-form button[type='submit']:hover {
-  background: #0a1329 !important;
+.auth-layout form button[type='submit']:hover {
+  background: #000000 !important;
 }
 
-form button[type='button']:not([class*='red']):not([class*='danger']) {
+.auth-layout form button[type='button']:not([class*='red']):not([class*='danger']) {
   background: #e5e7eb !important;
   border-color: #c4c8cf !important;
   color: #111827 !important;
 }
 
-form button[type='button']:not([class*='red']):not([class*='danger']):hover {
+.auth-layout form button[type='button']:not([class*='red']):not([class*='danger']):hover {
   background: #d1d5db !important;
 }
 
-
+/* Lobby oscuro: preservar estilos de NoxUi */
+.nox-page-shell input,
+.nox-page-shell textarea,
+.nox-page-shell select,
+.nox-page input,
+.nox-page textarea,
+.nox-page select {
+  color: inherit;
+}

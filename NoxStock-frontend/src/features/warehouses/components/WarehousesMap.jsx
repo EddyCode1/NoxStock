@@ -9,6 +9,7 @@ import {
   DEFAULT_MAP_ZOOM,
   normalizeWarehouseLocation,
 } from '../utils/warehouseMapUtils';
+import { palette } from '../../../shared/theme/noxTheme';
 
 function MapBoundsFitter({ positions }) {
   const map = useMap();
@@ -66,8 +67,8 @@ export default function WarehousesMap({
     <MapContainer
       center={center}
       zoom={DEFAULT_MAP_ZOOM}
-      className="h-full w-full rounded-lg border border-gray-200 shadow-sm"
-      style={{ minHeight: '480px' }}
+      className="h-full w-full rounded-2xl border shadow-sm"
+      style={{ minHeight: '480px', borderColor: palette.border }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -91,37 +92,41 @@ export default function WarehousesMap({
             })}
           >
             <Popup minWidth={240} className="noxstock-warehouse-popup">
-              <div className="space-y-3 text-sm text-gray-800">
+              <div className="space-y-3 text-sm" style={{ color: palette.textPrimary }}>
                 <div>
-                  <p className="text-base font-bold text-blue-900">{warehouse.nombre}</p>
+                  <p className="text-base font-bold" style={{ color: palette.ice }}>{warehouse.nombre}</p>
                   <span
-                    className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      warehouse.esCentral
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}
+                    className="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold"
+                    style={{
+                      background: warehouse.esCentral ? 'rgba(138, 109, 46, 0.25)' : 'rgba(30, 58, 138, 0.25)',
+                      color: warehouse.esCentral ? palette.warningText : palette.ice,
+                    }}
                   >
                     {warehouse.esCentral ? 'Vista consolidada' : 'Sucursal operativa'}
                   </span>
                 </div>
 
                 {warehouse.direccion && (
-                  <p className="text-gray-600">{warehouse.direccion}</p>
+                  <p style={{ color: palette.textSecondary }}>{warehouse.direccion}</p>
                 )}
 
-                <p className="font-mono text-xs text-gray-500">
+                <p className="font-mono text-xs" style={{ color: palette.textMuted }}>
                   {warehouse.lat.toFixed(5)}, {warehouse.lng.toFixed(5)}
                 </p>
 
                 {isSelected ? (
-                  <p className="rounded border border-green-200 bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
+                  <p
+                    className="rounded px-2 py-1 text-xs font-medium"
+                    style={{ background: 'rgba(63, 108, 81, 0.2)', color: palette.successText }}
+                  >
                     Bodega activa en el sistema
                   </p>
                 ) : (
                   <button
                     type="button"
                     onClick={() => onSelectWarehouse?.(warehouse._id)}
-                    className="w-full rounded bg-blue-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-800"
+                    className="w-full rounded-full px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                    style={{ background: palette.navy }}
                   >
                     {warehouse.esCentral ? 'Ver todas las sucursales' : 'Trabajar en esta sucursal'}
                   </button>

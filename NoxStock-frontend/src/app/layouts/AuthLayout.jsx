@@ -3,7 +3,7 @@ import backgroundImage from '../../shared/assets/img/fondo_logon.avif'
 const AuthLayout = ({ children }) => {
   return (
     <div
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden"
+      className="auth-layout relative flex min-h-screen w-full items-center justify-center overflow-hidden"
     >
       <div
         className="absolute inset-0 lobby-bg-motion pointer-events-none"

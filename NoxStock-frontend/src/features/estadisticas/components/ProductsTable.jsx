@@ -13,7 +13,7 @@ const estadoStyles = {
 export default function ProductsTable({ productos = [] }) {
   return (
     <div
-      className="rounded-2xl border p-5 overflow-hidden"
+      className="nox-card-hover rounded-2xl border p-5 overflow-hidden"
       style={{ background: palette.surface, borderColor: palette.border }}
     >
       <div className="flex items-center justify-between mb-4">

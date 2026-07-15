@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../../shared/stores/useAuthStore'
 import { authService } from '../../../shared/api/services/authService'
+import NoxLogo from '../../../shared/components/NoxLogo'
 import '../LoginPage.css'
 
 /**
@@ -42,7 +43,10 @@ const LoginPage = () => {
       ))}
 
       <div className="login-box">
-        <h2>NoxStock</h2>
+        <div className="login-brand">
+          <NoxLogo size="lg" animated />
+          <h2>NoxStock</h2>
+        </div>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="input-box">
             <input
