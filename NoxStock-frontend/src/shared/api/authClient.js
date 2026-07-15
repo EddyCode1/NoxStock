@@ -5,7 +5,7 @@ import useAuthStore from '../stores/useAuthStore'
 const authClient = axios.create({
   baseURL:
     import.meta.env.VITE_AUTH_URL ||
-    'http://localhost:3000/GestorRestaurante/v1/auth',
+    'http://localhost:3001/auth',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -37,7 +37,7 @@ authClient.interceptors.response.use(
         if (refreshToken) {
           const refreshUrl =
             import.meta.env.VITE_AUTH_URL ||
-            'http://localhost:3000/GestorRestaurante/v1/auth'
+            'http://localhost:3001/auth'
           const response = await axios.post(
             `${refreshUrl}/refresh`,
             { refreshToken }
