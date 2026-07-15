@@ -262,12 +262,12 @@ curl http://localhost:5173
 **Objetivo:** Implementar autenticación básica
 
 **Tareas:**
-- [ ] Crear modelo de Usuario en `models/User.js`
-- [ ] Configurar conexión a MongoDB en `config/db.js`
-- [ ] Implementar endpoints POST `/auth/register` y `/auth/login`
-- [ ] Cifrar contraseñas con bcryptjs
-- [ ] Generar y validar JWT
-- [ ] Probar con Postman
+- [x] Crear modelo de Usuario en `models/User.js`
+- [x] Configurar conexión a MongoDB en `config/db.js`
+- [x] Implementar endpoints POST `/auth/register` y `/auth/login`
+- [x] Cifrar contraseñas con bcryptjs
+- [x] Generar y validar JWT
+- [x] Probar con Postman
 
 **Archivo de inicio:** `services/auth-service/index.js`
 
@@ -276,24 +276,24 @@ curl http://localhost:5173
 **Objetivo:** Gestión de productos e inventario
 
 **Tareas:**
-- [ ] Crear modelos: Product, Category, Entry, Output
-- [ ] Implementar CRUD de productos
-- [ ] Implementar endpoints de movimientos
-- [ ] Validar JWT en todos los endpoints
-- [ ] Actualizar automáticamente stock
-- [ ] Probar endpoints
+- [x] Crear modelos: Product, Entry, Output
+- [x] Implementar CRUD de productos
+- [x] Implementar endpoints de movimientos
+- [x] Validar JWT en todos los endpoints
+- [x] Actualizar automáticamente stock (atómico con `$inc`)
+- [x] Probar endpoints
 
 ### 3. Completar Reports Service
 
 **Objetivo:** Análisis e informes
 
 **Tareas:**
-- [ ] Crear cliente HTTP para consultar Inventory Service
-- [ ] Implementar cálculo de bajo stock
-- [ ] Implementar reporte de productos agotados
-- [ ] Implementar top productos
-- [ ] Implementar resumen por categoría
-- [ ] Probar endpoints
+- [x] Crear cliente HTTP para consultar Inventory Service
+- [x] Implementar cálculo de bajo stock
+- [x] Implementar reporte de productos agotados
+- [x] Implementar top productos
+- [x] Implementar resumen por categoría
+- [x] Probar endpoints
 
 ### 4. Desarrollar Frontend
 
