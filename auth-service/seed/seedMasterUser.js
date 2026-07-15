@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import { shouldRunSeed } from './seedUtils.js';
 
 const DEFAULT_MASTER = {
   nombre: process.env.MASTER_NOMBRE || 'Administrador Maestro',
@@ -8,11 +9,7 @@ const DEFAULT_MASTER = {
 };
 
 export const seedMasterUser = async () => {
-  const shouldSeed =
-    process.env.SEED_MASTER_USER === 'true' ||
-    (process.env.NODE_ENV !== 'production' && process.env.SEED_MASTER_USER !== 'false');
-
-  if (!shouldSeed) {
+  if (!shouldRunSeed()) {
     return null;
   }
 

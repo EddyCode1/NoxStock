@@ -51,11 +51,41 @@ Al iniciar `auth-service` se crea automáticamente un usuario admin si no existe
 Variables opcionales en `auth-service/.env`:
 
 ```env
-SEED_MASTER_USER=true
+SEED_DATA=true
 MASTER_EMAIL=admin@noxstock.com
 MASTER_PASSWORD=NoxStock2026!
-MASTER_NOMBRE=Administrador Maestro
+SEED_USER_PASSWORD=NoxStock2026!
 ```
+
+## Datos de prueba automáticos (seed)
+
+Al iniciar los servicios con `SEED_DATA=true`, se cargan datos base en MongoDB si no existen.
+
+Los datos viven en el repositorio (`auth-service/seed/` e `inventory-service/seed/`), no en archivos locales.
+
+| Servicio | Colección | Cantidad |
+|----------|-----------|----------|
+| auth-service | users | 10 usuarios |
+| inventory-service | products | 10 productos |
+| inventory-service | entries | 10 entradas |
+| inventory-service | outputs | 10 salidas |
+
+### Usuarios de prueba
+
+| Email | Password | Rol |
+|-------|----------|-----|
+| admin@noxstock.com | NoxStock2026! | admin |
+| kevin@noxstock.com | NoxStock2026! | user |
+| eddy@noxstock.com | NoxStock2026! | user |
+| sajche@noxstock.com | NoxStock2026! | user |
+| ana@noxstock.com | NoxStock2026! | user |
+| luis@noxstock.com | NoxStock2026! | user |
+| maria@noxstock.com | NoxStock2026! | user |
+| carlos@noxstock.com | NoxStock2026! | user |
+| sofia@noxstock.com | NoxStock2026! | user |
+| pedro@noxstock.com | NoxStock2026! | user |
+
+El seed es **idempotente**: si los datos ya existen, no los duplica.
 
 ## Flujo de prueba completo
 

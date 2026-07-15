@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js';
-import { seedMasterUser } from './seed/seedMasterUser.js';
+import { runAuthSeeds } from './seed/index.js';
 
 dotenv.config();
 
@@ -45,7 +45,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectDB();
-    await seedMasterUser();
+    await runAuthSeeds();
 
     app.listen(PORT, () => {
       console.log(`✅ Servicio de Autenticación escuchando en puerto ${PORT}`);

@@ -11,6 +11,7 @@ import entryRoutes from './routes/entries.js';
 import outputRoutes from './routes/outputs.js';
 import { notFoundHandler, errorHandler } from './middlewares/errorHandler.js';
 import { successResponse } from './helpers/response.js';
+import { seedInventory } from './seed/seedInventory.js';
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
+    await seedInventory();
 
     app.listen(PORT, () => {
       console.log(`✅ Servicio de Inventario escuchando en puerto ${PORT}`);
