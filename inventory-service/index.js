@@ -16,6 +16,7 @@ import purchaseOrderRoutes from './routes/purchaseOrders.js';
 import customerRoutes from './routes/customers.js';
 import saleRoutes from './routes/sales.js';
 import warehouseRoutes from './routes/warehouses.js';
+import statisticsRoutes from './routes/statistics.js';
 import { notFoundHandler, errorHandler } from './middlewares/errorHandler.js';
 import { successResponse } from './helpers/response.js';
 import { seedInventory } from './seed/seedInventory.js';
@@ -49,6 +50,7 @@ app.use('/purchase-orders', purchaseOrderRoutes);
 app.use('/customers', customerRoutes);
 app.use('/sales', saleRoutes);
 app.use('/warehouses', warehouseRoutes);
+app.use('/statistics', statisticsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

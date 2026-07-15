@@ -31,7 +31,7 @@ const MainLayout = () => {
     <div className="flex h-screen bg-[var(--bg)]">
       <NoxStockSidebar isOpen={isSidebarOpen} />
 
-      <div className="ml-64 flex flex-1 flex-col overflow-hidden">
+      <div className={`${isSidebarOpen ? 'ml-64' : 'ml-0'} flex flex-1 flex-col overflow-hidden transition-all duration-300`}>
         <NavbarBlack
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
