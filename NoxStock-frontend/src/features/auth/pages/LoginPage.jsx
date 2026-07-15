@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../../shared/stores/useAuthStore'
@@ -11,12 +11,24 @@ import '../LoginPage.css'
  */
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false)
-  const { register, handleSubmit, formState: { errors } } = useForm()
+  const [isResending, setIsResending] = useState(false)
+  const [emailNotVerified, setEmailNotVerified] = useState(false)
+  const { register, handleSubmit, getValues, formState: { errors } } = useForm()
   const { login } = useAuthStore()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.state?.infoMessage) {
+      toast.success(location.state.infoMessage)
+      // Limpiar el state para que no se vuelva a mostrar al navegar
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   const onSubmit = async (data) => {
     setIsLoading(true)
+    setEmailNotVerified(false)
     try {
       const result = await authService.login(data.email, data.password)
 
@@ -24,13 +36,37 @@ const LoginPage = () => {
         login(result.token, result.user, result.refreshToken)
         toast.success('Sesión iniciada correctamente')
         navigate('/loby')
-      } else {
-        toast.error(result.error || 'Credenciales inválidas')
+      } else if (result.error) {
+        // Detectar el caso de email no verificado para ofrecer reenvío
+        const message = result.error || ''
+        if (message.toLowerCase().includes('verificar tu correo')) {
+          setEmailNotVerified(true)
+        }
       }
     } catch (err) {
       console.error(err)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    const email = getValues('email')
+    if (!email) {
+      toast.error('Ingresa tu correo electrónico primero')
+      return
+    }
+
+    setIsResending(true)
+    try {
+      const res = await authService.resendVerification(email)
+      if (res.success) {
+        toast.success(res.message || 'Correo de verificación reenviado')
+      } else {
+        toast.error(res.error || 'No se pudo reenviar el correo de verificación')
+      }
+    } finally {
+      setIsResending(false)
     }
   }
 
@@ -65,8 +101,25 @@ const LoginPage = () => {
           </div>
 
           <div className="forgot-pass">
-            <a href="#">¿Olvidaste tu contraseña?</a>
+            <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
           </div>
+
+          {emailNotVerified && (
+            <div style={{ marginBottom: '12px', textAlign: 'center' }}>
+              <p className="error-text" style={{ marginBottom: '6px' }}>
+                Debes verificar tu correo electrónico antes de iniciar sesión.
+              </p>
+              <button
+                type="button"
+                className="btn"
+                onClick={handleResendVerification}
+                disabled={isResending}
+                style={{ background: '#444' }}
+              >
+                {isResending ? 'Enviando...' : 'Reenviar correo de verificación'}
+              </button>
+            </div>
+          )}
 
           <button className="btn" type="submit" disabled={isLoading}>
             {isLoading ? 'Cargando...' : 'Iniciar sesión'}

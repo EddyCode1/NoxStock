@@ -38,6 +38,7 @@ export const seedUsers = async () => {
       email,
       password: DEFAULT_PASSWORD,
       activo: true,
+      emailVerificado: true, // Usuarios de prueba no requieren verificación de email
     });
 
     created += 1;

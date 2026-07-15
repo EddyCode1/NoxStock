@@ -8,6 +8,9 @@ import ProtectedRoute from './ProtectedRoute';
 
 import LoginPage from '../../features/auth/pages/LoginPage';
 import RegisterPage from '../../features/auth/pages/RegisterPage';
+import VerifyEmailPage from '../../features/auth/pages/VerifyEmailPage';
+import ForgotPasswordPage from '../../features/auth/pages/ForgotPasswordPage';
+import ResetPasswordPage from '../../features/auth/pages/ResetPasswordPage';
 import NotFoundPage from '../../features/common/pages/NotFoundPage';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
 import { ProductsPage, ProductFormPage, MovementsPage, SuppliersPage, PurchaseOrdersPage, CustomersPage, SalesPage } from '../../features/inventory';
@@ -32,6 +35,30 @@ const router = createBrowserRouter([
     element: (
       <AuthLayout>
         <RegisterPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: '/verify-email',
+    element: (
+      <AuthLayout>
+        <VerifyEmailPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: '/forgot-password',
+    element: (
+      <AuthLayout>
+        <ForgotPasswordPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: '/reset-password',
+    element: (
+      <AuthLayout>
+        <ResetPasswordPage />
       </AuthLayout>
     ),
   },

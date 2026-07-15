@@ -31,6 +31,8 @@ export const seedMasterUser = async () => {
     password: DEFAULT_MASTER.password,
     role: DEFAULT_MASTER.role,
     activo: true,
+    emailVerificado: true, // El usuario maestro no requiere verificación de email
+    esUsuarioPorDefecto: true, // Permite iniciar sesión sin verificar el correo
   });
 
   console.log('[auth-service] Usuario maestro creado para pruebas');

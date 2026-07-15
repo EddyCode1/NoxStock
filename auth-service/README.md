@@ -1,50 +1,133 @@
 # Servicio de Autenticación - NoxStock
 
 ## Descripción
-Servicio de autenticación con registro, login, JWT y seeds de usuarios de prueba.
+Este es el servicio responsable de la autenticación de usuarios en el sistema NoxStock.
+
+## Funcionalidades
+- Registro de usuarios
+- Verificación de correo electrónico (obligatoria antes de poder iniciar sesión)
+- Reenvío de correo de verificación
+- Inicio de sesión
+- Recuperación de contraseña (forgot / reset password) vía correo electrónico
+- Emisión de JWT (JSON Web Token)
+- Validación de credenciales
+
+> El flujo de verificación de email y recuperación de contraseña fue replicado
+> a partir de la implementación de KinalSports (`auth-node`), adaptado al stack
+> de NoxStock (Express + MongoDB/Mongoose) en lugar de Sequelize/PostgreSQL.
+
+## Modelo Usuario
+- nombre
+- correo electrónico
+- contraseña (cifrada con bcrypt)
+- emailVerificado (booleano)
+- tokenVerificacionEmail / tokenVerificacionEmailExpira
+- tokenResetPassword / tokenResetPasswordExpira
 
 ## Endpoints
 
-| Método | Ruta | Auth | Descripción |
-|--------|------|------|-------------|
-| `GET` | `/health` | No | Estado del servicio |
-| `POST` | `/auth/register` | No | Registrar usuario |
-| `POST` | `/auth/login` | No | Iniciar sesión |
-| `GET` | `/auth/perfil` | Sí | Perfil del usuario autenticado |
+### POST /auth/register
+Registrar un nuevo usuario. El usuario queda **inactivo** y con `emailVerificado: false`
+hasta que confirme su correo electrónico. Se envía automáticamente un correo con el
+enlace de verificación.
 
-## Credenciales de prueba
+**Body:**
+```json
+{
+  "nombre": "Juan",
+  "email": "juan@example.com",
+  "password": "SecurePassword123"
+}
+```
 
-| Email | Password | Rol |
-|-------|----------|-----|
-| `admin@noxstock.com` | `1234` | admin |
-| `kevin@noxstock.com` | `1234` | user |
-| `eddy@noxstock.com` | `1234` | user |
-| `sajche@noxstock.com` | `1234` | user |
+### POST /auth/verify-email
+Verifica el correo electrónico usando el token recibido por correo. Al verificar,
+el usuario queda activo y se envía un correo de bienvenida.
 
-Se crean automáticamente al iniciar con `SEED_DATA=true`.
+**Body:**
+```json
+{ "token": "eyJhbGciOi..." }
+```
 
-## Variables de entorno
+### POST /auth/resend-verification
+Reenvía el correo de verificación si el usuario aún no ha verificado su cuenta.
 
-```env
+**Body:**
+```json
+{ "email": "juan@example.com" }
+```
+
+### POST /auth/login
+Iniciar sesión y obtener JWT. **Requiere que el correo ya esté verificado**,
+de lo contrario responde `403` con `emailVerificationRequired: true`.
+
+**Body:**
+```json
+{
+  "email": "juan@example.com",
+  "password": "SecurePassword123"
+}
+```
+
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "usuario": {
+    "_id": "...",
+    "nombre": "Juan",
+    "email": "juan@example.com"
+  }
+}
+```
+
+### POST /auth/forgot-password
+Inicia el flujo de recuperación de contraseña. Siempre responde con éxito
+(por seguridad), exista o no el correo, y envía un enlace con token de reset
+si el usuario existe.
+
+**Body:**
+```json
+{ "email": "juan@example.com" }
+```
+
+### POST /auth/reset-password
+Restablece la contraseña usando el token recibido por correo.
+
+**Body:**
+```json
+{ "token": "eyJhbGciOi...", "newPassword": "NuevaPassword123" }
+```
+
+### GET /auth/perfil
+Ruta protegida que retorna el perfil del usuario autenticado (requiere `Authorization: Bearer <token>`).
+
+## Variables de Entorno
+
+Crear un archivo `.env` en la raíz del servicio:
+
+```
 PORT=3001
 MONGODB_URI=mongodb://localhost:27017/noxstock-auth
 JWT_SECRET=noxstock_jwt_secret_dev_2026
 JWT_EXPIRE=24h
 NODE_ENV=development
-SEED_DATA=true
-MASTER_EMAIL=admin@noxstock.com
-MASTER_PASSWORD=1234
-SEED_USER_PASSWORD=1234
-```
 
-**Importante:** `JWT_SECRET` debe ser el mismo en auth, inventory y reports.
+# SMTP - Envío de correos
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_ENABLE_SSL=false
+SMTP_USERNAME=kinalsports@gmail.com
+SMTP_PASSWORD=koek doen egvt qcaz
+EMAIL_FROM=kinalsports@gmail.com
+EMAIL_FROM_NAME=NoxStock
 
-## Ejemplo login
+# URL del frontend (para armar los links de verificación / reset)
+FRONTEND_URL=http://localhost:5173
 
-```bash
-curl -X POST http://localhost:3001/auth/login \
-  -H "Content-Type: application/json" \
-  -d "{\"email\":\"admin@noxstock.com\",\"password\":\"1234\"}"
+# Expiración de tokens (en horas)
+VERIFICATION_EMAIL_EXPIRY_HOURS=24
+PASSWORD_RESET_EXPIRY_HOURS=1
 ```
 
 ## Instalación
@@ -55,9 +138,26 @@ pnpm dev   # desarrollo
 pnpm start # producción
 ```
 
-## Notas
+## Estructura del Proyecto
 
-- Contraseñas cifradas con **bcryptjs**
-- Contraseña de prueba: 4–5 caracteres
-- Rate limit en register/login (200 intentos en desarrollo)
-- Al reiniciar, sincroniza password del usuario maestro
+```
+auth-service/
+├── index.js           # Punto de entrada
+├── package.json
+├── .env
+├── config/
+│   └── db.js          # Configuración de base de datos
+├── models/
+│   └── User.js        # Modelo de Usuario
+├── routes/
+│   └── auth.js        # Rutas de autenticación
+├── controllers/
+│   └── authController.js  # Controladores
+├── middlewares/
+│   ├── auth.js         # Middleware de autenticación
+│   └── rateLimiter.js  # Rate limiting (auth / envío de correos)
+└── helpers/
+    ├── generateJwt.js     # Utilidades de JWT
+    ├── tokenGenerator.js  # Generación de tokens seguros (verificación / reset)
+    └── emailService.js    # Envío de correos (nodemailer)
+```
