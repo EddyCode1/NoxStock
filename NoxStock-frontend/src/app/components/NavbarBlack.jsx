@@ -2,17 +2,16 @@ import { Link } from 'react-router-dom'
 
 // Datos del Menú Principal
 const menuItems = [
-    { id: 1, label: 'Restaurantes', path: '/loby/restaurants', specialClass: 'font-bold text-lg' },
-    { id: 2, label: 'Mesas', path: '/loby/tables' },
-    { id: 3, label: 'Todas las Mesas', path: '/loby/tables/all' },
-    { id: 4, label: 'Información', path: '/loby/information', specialClass: 'italic' },
-    { id: 5, label: 'Menú', path: '/loby/menu', specialClass: 'italic' },
-    { id: 6, label: 'Mi Perfil', path: '/loby/profile' },
-    { id: 7, label: 'Contactos', path: '/loby/users', specialClass: 'italic' },
+    { id: 1, label: 'Dashboard', path: '/loby', specialClass: 'font-bold text-lg' },
+    { id: 2, label: 'Productos', path: '/loby/inventory' },
+    { id: 3, label: 'Movimientos', path: '/loby/inventory/movements' },
+    { id: 4, label: 'Reportes', path: '/loby/reports', specialClass: 'italic' },
+    { id: 5, label: 'Alertas', path: '/loby/alerts', specialClass: 'italic' },
 ]
 
 // Texto fijo del navbar
-const NAVBAR_TITLE = 'Conozca nuestras ramas'
+const NAVBAR_TITLE = 'Panel de inventario NoxStock'
+
 
 /**
  * Componente NavbarBlack - Barra de navegación negra
