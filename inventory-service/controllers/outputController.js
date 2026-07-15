@@ -5,6 +5,31 @@ import { successResponse, errorResponse } from '../helpers/response.js';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+export const getOutputs = async (req, res, next) => {
+  try {
+    const { productId } = req.query;
+    const filter = {};
+
+    if (productId) {
+      if (!isValidObjectId(productId)) {
+        return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
+      }
+      filter.productId = productId;
+    }
+
+    const outputs = await Output.find(filter)
+      .populate('productId', 'nombre categoria precio existencia')
+      .sort({ fecha: -1 });
+
+    return successResponse(res, 200, 'Salidas obtenidas correctamente', {
+      total: outputs.length,
+      outputs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const registerOutput = async (req, res, next) => {
   const session = await mongoose.startSession();
 

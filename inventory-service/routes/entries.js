@@ -1,12 +1,18 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
-import { registerEntry } from '../controllers/entryController.js';
+import { body, query } from 'express-validator';
+import { getEntries, registerEntry } from '../controllers/entryController.js';
 import { validateJWT } from '../middlewares/auth.js';
 import { handleValidationErrors } from '../middlewares/validators.js';
 
 const router = Router();
 
 router.use(validateJWT);
+
+router.get(
+  '/',
+  [query('productId').optional().isMongoId().withMessage('ID de producto inválido'), handleValidationErrors],
+  getEntries
+);
 
 router.post(
   '/',

@@ -49,7 +49,6 @@ router.put(
     body('nombre').optional().trim().notEmpty().isLength({ max: 120 }),
     body('categoria').optional().trim().notEmpty().isLength({ max: 80 }),
     body('precio').optional().isFloat({ min: 0 }),
-    body('existencia').optional().isInt({ min: 0 }),
     handleValidationErrors,
   ],
   updateProduct

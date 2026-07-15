@@ -73,7 +73,14 @@ export const updateProduct = async (req, res, next) => {
       return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
     }
 
-    const product = await Product.findByIdAndUpdate(id, req.body, {
+    const { nombre, categoria, precio } = req.body;
+    const updateData = {};
+
+    if (nombre !== undefined) updateData.nombre = nombre;
+    if (categoria !== undefined) updateData.categoria = categoria;
+    if (precio !== undefined) updateData.precio = precio;
+
+    const product = await Product.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
