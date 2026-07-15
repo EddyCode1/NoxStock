@@ -1,36 +1,27 @@
-import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
-import Sidebar from '../components/Sidebar'
-import NavbarBlack from '../components/NavbarBlack'
+import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import NoxStockSidebar from '../components/NoxStockSidebar';
+import NavbarBlack from '../components/NavbarBlack';
 
-/**
- * Layout principal con Sidebar y NavbarBlack
- * Usado en rutas protegidas
- */
 const MainLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-
-  const handleToggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev)
-  }
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <div className="flex h-screen bg-[var(--bg)]">
-      {/* Sidebar */}
-      <Sidebar isOpen={isSidebarOpen} />
+      <NoxStockSidebar isOpen={isSidebarOpen} />
 
-      {/* Contenido principal */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* NavbarBlack */}
-        <NavbarBlack isSidebarOpen={isSidebarOpen} onToggleSidebar={handleToggleSidebar} />
+      <div className="ml-64 flex flex-1 flex-col overflow-hidden">
+        <NavbarBlack
+          isSidebarOpen={isSidebarOpen}
+          onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+        />
 
-        {/* Página */}
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <Outlet />
         </main>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MainLayout
+export default MainLayout;

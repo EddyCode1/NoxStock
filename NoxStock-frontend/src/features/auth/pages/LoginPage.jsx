@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../../shared/stores/useAuthStore'
 import { authService } from '../../../shared/api/services/authService'
-import { isClientRole } from '../../../shared/utils/roles'
 import '../LoginPage.css'
 
 /**
@@ -24,12 +23,7 @@ const LoginPage = () => {
       if (result.success) {
         login(result.token, result.user, result.refreshToken)
         toast.success('Sesión iniciada correctamente')
-        const role = result.user?.rol || result.user?.role
-        if (isClientRole(role)) {
-          navigate('/customer')
-        } else {
-          navigate('/loby')
-        }
+        navigate('/loby')
       }
     } catch (err) {
       console.error(err)
