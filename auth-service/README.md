@@ -1,98 +1,63 @@
 # Servicio de Autenticación - NoxStock
 
 ## Descripción
-Este es el servicio responsable de la autenticación de usuarios en el sistema NoxStock.
+Servicio de autenticación con registro, login, JWT y seeds de usuarios de prueba.
 
-## Funcionalidades
-- Registro de usuarios
-- Inicio de sesión
-- Emisión de JWT (JSON Web Token)
-- Validación de credenciales
+## Endpoints
 
-## Modelo Usuario
-- nombre
-- correo electrónico
-- contraseña (cifrada con argon2 o bcrypt)
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| `GET` | `/health` | No | Estado del servicio |
+| `POST` | `/auth/register` | No | Registrar usuario |
+| `POST` | `/auth/login` | No | Iniciar sesión |
+| `GET` | `/auth/perfil` | Sí | Perfil del usuario autenticado |
 
-## Endpoints Mínimos
+## Credenciales de prueba
 
-### POST /auth/register
-Registrar un nuevo usuario
+| Email | Password | Rol |
+|-------|----------|-----|
+| `admin@noxstock.com` | `1234` | admin |
+| `kevin@noxstock.com` | `1234` | user |
+| `eddy@noxstock.com` | `1234` | user |
+| `sajche@noxstock.com` | `1234` | user |
 
-**Body:**
-```json
-{
-  "nombre": "Juan",
-  "email": "juan@example.com",
-  "password": "SecurePassword123"
-}
-```
+Se crean automáticamente al iniciar con `SEED_DATA=true`.
 
-### POST /auth/login
-Iniciar sesión y obtener JWT
+## Variables de entorno
 
-**Body:**
-```json
-{
-  "email": "juan@example.com",
-  "password": "SecurePassword123"
-}
-```
-
-**Response:**
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "usuario": {
-    "_id": "...",
-    "nombre": "Juan",
-    "email": "juan@example.com"
-  }
-}
-```
-
-## Variables de Entorno
-
-Crear un archivo `.env` en la raíz del servicio:
-
-```
+```env
 PORT=3001
 MONGODB_URI=mongodb://localhost:27017/noxstock-auth
-JWT_SECRET=your_jwt_secret_key_here
+JWT_SECRET=noxstock_jwt_secret_dev_2026
 JWT_EXPIRE=24h
 NODE_ENV=development
+SEED_DATA=true
+MASTER_EMAIL=admin@noxstock.com
+MASTER_PASSWORD=1234
+SEED_USER_PASSWORD=1234
 ```
 
-## Instalación y Ejecución
+**Importante:** `JWT_SECRET` debe ser el mismo en auth, inventory y reports.
+
+## Ejemplo login
 
 ```bash
-# Instalar dependencias
+curl -X POST http://localhost:3001/auth/login \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"admin@noxstock.com\",\"password\":\"1234\"}"
+```
+
+## Instalación
+
+```bash
 pnpm install
-
-# Desarrollo
-pnpm dev
-
-# Producción
-pnpm start
+pnpm dev   # desarrollo
+pnpm start # producción
 ```
 
-## Estructura del Proyecto
+## Notas
 
-```
-auth-service/
-├── index.js           # Punto de entrada
-├── package.json
-├── .env
-├── config/
-│   └── db.js          # Configuración de base de datos
-├── models/
-│   └── User.js        # Modelo de Usuario
-├── routes/
-│   └── auth.js        # Rutas de autenticación
-├── controllers/
-│   └── authController.js  # Controladores
-├── middlewares/
-│   └── auth.js        # Middleware de autenticación
-└── helpers/
-    └── generateJwt.js  # Utilidades de JWT
-```
+- Contraseñas cifradas con **bcryptjs**
+- Contraseña de prueba: 4–5 caracteres
+- Rate limit en register/login (200 intentos en desarrollo)
+- Al reiniciar, sincroniza password del usuario maestro

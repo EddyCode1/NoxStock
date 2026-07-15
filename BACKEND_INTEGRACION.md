@@ -181,3 +181,21 @@ Debe ser idéntico en `auth-service`, `inventory-service` y `reports-service`.
 - `GET /reports/top-products`
 - `GET /reports/categories`
 - `GET /reports/summary`
+
+## Estado del backend (listo para lab)
+
+| Servicio | Estado | Notas |
+|----------|--------|-------|
+| auth-service | Listo | Login, register, JWT, seeds, rate limit |
+| inventory-service | Listo | CRUD, movimientos, stock atómico `$inc`, delete con validación |
+| reports-service | Listo | Consume inventory por HTTP, mocks desactivados por defecto |
+
+### Smoke test rápido
+
+Ver `BACKEND_SMOKE.md` para probar el flujo completo en PowerShell.
+
+### Reglas de negocio inventory
+
+- Stock atómico con `$inc` en entradas/salidas
+- `DELETE /products/:id` bloqueado si hay movimientos (`409 PRODUCT_HAS_MOVEMENTS`)
+- `PUT /products/:id` no modifica `existencia` directamente
