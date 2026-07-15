@@ -1,0 +1,96 @@
+export const mockProducts = [
+    {
+        _id: 'p001',
+        nombre: 'Arroz Premium',
+        categoria: 'Abarrotes',
+        precio: 12.5,
+        existencia: 4,
+    },
+    {
+        _id: 'p002',
+        nombre: 'Aceite Vegetal',
+        categoria: 'Abarrotes',
+        precio: 24,
+        existencia: 0,
+    },
+    {
+        _id: 'p003',
+        nombre: 'Refresco Cola',
+        categoria: 'Bebidas',
+        precio: 18.5,
+        existencia: 14,
+    },
+    {
+        _id: 'p004',
+        nombre: 'Jugo Naranja',
+        categoria: 'Bebidas',
+        precio: 16,
+        existencia: 5,
+    },
+    {
+        _id: 'p005',
+        nombre: 'Pasta Dental',
+        categoria: 'Cuidado Personal',
+        precio: 31,
+        existencia: 2,
+    },
+    {
+        _id: 'p006',
+        nombre: 'Jabón Líquido',
+        categoria: 'Limpieza',
+        precio: 27,
+        existencia: 8,
+    },
+    {
+        _id: 'p007',
+        nombre: 'Leche Entera',
+        categoria: 'Lácteos',
+        precio: 22,
+        existencia: 1,
+    },
+    {
+        _id: 'p008',
+        nombre: 'Galletas de Chocolate',
+        categoria: 'Snacks',
+        precio: 9.9,
+        existencia: 11,
+    },
+];
+
+export const mockOutputs = [
+    {
+        _id: 'o001',
+        productId: 'p003',
+        productName: 'Refresco Cola',
+        cantidad: 18,
+        fecha: '2026-07-15T10:00:00.000Z',
+    },
+    {
+        _id: 'o002',
+        productId: 'p003',
+        productName: 'Refresco Cola',
+        cantidad: 10,
+        fecha: '2026-07-15T11:00:00.000Z',
+    },
+    {
+        _id: 'o003',
+        productId: 'p001',
+        productName: 'Arroz Premium',
+        cantidad: 6,
+        fecha: '2026-07-14T15:30:00.000Z',
+    },
+    {
+        _id: 'o004',
+        productId: 'p007',
+        productName: 'Leche Entera',
+        cantidad: 14,
+        fecha: '2026-07-14T16:00:00.000Z',
+    },
+    {
+        _id: 'o005',
+        productId: 'p005',
+        productName: 'Pasta Dental',
+        cantidad: 8,
+        fecha: '2026-07-15T09:45:00.000Z',
+    },
+];

@@ -3,37 +3,67 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import { env } from './config/env.js';
+import alertsRoutes from './routes/alerts.routes.js';
+import reportsRoutes from './routes/reports.routes.js';
+import { notFoundHandler, errorHandler } from './middlewares/error.middleware.js';
 
-// Cargar variables de entorno
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3003;
 
-// Middlewares de seguridad y utilidad
 app.use(helmet());
-app.use(morgan('combined'));
-app.use(cors());
-app.use(express.json());
+app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
+app.use(cors({ origin: env.corsOrigin === '*' ? true : env.corsOrigin }));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rutas
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'Reports Service is running' });
+  res.status(200).json({
+    status: 'ok',
+    service: 'reports-service',
+    timestamp: new Date().toISOString(),
+    mockInventory: env.useMockInventory,
+    devTokenEnabled: env.allowDevToken,
+  });
 });
 
-// TODO: Importar y usar rutas de reportes y alertas
-// import alertRoutes from './routes/alerts.js';
-// import reportRoutes from './routes/reports.js';
-// app.use('/alerts', alertRoutes);
-// app.use('/reports', reportRoutes);
+app.get('/dev/token', (req, res) => {
+  if (!env.allowDevToken) {
+    return res.status(404).json({
+      success: false,
+      message: 'Ruta no disponible',
+    });
+  }
 
-// Manejo de errores 404
-app.use((req, res) => {
-  res.status(404).json({ message: 'Ruta no encontrada' });
+  const token = jwt.sign(
+    {
+      sub: 'dev-user',
+      name: 'Usuario de pruebas',
+      role: 'admin',
+      roles: ['admin'],
+      status: 'active',
+      blocked: false,
+    },
+    env.jwtSecret,
+    { expiresIn: '12h' }
+  );
+
+  return res.status(200).json({
+    success: true,
+    token,
+    tokenType: 'Bearer',
+    expiresIn: '12h',
+  });
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`✅ Servicio de Reportes y Alertas escuchando en puerto ${PORT}`);
+app.use('/alerts', alertsRoutes);
+app.use('/reports', reportsRoutes);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+app.listen(env.port, () => {
+  console.log(`✅ Servicio de Reportes y Alertas escuchando en puerto ${env.port}`);
 });
