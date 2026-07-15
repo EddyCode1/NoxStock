@@ -122,6 +122,7 @@ Error:
 6. No se puede `DELETE /suppliers/:id` si tiene órdenes en `borrador` o `enviada` → `409 SUPPLIER_HAS_OPEN_ORDERS`.
 7. Órdenes de compra: solo `borrador` es editable; `receive` genera entradas automáticas con motivo `OC-{id} recepción {proveedor}`.
 8. Cada producto tiene `stockMinimo` (default `5`). `GET /products?bajoStock=true` filtra por umbral individual.
+9. Entradas y salidas guardan `registradoPor` (email del usuario JWT) para auditoría.
 
 ---
 

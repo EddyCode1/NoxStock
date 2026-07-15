@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Product from '../models/Product.js';
 import Entry from '../models/Entry.js';
 import { increaseStock } from '../helpers/stock.js';
+import { getAuditUser } from '../helpers/audit.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -49,6 +50,7 @@ export const registerEntry = async (req, res, next) => {
       productId,
       cantidad,
       motivo,
+      registradoPor: getAuditUser(req),
     });
 
     return successResponse(res, 201, 'Entrada registrada correctamente', {

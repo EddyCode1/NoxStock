@@ -203,3 +203,4 @@ Ver `BACKEND_SMOKE.md` para probar el flujo completo en PowerShell.
 - `PUT /products/:id` no modifica `existencia` directamente
 - Proveedores: CRUD en `/suppliers`; no se elimina si tiene OC abiertas
 - Órdenes de compra: `/purchase-orders` con flujo `borrador → enviada → recibida`; al recibir se crean entradas automáticas
+- Auditoría: entradas/salidas registran `registradoPor` con el email del JWT

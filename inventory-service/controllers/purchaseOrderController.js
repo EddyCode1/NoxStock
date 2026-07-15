@@ -4,6 +4,7 @@ import Supplier from '../models/Supplier.js';
 import PurchaseOrder from '../models/PurchaseOrder.js';
 import Entry from '../models/Entry.js';
 import { increaseStock } from '../helpers/stock.js';
+import { getAuditUser } from '../helpers/audit.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -240,6 +241,7 @@ export const receivePurchaseOrder = async (req, res, next) => {
         productId: item.productId,
         cantidad: item.cantidad,
         motivo: `OC-${order._id} recepción ${supplierName}`,
+        registradoPor: getAuditUser(req),
       });
 
       entries.push(entry);

@@ -18,6 +18,11 @@ const outputSchema = new mongoose.Schema(
       maxlength: [200, 'El motivo no puede superar 200 caracteres'],
       default: '',
     },
+    registradoPor: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     fecha: {
       type: Date,
       default: Date.now,
