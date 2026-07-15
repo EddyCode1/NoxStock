@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import noxReportsService from '../../../shared/api/services/noxReportsService';
-import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
+import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -10,11 +10,14 @@ export default function DashboardPage() {
     lowStock: 0,
     outOfStock: 0,
   });
-  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
-  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
+  const { selectedWarehouseId, selectedWarehouse, version, isReady, isCentral } = useWarehouse();
 
   useEffect(() => {
-    if (!selectedWarehouseId) {
+    setStats({ products: 0, lowStock: 0, outOfStock: 0 });
+  }, [selectedWarehouseId, version]);
+
+  useEffect(() => {
+    if (!isReady || !selectedWarehouseId) {
       return;
     }
 
@@ -37,14 +40,16 @@ export default function DashboardPage() {
     };
 
     loadStats();
-  }, [selectedWarehouseId]);
+  }, [isReady, selectedWarehouseId, version]);
 
   return (
     <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">Dashboard NoxStock</h1>
         <p className="text-sm text-gray-500">
-          Resumen de {selectedWarehouse?.nombre || 'la bodega seleccionada'}
+          {isCentral
+            ? 'Resumen consolidado de todas las sucursales'
+            : `Resumen de ${selectedWarehouse?.nombre || 'la bodega seleccionada'}`}
         </p>
       </header>
 

@@ -6,29 +6,53 @@ const useWarehouseStore = create(
     (set, get) => ({
       warehouses: [],
       selectedWarehouseId: null,
-      loading: false,
+      version: 0,
+      isReady: false,
+      hasHydrated: false,
+
+      setHasHydrated: (value) => set({ hasHydrated: value }),
 
       setWarehouses: (warehouses) => {
         const list = Array.isArray(warehouses) ? warehouses : [];
         const currentId = get().selectedWarehouseId;
         const isValid = list.some((warehouse) => warehouse._id === currentId);
+        const centralWarehouse = list.find((warehouse) => warehouse.esCentral);
+        const nextId = isValid ? currentId : centralWarehouse?._id || list[0]?._id || null;
+        const warehouseChanged = nextId !== currentId;
 
         set({
           warehouses: list,
-          selectedWarehouseId: isValid ? currentId : list[0]?._id || null,
+          selectedWarehouseId: nextId,
+          isReady: list.length > 0 && Boolean(nextId),
+          version: warehouseChanged ? get().version + 1 : get().version,
         });
       },
 
-      setSelectedWarehouseId: (warehouseId) => set({ selectedWarehouseId: warehouseId }),
+      setSelectedWarehouseId: (warehouseId) => {
+        const currentId = get().selectedWarehouseId;
 
-      getSelectedWarehouse: () => {
-        const { warehouses, selectedWarehouseId } = get();
-        return warehouses.find((warehouse) => warehouse._id === selectedWarehouseId) || null;
+        if (!warehouseId || warehouseId === currentId) {
+          return;
+        }
+
+        const exists = get().warehouses.some((warehouse) => warehouse._id === warehouseId);
+
+        if (!exists) {
+          return;
+        }
+
+        set({
+          selectedWarehouseId: warehouseId,
+          version: get().version + 1,
+        });
       },
     }),
     {
       name: 'noxstock-warehouse',
       partialize: (state) => ({ selectedWarehouseId: state.selectedWarehouseId }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

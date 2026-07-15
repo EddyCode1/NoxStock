@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
-import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
+import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 
 const emptyForm = {
   nombre: '',
@@ -18,11 +18,10 @@ export default function ProductFormPage() {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
-  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
+  const { selectedWarehouseId, selectedWarehouse, version, isReady } = useWarehouse();
 
   useEffect(() => {
-    if (!isEdit || !selectedWarehouseId) return;
+    if (!isEdit || !isReady || !selectedWarehouseId) return;
 
     const loadProduct = async () => {
       setLoading(true);
@@ -44,7 +43,7 @@ export default function ProductFormPage() {
     };
 
     loadProduct();
-  }, [id, isEdit, selectedWarehouseId]);
+  }, [id, isEdit, isReady, selectedWarehouseId, version]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;

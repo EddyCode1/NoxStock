@@ -7,46 +7,67 @@ import Customer from '../models/Customer.js';
 import Sale from '../models/Sale.js';
 import Warehouse from '../models/Warehouse.js';
 import WarehouseStock from '../models/WarehouseStock.js';
+import { syncProductTotal } from '../helpers/warehouseStock.js';
 import { shouldRunSeed } from './seedUtils.js';
 
-const PRODUCTS = [
-  { nombre: 'Laptop Dell Inspiron', categoria: 'Electronica', precio: 800, existencia: 15, stockMinimo: 5 },
-  { nombre: 'Mouse Logitech M185', categoria: 'Electronica', precio: 25, existencia: 50, stockMinimo: 10 },
-  { nombre: 'Teclado Mecanico RGB', categoria: 'Electronica', precio: 65, existencia: 30, stockMinimo: 8 },
-  { nombre: 'Monitor Samsung 24"', categoria: 'Electronica', precio: 220, existencia: 8, stockMinimo: 10 },
-  { nombre: 'Escritorio Ergonomico', categoria: 'Muebles', precio: 180, existencia: 5, stockMinimo: 3 },
-  { nombre: 'Silla de Oficina', categoria: 'Muebles', precio: 120, existencia: 12, stockMinimo: 4 },
-  { nombre: 'Cuaderno A4 100 hojas', categoria: 'Papeleria', precio: 3, existencia: 100, stockMinimo: 20 },
-  { nombre: 'Pack Boligrafos x12', categoria: 'Papeleria', precio: 5, existencia: 200, stockMinimo: 30 },
-  { nombre: 'Toner HP 85A', categoria: 'Consumibles', precio: 45, existencia: 6, stockMinimo: 8 },
-  { nombre: 'Cable HDMI 2m', categoria: 'Accesorios', precio: 12, existencia: 40, stockMinimo: 15 },
+const WAREHOUSE_CATALOGS = [
+  {
+    warehouseName: 'Sucursal Zona 10',
+    products: [
+      { nombre: 'Laptop Dell Inspiron', categoria: 'Computadoras', precio: 800, existencia: 15, stockMinimo: 5 },
+      { nombre: 'Mouse Logitech M185', categoria: 'Computadoras', precio: 25, existencia: 50, stockMinimo: 10 },
+      { nombre: 'Teclado Mecanico RGB', categoria: 'Computadoras', precio: 65, existencia: 30, stockMinimo: 8 },
+      { nombre: 'Monitor Samsung 24"', categoria: 'Computadoras', precio: 220, existencia: 8, stockMinimo: 10 },
+      { nombre: 'Cable HDMI 2m', categoria: 'Accesorios PC', precio: 12, existencia: 40, stockMinimo: 15 },
+    ],
+    entries: [
+      { productName: 'Laptop Dell Inspiron', cantidad: 5, motivo: 'SEED-ENTRY-Z10-01 Compra proveedor tech' },
+      { productName: 'Mouse Logitech M185', cantidad: 20, motivo: 'SEED-ENTRY-Z10-02 Reposicion computadoras' },
+    ],
+    outputs: [
+      { productName: 'Laptop Dell Inspiron', cantidad: 2, motivo: 'SEED-OUTPUT-Z10-01 Venta corporativa' },
+      { productName: 'Cable HDMI 2m', cantidad: 8, motivo: 'SEED-OUTPUT-Z10-02 Venta accesorios' },
+    ],
+  },
+  {
+    warehouseName: 'Sucursal Mixco',
+    products: [
+      { nombre: 'Leche Entera Dos Pinos 1L', categoria: 'Lacteos', precio: 12, existencia: 80, stockMinimo: 20 },
+      { nombre: 'Queso Fresco Libra', categoria: 'Lacteos', precio: 28, existencia: 45, stockMinimo: 10 },
+      { nombre: 'Yogurt Griego 200g', categoria: 'Lacteos', precio: 8, existencia: 120, stockMinimo: 25 },
+      { nombre: 'Mantequilla 200g', categoria: 'Lacteos', precio: 15, existencia: 60, stockMinimo: 15 },
+      { nombre: 'Crema de Leche 1L', categoria: 'Lacteos', precio: 18, existencia: 35, stockMinimo: 12 },
+    ],
+    entries: [
+      { productName: 'Leche Entera Dos Pinos 1L', cantidad: 30, motivo: 'SEED-ENTRY-MIX-01 Entrada lacteos' },
+      { productName: 'Yogurt Griego 200g', cantidad: 50, motivo: 'SEED-ENTRY-MIX-02 Reposicion yogurt' },
+    ],
+    outputs: [
+      { productName: 'Queso Fresco Libra', cantidad: 10, motivo: 'SEED-OUTPUT-MIX-01 Venta mostrador' },
+      { productName: 'Mantequilla 200g', cantidad: 15, motivo: 'SEED-OUTPUT-MIX-02 Venta mayoreo' },
+    ],
+  },
+  {
+    warehouseName: 'Sucursal Antigua',
+    products: [
+      { nombre: 'Alambre Galvanizado #18', categoria: 'Alambres', precio: 35, existencia: 100, stockMinimo: 20 },
+      { nombre: 'Alambre de Puas Rollo 50m', categoria: 'Alambres', precio: 280, existencia: 12, stockMinimo: 4 },
+      { nombre: 'Cable Electrico 12 AWG metro', categoria: 'Alambres', precio: 4.5, existencia: 500, stockMinimo: 100 },
+      { nombre: 'Clavos 2 pulgadas caja', categoria: 'Ferreteria', precio: 22, existencia: 75, stockMinimo: 15 },
+      { nombre: 'Tornillo Drywall x100', categoria: 'Ferreteria', precio: 18, existencia: 90, stockMinimo: 20 },
+    ],
+    entries: [
+      { productName: 'Alambre Galvanizado #18', cantidad: 40, motivo: 'SEED-ENTRY-ANT-01 Compra alambres' },
+      { productName: 'Cable Electrico 12 AWG metro', cantidad: 200, motivo: 'SEED-ENTRY-ANT-02 Entrada cable' },
+    ],
+    outputs: [
+      { productName: 'Alambre de Puas Rollo 50m', cantidad: 2, motivo: 'SEED-OUTPUT-ANT-01 Venta construccion' },
+      { productName: 'Clavos 2 pulgadas caja', cantidad: 12, motivo: 'SEED-OUTPUT-ANT-02 Venta ferreteria' },
+    ],
+  },
 ];
 
-const ENTRIES = [
-  { productName: 'Laptop Dell Inspiron', cantidad: 5, motivo: 'SEED-ENTRY-01 Compra proveedor' },
-  { productName: 'Mouse Logitech M185', cantidad: 20, motivo: 'SEED-ENTRY-02 Reposicion almacen' },
-  { productName: 'Teclado Mecanico RGB', cantidad: 10, motivo: 'SEED-ENTRY-03 Compra mayoreo' },
-  { productName: 'Monitor Samsung 24"', cantidad: 4, motivo: 'SEED-ENTRY-04 Entrada nueva linea' },
-  { productName: 'Escritorio Ergonomico', cantidad: 3, motivo: 'SEED-ENTRY-05 Stock inicial' },
-  { productName: 'Silla de Oficina', cantidad: 8, motivo: 'SEED-ENTRY-06 Compra local' },
-  { productName: 'Cuaderno A4 100 hojas', cantidad: 50, motivo: 'SEED-ENTRY-07 Pedido papeleria' },
-  { productName: 'Pack Boligrafos x12', cantidad: 100, motivo: 'SEED-ENTRY-08 Reposicion' },
-  { productName: 'Toner HP 85A', cantidad: 4, motivo: 'SEED-ENTRY-09 Compra consumibles' },
-  { productName: 'Cable HDMI 2m', cantidad: 25, motivo: 'SEED-ENTRY-10 Entrada accesorios' },
-];
-
-const OUTPUTS = [
-  { productName: 'Laptop Dell Inspiron', cantidad: 2, motivo: 'SEED-OUTPUT-01 Venta mostrador' },
-  { productName: 'Mouse Logitech M185', cantidad: 10, motivo: 'SEED-OUTPUT-02 Venta online' },
-  { productName: 'Teclado Mecanico RGB', cantidad: 5, motivo: 'SEED-OUTPUT-03 Venta corporativa' },
-  { productName: 'Monitor Samsung 24"', cantidad: 1, motivo: 'SEED-OUTPUT-04 Venta mostrador' },
-  { productName: 'Escritorio Ergonomico', cantidad: 1, motivo: 'SEED-OUTPUT-05 Venta oficina' },
-  { productName: 'Silla de Oficina', cantidad: 3, motivo: 'SEED-OUTPUT-06 Venta mostrador' },
-  { productName: 'Cuaderno A4 100 hojas', cantidad: 20, motivo: 'SEED-OUTPUT-07 Venta escolar' },
-  { productName: 'Pack Boligrafos x12', cantidad: 30, motivo: 'SEED-OUTPUT-08 Venta mayoreo' },
-  { productName: 'Toner HP 85A', cantidad: 2, motivo: 'SEED-OUTPUT-09 Venta servicio' },
-  { productName: 'Cable HDMI 2m', cantidad: 8, motivo: 'SEED-OUTPUT-10 Venta accesorios' },
-];
+const ALL_CATALOG_PRODUCTS = WAREHOUSE_CATALOGS.flatMap((catalog) => catalog.products);
 
 const SUPPLIERS = [
   {
@@ -54,33 +75,53 @@ const SUPPLIERS = [
     contacto: 'Carlos Mendez',
     email: 'ventas@techsupply.gt',
     telefono: '502-555-0101',
-    categorias: ['Electronica', 'Accesorios'],
+    categorias: ['Computadoras', 'Accesorios PC'],
   },
   {
-    nombre: 'Papeleria Central',
-    contacto: 'Maria Lopez',
-    email: 'pedidos@papeleria-central.gt',
+    nombre: 'Lacteos del Valle',
+    contacto: 'Ana Recinos',
+    email: 'pedidos@lacteosvalle.gt',
     telefono: '502-555-0202',
-    categorias: ['Papeleria'],
+    categorias: ['Lacteos'],
   },
   {
-    nombre: 'Muebles Pro',
+    nombre: 'Ferreteria El Constructor',
     contacto: 'Jorge Ruiz',
-    email: 'compras@mueblespro.gt',
+    email: 'ventas@constructor.gt',
     telefono: '502-555-0303',
-    categorias: ['Muebles'],
+    categorias: ['Alambres', 'Ferreteria'],
   },
 ];
 
 const PURCHASE_ORDERS = [
   {
     supplierName: 'TechSupply Guatemala',
-    warehouseName: 'Bodega Central Zona 10',
-    notas: 'SEED-OC-01 Pedido electronica Q3',
+    warehouseName: 'Sucursal Zona 10',
+    notas: 'SEED-OC-Z10-01 Pedido computadoras',
     estado: 'borrador',
     items: [
       { productName: 'Mouse Logitech M185', cantidad: 15, precioUnitario: 18 },
       { productName: 'Cable HDMI 2m', cantidad: 20, precioUnitario: 8 },
+    ],
+  },
+  {
+    supplierName: 'Lacteos del Valle',
+    warehouseName: 'Sucursal Mixco',
+    notas: 'SEED-OC-MIX-01 Pedido lacteos semana',
+    estado: 'borrador',
+    items: [
+      { productName: 'Leche Entera Dos Pinos 1L', cantidad: 40, precioUnitario: 9 },
+      { productName: 'Yogurt Griego 200g', cantidad: 60, precioUnitario: 6 },
+    ],
+  },
+  {
+    supplierName: 'Ferreteria El Constructor',
+    warehouseName: 'Sucursal Antigua',
+    notas: 'SEED-OC-ANT-01 Pedido alambres',
+    estado: 'borrador',
+    items: [
+      { productName: 'Alambre Galvanizado #18', cantidad: 30, precioUnitario: 28 },
+      { productName: 'Tornillo Drywall x100', cantidad: 25, precioUnitario: 14 },
     ],
   },
 ];
@@ -109,16 +150,37 @@ const CUSTOMERS = [
 const SALES = [
   {
     customerName: 'Comercial El Faro',
-    warehouseName: 'Sucursal Mixco',
-    notas: 'SEED-VENTA-01 Pedido mostrador',
+    warehouseName: 'Sucursal Zona 10',
+    notas: 'SEED-VENTA-Z10-01 Pedido equipos',
     estado: 'borrador',
-    items: [{ productName: 'Pack Boligrafos x12', cantidad: 5, precioUnitario: 4.5 }],
+    items: [{ productName: 'Teclado Mecanico RGB', cantidad: 3, precioUnitario: 60 }],
+  },
+  {
+    customerName: 'Distribuidora Norte',
+    warehouseName: 'Sucursal Mixco',
+    notas: 'SEED-VENTA-MIX-01 Pedido lacteos',
+    estado: 'borrador',
+    items: [{ productName: 'Crema de Leche 1L', cantidad: 10, precioUnitario: 16 }],
+  },
+  {
+    customerName: 'Tienda Express',
+    warehouseName: 'Sucursal Antigua',
+    notas: 'SEED-VENTA-ANT-01 Pedido ferreteria',
+    estado: 'borrador',
+    items: [{ productName: 'Clavos 2 pulgadas caja', cantidad: 8, precioUnitario: 20 }],
   },
 ];
 
 const WAREHOUSES = [
   {
-    nombre: 'Bodega Central Zona 10',
+    nombre: 'Central',
+    direccion: 'Vista consolidada — todas las sucursales',
+    lat: 14.6349,
+    lng: -90.5069,
+    esCentral: true,
+  },
+  {
+    nombre: 'Sucursal Zona 10',
     direccion: 'Zona 10, Ciudad de Guatemala',
     lat: 14.6019,
     lng: -90.5069,
@@ -138,7 +200,9 @@ const WAREHOUSES = [
 ];
 
 async function seedStockMinimo() {
-  const defaultsByName = Object.fromEntries(PRODUCTS.map((p) => [p.nombre, p.stockMinimo ?? 5]));
+  const defaultsByName = Object.fromEntries(
+    ALL_CATALOG_PRODUCTS.map((product) => [product.nombre, product.stockMinimo ?? 5])
+  );
   const products = await Product.find({ nombre: { $in: Object.keys(defaultsByName) } });
 
   let updated = 0;
@@ -159,84 +223,82 @@ async function seedStockMinimo() {
 async function seedProducts() {
   let created = 0;
 
-  for (const productData of PRODUCTS) {
+  for (const productData of ALL_CATALOG_PRODUCTS) {
     const exists = await Product.findOne({ nombre: productData.nombre });
 
     if (exists) {
       continue;
     }
 
-    await Product.create(productData);
+    await Product.create({
+      ...productData,
+      existencia: 0,
+    });
     created += 1;
   }
 
   return created;
 }
 
-async function seedEntries() {
+async function seedWarehouseMovements() {
   let created = 0;
 
-  for (const entryData of ENTRIES) {
-    const exists = await Entry.findOne({ motivo: entryData.motivo });
+  for (const catalog of WAREHOUSE_CATALOGS) {
+    const warehouse = await Warehouse.findOne({ nombre: catalog.warehouseName });
 
-    if (exists) {
+    if (!warehouse) {
       continue;
     }
 
-    const product = await Product.findOne({ nombre: entryData.productName });
+    for (const entryData of catalog.entries || []) {
+      const exists = await Entry.findOne({ motivo: entryData.motivo });
 
-    if (!product) {
-      console.warn(`[inventory-service] Producto no encontrado para entrada: ${entryData.productName}`);
-      continue;
+      if (exists) {
+        continue;
+      }
+
+      const product = await Product.findOne({ nombre: entryData.productName });
+
+      if (!product) {
+        console.warn(`[inventory-service] Producto no encontrado para entrada: ${entryData.productName}`);
+        continue;
+      }
+
+      await Entry.create({
+        productId: product._id,
+        warehouseId: warehouse._id,
+        cantidad: entryData.cantidad,
+        motivo: entryData.motivo,
+        registradoPor: 'seed',
+      });
+
+      created += 1;
     }
 
-    product.existencia += entryData.cantidad;
-    await product.save();
+    for (const outputData of catalog.outputs || []) {
+      const exists = await Output.findOne({ motivo: outputData.motivo });
 
-    await Entry.create({
-      productId: product._id,
-      cantidad: entryData.cantidad,
-      motivo: entryData.motivo,
-    });
+      if (exists) {
+        continue;
+      }
 
-    created += 1;
-  }
+      const product = await Product.findOne({ nombre: outputData.productName });
 
-  return created;
-}
+      if (!product) {
+        console.warn(`[inventory-service] Producto no encontrado para salida: ${outputData.productName}`);
+        continue;
+      }
 
-async function seedOutputs() {
-  let created = 0;
+      await Output.create({
+        productId: product._id,
+        warehouseId: warehouse._id,
+        cantidad: outputData.cantidad,
+        motivo: outputData.motivo,
+        registradoPor: 'seed',
+      });
 
-  for (const outputData of OUTPUTS) {
-    const exists = await Output.findOne({ motivo: outputData.motivo });
-
-    if (exists) {
-      continue;
+      created += 1;
     }
-
-    const product = await Product.findOne({ nombre: outputData.productName });
-
-    if (!product) {
-      console.warn(`[inventory-service] Producto no encontrado para salida: ${outputData.productName}`);
-      continue;
-    }
-
-    if (product.existencia < outputData.cantidad) {
-      console.warn(`[inventory-service] Stock insuficiente para seed salida: ${outputData.productName}`);
-      continue;
-    }
-
-    product.existencia -= outputData.cantidad;
-    await product.save();
-
-    await Output.create({
-      productId: product._id,
-      cantidad: outputData.cantidad,
-      motivo: outputData.motivo,
-    });
-
-    created += 1;
   }
 
   return created;
@@ -397,15 +459,50 @@ async function seedSales() {
 async function seedWarehouses() {
   let created = 0;
 
+  const legacyBranch = await Warehouse.findOne({ nombre: 'Bodega Central Zona 10' });
+
+  if (legacyBranch && !legacyBranch.esCentral) {
+    legacyBranch.nombre = 'Sucursal Zona 10';
+    await legacyBranch.save();
+  }
+
   for (const warehouseData of WAREHOUSES) {
     const exists = await Warehouse.findOne({ nombre: warehouseData.nombre });
 
     if (exists) {
+      if (warehouseData.esCentral && !exists.esCentral) {
+        exists.esCentral = true;
+        exists.direccion = warehouseData.direccion;
+        await exists.save();
+      }
       continue;
     }
 
     await Warehouse.create(warehouseData);
     created += 1;
+  }
+
+  const central = await Warehouse.findOne({ esCentral: true });
+
+  if (central) {
+    await WarehouseStock.deleteMany({ warehouseId: central._id });
+  }
+
+  const zonaBranches = await Warehouse.find({ nombre: 'Sucursal Zona 10', esCentral: { $ne: true } }).sort({
+    createdAt: 1,
+  });
+
+  if (zonaBranches.length > 1) {
+    const [primary, ...duplicates] = zonaBranches;
+
+    for (const duplicate of duplicates) {
+      await WarehouseStock.updateMany({ warehouseId: duplicate._id }, { warehouseId: primary._id });
+      await Entry.updateMany({ warehouseId: duplicate._id }, { warehouseId: primary._id });
+      await Output.updateMany({ warehouseId: duplicate._id }, { warehouseId: primary._id });
+      await PurchaseOrder.updateMany({ warehouseId: duplicate._id }, { warehouseId: primary._id });
+      await Sale.updateMany({ warehouseId: duplicate._id }, { warehouseId: primary._id });
+      await Warehouse.findByIdAndDelete(duplicate._id);
+    }
   }
 
   return created;
@@ -418,30 +515,42 @@ async function seedWarehouseStock() {
     return 0;
   }
 
-  const products = await Product.find();
-  const splits = [0.5, 0.3, 0.2];
+  const catalogProductIds = new Set();
   let updated = 0;
-  const defaultWarehouseId = warehouses[0]._id;
 
-  for (const product of products) {
-    let assigned = 0;
+  await WarehouseStock.deleteMany({});
 
-    for (let index = 0; index < warehouses.length; index += 1) {
-      const isLast = index === warehouses.length - 1;
-      const portion = isLast
-        ? Math.max(product.existencia - assigned, 0)
-        : Math.floor(product.existencia * (splits[index] || 0.1));
+  for (const catalog of WAREHOUSE_CATALOGS) {
+    const warehouse = warehouses.find(
+      (item) => item.nombre === catalog.warehouseName && !item.esCentral
+    );
+
+    if (!warehouse) {
+      console.warn(`[inventory-service] Bodega no encontrada para catalogo: ${catalog.warehouseName}`);
+      continue;
+    }
+
+    for (const productData of catalog.products) {
+      const product = await Product.findOne({ nombre: productData.nombre });
+
+      if (!product) {
+        console.warn(`[inventory-service] Producto no encontrado para stock: ${productData.nombre}`);
+        continue;
+      }
 
       await WarehouseStock.findOneAndUpdate(
-        { productId: product._id, warehouseId: warehouses[index]._id },
-        { existencia: portion },
+        { productId: product._id, warehouseId: warehouse._id },
+        { existencia: productData.existencia },
         { upsert: true, new: true, runValidators: true }
       );
 
-      assigned += portion;
+      catalogProductIds.add(String(product._id));
       updated += 1;
+      await syncProductTotal(product._id);
     }
   }
+
+  const defaultWarehouseId = warehouses[0]._id;
 
   await Entry.updateMany({ warehouseId: { $exists: false } }, { warehouseId: defaultWarehouseId });
   await Output.updateMany({ warehouseId: { $exists: false } }, { warehouseId: defaultWarehouseId });
@@ -461,14 +570,13 @@ export const seedInventory = async () => {
 
   const productsCreated = await seedProducts();
   const stockMinimoUpdated = await seedStockMinimo();
-  const entriesCreated = await seedEntries();
-  const outputsCreated = await seedOutputs();
   const suppliersCreated = await seedSuppliers();
+  const warehousesCreated = await seedWarehouses();
+  const warehouseStockSynced = await seedWarehouseStock();
+  const movementsCreated = await seedWarehouseMovements();
   const purchaseOrdersCreated = await seedPurchaseOrders();
   const customersCreated = await seedCustomers();
   const salesCreated = await seedSales();
-  const warehousesCreated = await seedWarehouses();
-  const warehouseStockSynced = await seedWarehouseStock();
 
   const [products, entries, outputs, suppliers, purchaseOrders, customers, sales, warehouses] = await Promise.all([
     Product.countDocuments(),
@@ -482,8 +590,7 @@ export const seedInventory = async () => {
   ]);
 
   console.log(`[inventory-service] Productos: ${products} (nuevos: ${productsCreated}, stockMinimo sync: ${stockMinimoUpdated})`);
-  console.log(`[inventory-service] Entradas: ${entries} (nuevas: ${entriesCreated})`);
-  console.log(`[inventory-service] Salidas: ${outputs} (nuevas: ${outputsCreated})`);
+  console.log(`[inventory-service] Movimientos seed: ${movementsCreated} (entradas: ${entries}, salidas: ${outputs})`);
   console.log(`[inventory-service] Proveedores: ${suppliers} (nuevos: ${suppliersCreated})`);
   console.log(`[inventory-service] Ordenes de compra: ${purchaseOrders} (nuevas: ${purchaseOrdersCreated})`);
   console.log(`[inventory-service] Clientes: ${customers} (nuevos: ${customersCreated})`);
@@ -501,8 +608,7 @@ export const seedInventory = async () => {
     warehouses,
     productsCreated,
     stockMinimoUpdated,
-    entriesCreated,
-    outputsCreated,
+    movementsCreated,
     suppliersCreated,
     purchaseOrdersCreated,
     customersCreated,

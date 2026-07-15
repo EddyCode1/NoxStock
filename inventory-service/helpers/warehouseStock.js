@@ -1,5 +1,51 @@
 import Product from '../models/Product.js';
 import WarehouseStock from '../models/WarehouseStock.js';
+import { getBranchWarehouseIds } from './warehouseContext.js';
+
+export const getCatalogProductIds = async (warehouseId) => {
+  const stocks = await WarehouseStock.find({ warehouseId }).select('productId');
+  return stocks.map((item) => item.productId);
+};
+
+export const getAllBranchCatalogProductIds = async () => {
+  const branchIds = await getBranchWarehouseIds();
+  const stocks = await WarehouseStock.find({ warehouseId: { $in: branchIds } }).select('productId');
+  return [...new Set(stocks.map((item) => String(item.productId)))];
+};
+
+export const getAggregatedStockMap = async (productIds = []) => {
+  const branchIds = await getBranchWarehouseIds();
+  const filter = { warehouseId: { $in: branchIds } };
+
+  if (productIds.length > 0) {
+    filter.productId = { $in: productIds };
+  }
+
+  const stocks = await WarehouseStock.find(filter);
+  const stockMap = new Map();
+
+  for (const item of stocks) {
+    const key = String(item.productId);
+    stockMap.set(key, (stockMap.get(key) || 0) + item.existencia);
+  }
+
+  return stockMap;
+};
+
+export const isProductInWarehouseCatalog = async (productId, warehouseId) => {
+  const stock = await WarehouseStock.findOne({ productId, warehouseId }).select('_id');
+  return Boolean(stock);
+};
+
+export const isProductInAnyBranchCatalog = async (productId) => {
+  const branchIds = await getBranchWarehouseIds();
+  const stock = await WarehouseStock.findOne({
+    productId,
+    warehouseId: { $in: branchIds },
+  }).select('_id');
+
+  return Boolean(stock);
+};
 
 export const syncProductTotal = async (productId) => {
   const stocks = await WarehouseStock.find({ productId });

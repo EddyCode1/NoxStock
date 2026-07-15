@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import noxReportsService from '../../../shared/api/services/noxReportsService';
-import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
+import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 
 export default function InventoryInsightsPage() {
   const [days, setDays] = useState(30);
@@ -8,11 +8,10 @@ export default function InventoryInsightsPage() {
   const [noMovement, setNoMovement] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
-  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
+  const { selectedWarehouseId, selectedWarehouse, version, isReady } = useWarehouse();
 
   const loadReports = async (period = days) => {
-    if (!selectedWarehouseId) {
+    if (!isReady || !selectedWarehouseId) {
       return;
     }
 
@@ -33,8 +32,14 @@ export default function InventoryInsightsPage() {
   };
 
   useEffect(() => {
+    setRotation([]);
+    setNoMovement([]);
+    setError('');
+  }, [selectedWarehouseId, version]);
+
+  useEffect(() => {
     loadReports(days);
-  }, [selectedWarehouseId]);
+  }, [isReady, selectedWarehouseId, version]);
 
   const handleApply = (event) => {
     event.preventDefault();

@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useInventory } from '../hooks/useInventory';
-import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
+import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 
 export default function ProductsPage() {
   const { products, loading, error, loadProducts } = useInventory();
-  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
+  const { selectedWarehouse, isCentral } = useWarehouse();
   const [showLowStock, setShowLowStock] = useState(false);
 
   const handleFilter = () => {
@@ -23,12 +23,16 @@ export default function ProductsPage() {
         <div>
           <h1 className="text-2xl font-bold">Inventario - Productos</h1>
           <p className="text-sm text-gray-500">
-            Stock en {selectedWarehouse?.nombre || 'la bodega activa'}
+            {isCentral
+              ? 'Vista consolidada — stock total de todas las sucursales'
+              : `Stock en ${selectedWarehouse?.nombre || 'la bodega activa'}`}
           </p>
         </div>
+        {!isCentral && (
         <Link to="/loby/inventory/new" className="rounded bg-black px-4 py-2 text-white">
           Nuevo producto
         </Link>
+        )}
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -50,6 +54,11 @@ export default function ProductsPage() {
 
       {loading && <p>Cargando productos...</p>}
       {error && <p className="text-red-600">{error}</p>}
+      {!loading && !error && products.length === 0 && (
+        <p className="text-sm text-gray-500">
+          Esta bodega aún no tiene productos. Crea el primero con &quot;Nuevo producto&quot;.
+        </p>
+      )}
 
       <div className="overflow-x-auto rounded border">
         <table className="min-w-full text-sm">

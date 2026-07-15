@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import noxReportsService from '../../../shared/api/services/noxReportsService'
-import useWarehouseStore from '../../../shared/stores/useWarehouseStore'
+import { useWarehouse } from '../../../shared/hooks/useWarehouse'
 import ReportFilter from '../components/ReportFilter'
 import ReportTable from '../components/ReportTable'
 import ExportButton from '../components/ExportButton'
@@ -69,11 +69,10 @@ export default function ReportsPage() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [exported, setExported] = useState(false)
-  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId)
-  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse())
+  const { selectedWarehouseId, selectedWarehouse, version, isReady } = useWarehouse()
 
   useEffect(() => {
-    if (!selectedWarehouseId) {
+    if (!isReady || !selectedWarehouseId) {
       return
     }
 
@@ -99,7 +98,7 @@ export default function ReportsPage() {
     }
 
     loadReports()
-  }, [selectedWarehouseId])
+  }, [isReady, selectedWarehouseId, version])
 
   const tableData = useMemo(() => {
     if (filter === 'categories') {
@@ -149,7 +148,7 @@ export default function ReportsPage() {
               Reportes de inventario
             </h1>
             <p style={{ color: palette.textSecondary }} className="mt-2 max-w-2xl text-sm">
-              Panel conectado a reports-service con resumen, categorías y productos más vendidos.
+              Datos de {selectedWarehouse?.nombre || 'la bodega activa'} — resumen, categorías y top ventas.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">

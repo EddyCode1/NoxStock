@@ -6,6 +6,7 @@ const INVENTORY_WAREHOUSE_PATHS = [
   /^\/outputs/,
   /^\/purchase-orders/,
   /^\/sales/,
+  /^\/categories/,
 ];
 
 const REPORTS_WAREHOUSE_PATHS = [/^\/alerts/, /^\/reports/];

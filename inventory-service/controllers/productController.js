@@ -5,10 +5,17 @@ import Output from '../models/Output.js';
 import {
   attachWarehouseStock,
   ensureWarehouseStock,
+  getAggregatedStockMap,
+  getAllBranchCatalogProductIds,
+  getCatalogProductIds,
   getStockMapForWarehouse,
+  isProductInAnyBranchCatalog,
+  isProductInWarehouseCatalog,
 } from '../helpers/warehouseStock.js';
 import {
   ensureWarehouseExists,
+  isCentralWarehouse,
+  rejectCentralWrite,
   requireWarehouseId,
 } from '../helpers/warehouseContext.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
@@ -26,7 +33,22 @@ export const getProducts = async (req, res, next) => {
     }
 
     const { q, categoria } = req.query;
-    const filter = {};
+    const centralView = await isCentralWarehouse(warehouseId);
+    const catalogProductIds = centralView
+      ? await getAllBranchCatalogProductIds()
+      : await getCatalogProductIds(warehouseId);
+
+    if (catalogProductIds.length === 0) {
+      return successResponse(res, 200, 'Productos obtenidos correctamente', {
+        warehouseId,
+        warehouse: { _id: warehouse._id, nombre: warehouse.nombre, esCentral: centralView },
+        vistaConsolidada: centralView,
+        total: 0,
+        products: [],
+      });
+    }
+
+    const filter = { _id: { $in: catalogProductIds } };
 
     if (q) {
       filter.nombre = { $regex: q.trim(), $options: 'i' };
@@ -37,10 +59,9 @@ export const getProducts = async (req, res, next) => {
     }
 
     const products = await Product.find(filter).sort({ createdAt: -1 });
-    const stockMap = await getStockMapForWarehouse(
-      warehouseId,
-      products.map((product) => product._id)
-    );
+    const stockMap = centralView
+      ? await getAggregatedStockMap(products.map((product) => product._id))
+      : await getStockMapForWarehouse(warehouseId, products.map((product) => product._id));
     const enriched = attachWarehouseStock(products, stockMap, warehouseId);
 
     if (req.query.bajoStock === 'true') {
@@ -51,7 +72,8 @@ export const getProducts = async (req, res, next) => {
 
       return successResponse(res, 200, 'Productos con bajo stock obtenidos correctamente', {
         warehouseId,
-        warehouse: { _id: warehouse._id, nombre: warehouse.nombre },
+        warehouse: { _id: warehouse._id, nombre: warehouse.nombre, esCentral: centralView },
+        vistaConsolidada: centralView,
         total: lowStockProducts.length,
         products: lowStockProducts,
       });
@@ -59,7 +81,8 @@ export const getProducts = async (req, res, next) => {
 
     return successResponse(res, 200, 'Productos obtenidos correctamente', {
       warehouseId,
-      warehouse: { _id: warehouse._id, nombre: warehouse.nombre },
+      warehouse: { _id: warehouse._id, nombre: warehouse.nombre, esCentral: centralView },
+      vistaConsolidada: centralView,
       total: enriched.length,
       products: enriched,
     });
@@ -85,7 +108,23 @@ export const getProductById = async (req, res, next) => {
       return errorResponse(res, 404, 'Producto no encontrado', 'PRODUCT_NOT_FOUND');
     }
 
-    const stockMap = await getStockMapForWarehouse(warehouseId, [product._id]);
+    const centralView = await isCentralWarehouse(warehouseId);
+    const inCatalog = centralView
+      ? await isProductInAnyBranchCatalog(product._id)
+      : await isProductInWarehouseCatalog(product._id, warehouseId);
+
+    if (!inCatalog) {
+      return errorResponse(
+        res,
+        404,
+        'El producto no pertenece al inventario de esta bodega',
+        'PRODUCT_NOT_IN_WAREHOUSE'
+      );
+    }
+
+    const stockMap = centralView
+      ? await getAggregatedStockMap([product._id])
+      : await getStockMapForWarehouse(warehouseId, [product._id]);
     const [enriched] = attachWarehouseStock([product], stockMap, warehouseId);
 
     return successResponse(res, 200, 'Producto obtenido correctamente', { product: enriched });
@@ -102,6 +141,10 @@ export const createProduct = async (req, res, next) => {
     const warehouse = await ensureWarehouseExists(warehouseId);
     if (!warehouse) {
       return errorResponse(res, 404, 'Bodega no encontrada', 'WAREHOUSE_NOT_FOUND');
+    }
+
+    if (await rejectCentralWrite(warehouseId, res)) {
+      return;
     }
 
     const { nombre, categoria, precio, existencia, stockMinimo } = req.body;
@@ -157,7 +200,23 @@ export const updateProduct = async (req, res, next) => {
       return errorResponse(res, 404, 'Producto no encontrado', 'PRODUCT_NOT_FOUND');
     }
 
-    const stockMap = await getStockMapForWarehouse(warehouseId, [product._id]);
+    const centralView = await isCentralWarehouse(warehouseId);
+    const inCatalog = centralView
+      ? await isProductInAnyBranchCatalog(product._id)
+      : await isProductInWarehouseCatalog(product._id, warehouseId);
+
+    if (!inCatalog) {
+      return errorResponse(
+        res,
+        404,
+        'El producto no pertenece al inventario de esta bodega',
+        'PRODUCT_NOT_IN_WAREHOUSE'
+      );
+    }
+
+    const stockMap = centralView
+      ? await getAggregatedStockMap([product._id])
+      : await getStockMapForWarehouse(warehouseId, [product._id]);
     const [enriched] = attachWarehouseStock([product], stockMap, warehouseId);
 
     return successResponse(res, 200, 'Producto actualizado correctamente', { product: enriched });

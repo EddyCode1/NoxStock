@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import inventoryService from '../../../shared/api/services/inventoryService';
-import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
+import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 
 const estadoLabel = {
   borrador: 'Borrador',
@@ -22,11 +22,10 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
-  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
+  const { selectedWarehouseId, selectedWarehouse, version, isReady, isCentral } = useWarehouse();
 
   const loadData = useCallback(async () => {
-    if (!selectedWarehouseId) {
+    if (!isReady || !selectedWarehouseId) {
       return;
     }
 
@@ -46,7 +45,14 @@ export default function SalesPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedWarehouseId]);
+  }, [isReady, selectedWarehouseId, version]);
+
+  useEffect(() => {
+    setSales([]);
+    setProducts([]);
+    setMessage('');
+    setError('');
+  }, [selectedWarehouseId, version]);
 
   useEffect(() => {
     loadData();
@@ -103,10 +109,13 @@ export default function SalesPage() {
       <header>
         <h1 className="text-2xl font-bold">Ventas / Pedidos</h1>
         <p className="text-sm text-gray-500">
-          Bodega: {selectedWarehouse?.nombre || '—'} · borrador → confirmada (descuenta stock)
+          {isCentral
+            ? 'Ventas de todas las sucursales (solo lectura)'
+            : `Bodega: ${selectedWarehouse?.nombre || '—'} · borrador → confirmada`}
         </p>
       </header>
 
+      {!isCentral && (
       <form onSubmit={handleCreate} className="grid max-w-3xl gap-3 rounded border p-4 md:grid-cols-2">
         <select name="customerId" value={form.customerId} onChange={handleChange} className="rounded border px-3 py-2" required>
           <option value="">Cliente *</option>
@@ -127,6 +136,7 @@ export default function SalesPage() {
           Crear venta (borrador)
         </button>
       </form>
+      )}
 
       {message && <p className="text-green-700">{message}</p>}
       {error && <p className="text-red-600">{error}</p>}

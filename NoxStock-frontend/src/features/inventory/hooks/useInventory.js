@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import inventoryService from '../../../shared/api/services/inventoryService';
-import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
+import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 
 export function useInventory() {
   const [products, setProducts] = useState([]);
@@ -9,7 +9,7 @@ export function useInventory() {
   const [outputs, setOutputs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
+  const { selectedWarehouseId, version, isReady } = useWarehouse();
 
   const loadProducts = useCallback(async (params = {}) => {
     if (!selectedWarehouseId) {
@@ -42,19 +42,39 @@ export function useInventory() {
       return;
     }
 
-    const [entriesData, outputsData] = await Promise.all([
-      inventoryService.getEntries(),
-      inventoryService.getOutputs(),
-    ]);
+    setLoading(true);
+    setError(null);
 
-    setEntries(entriesData.entries || []);
-    setOutputs(outputsData.outputs || []);
+    try {
+      const [entriesData, outputsData] = await Promise.all([
+        inventoryService.getEntries(),
+        inventoryService.getOutputs(),
+      ]);
+
+      setEntries(entriesData.entries || []);
+      setOutputs(outputsData.outputs || []);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al cargar movimientos');
+    } finally {
+      setLoading(false);
+    }
   }, [selectedWarehouseId]);
 
   useEffect(() => {
+    setProducts([]);
+    setEntries([]);
+    setOutputs([]);
+    setError(null);
+  }, [selectedWarehouseId, version]);
+
+  useEffect(() => {
+    if (!isReady || !selectedWarehouseId) {
+      return;
+    }
+
     loadProducts();
     loadCategories();
-  }, [loadProducts, loadCategories]);
+  }, [isReady, selectedWarehouseId, version, loadProducts, loadCategories]);
 
   return {
     products,

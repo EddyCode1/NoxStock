@@ -30,6 +30,10 @@ const warehouseSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    esCentral: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

@@ -6,7 +6,9 @@ import Entry from '../models/Entry.js';
 import { increaseStock } from '../helpers/stock.js';
 import { getAuditUser } from '../helpers/audit.js';
 import {
+  buildWarehouseScopeFilter,
   ensureWarehouseExists,
+  rejectCentralWrite,
   requireWarehouseId,
   resolveWarehouseId,
 } from '../helpers/warehouseContext.js';
@@ -54,7 +56,8 @@ export const getPurchaseOrders = async (req, res, next) => {
 
     const warehouseId = resolveWarehouseId(req);
     if (warehouseId) {
-      filter.warehouseId = warehouseId;
+      const scopeFilter = await buildWarehouseScopeFilter(warehouseId);
+      Object.assign(filter, scopeFilter);
     }
 
     const orders = await PurchaseOrder.find(filter)
@@ -99,6 +102,10 @@ export const createPurchaseOrder = async (req, res, next) => {
     const warehouse = await ensureWarehouseExists(warehouseId);
     if (!warehouse) {
       return errorResponse(res, 404, 'Bodega no encontrada', 'WAREHOUSE_NOT_FOUND');
+    }
+
+    if (await rejectCentralWrite(warehouseId, res)) {
+      return;
     }
 
     if (!isValidObjectId(supplierId)) {
