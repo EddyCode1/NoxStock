@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Product from '../models/Product.js';
 import Output from '../models/Output.js';
+import { decreaseStock } from '../helpers/stock.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -38,18 +39,17 @@ export const registerOutput = async (req, res, next) => {
       return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
     }
 
-    const product = await Product.findById(productId);
+    const product = await decreaseStock(productId, cantidad);
 
     if (!product) {
-      return errorResponse(res, 404, 'Producto no encontrado', 'PRODUCT_NOT_FOUND');
-    }
+      const exists = await Product.findById(productId);
 
-    if (product.existencia < cantidad) {
+      if (!exists) {
+        return errorResponse(res, 404, 'Producto no encontrado', 'PRODUCT_NOT_FOUND');
+      }
+
       return errorResponse(res, 400, 'Existencia insuficiente para la salida', 'INSUFFICIENT_STOCK');
     }
-
-    product.existencia -= cantidad;
-    await product.save();
 
     const output = await Output.create({
       productId,

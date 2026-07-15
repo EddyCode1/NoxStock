@@ -3,7 +3,7 @@
 ## Descripción
 Este servicio implementa lógica independiente para generar alertas y reportes utilizando la información del inventario. Consume información del Servicio A mediante HTTP y protege toda su API con JWT.
 
-En desarrollo, el servicio trae datos mock locales activados por defecto para que puedas probarlo aunque el Servicio A todavía no exista.
+En desarrollo integrado consume `inventory-service` en tiempo real. Los mocks solo se activan si configuras `USE_MOCK_INVENTORY=true` o `ALLOW_MOCK_FALLBACK=true`.
 
 ## Funcionalidades
 - Mostrar productos con bajo inventario
@@ -29,22 +29,23 @@ Crear un archivo `.env` en la raíz del servicio:
 
 ```
 PORT=3003
-JWT_SECRET=dev-reports-secret
+JWT_SECRET=noxstock_jwt_secret_dev_2026
 NODE_ENV=development
-INVENTORY_SERVICE_URL=http://servicio-a-api/api
+INVENTORY_SERVICE_URL=http://localhost:3002
 LOW_STOCK_THRESHOLD=5
 CORS_ORIGIN=*
 REQUEST_TIMEOUT_MS=8000
-USE_MOCK_INVENTORY=true
-ALLOW_MOCK_FALLBACK=true
-ALLOW_DEV_TOKEN=true
+USE_MOCK_INVENTORY=false
+ALLOW_MOCK_FALLBACK=false
+ALLOW_DEV_TOKEN=false
 ```
 
 ### Modo de prueba local
 
-- `USE_MOCK_INVENTORY=true` hace que los reportes usen datos locales.
+- `USE_MOCK_INVENTORY=true` fuerza datos mock sin llamar al inventario.
+- `ALLOW_MOCK_FALLBACK=true` usa mock solo si inventory-service no responde.
 - `ALLOW_DEV_TOKEN=true` habilita `GET /dev/token` para generar un JWT de prueba.
-- Si luego conectas el Servicio A, basta con poner `USE_MOCK_INVENTORY=false`.
+- En el monorepo integrado deja ambos en `false` para datos reales.
 
 ## Instalación y Ejecución
 
@@ -126,4 +127,4 @@ reports-service/
 - Todos los endpoints requieren un JWT válido en `Authorization: Bearer <token>`
 - El criterio para bajo inventario es configurable (por defecto 5 unidades)
 - Este servicio consulta el Servicio de Inventario en lugar de mantener su propia base de datos
-- En desarrollo, los datos se sirven desde mocks locales si el Servicio A no está disponible
+- Si inventory-service no está disponible y los mocks están desactivados, los endpoints devuelven error explícito

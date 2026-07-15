@@ -103,6 +103,7 @@ Error:
 2. No se puede editar `existencia` directamente con `PUT /products/:id`.
 3. Si `cantidad > existencia` en una salida → error `400 INSUFFICIENT_STOCK`.
 4. Al crear producto, `existencia` es opcional (default `0`).
+5. No se puede `DELETE /products/:id` si tiene entradas o salidas → error `409 PRODUCT_HAS_MOVEMENTS`.
 
 ---
 
