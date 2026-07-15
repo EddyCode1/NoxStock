@@ -50,6 +50,7 @@ export default function PurchaseOrdersPage() {
 
   useEffect(() => {
     setOrders([]);
+    setSuppliers([]);
     setProducts([]);
     setMessage('');
     setError('');

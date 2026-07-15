@@ -2,6 +2,12 @@ import mongoose from 'mongoose';
 
 const customerSchema = new mongoose.Schema(
   {
+    warehouseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Warehouse',
+      required: [true, 'La bodega del cliente es obligatoria'],
+      index: true,
+    },
     nombre: {
       type: String,
       required: [true, 'El nombre del cliente es obligatorio'],
@@ -38,7 +44,7 @@ const customerSchema = new mongoose.Schema(
   }
 );
 
-customerSchema.index({ nombre: 1 });
+customerSchema.index({ warehouseId: 1, nombre: 1 });
 
 const Customer = mongoose.model('Customer', customerSchema);
 

@@ -40,8 +40,11 @@ async function validateItems(items) {
 
 export const getPurchaseOrders = async (req, res, next) => {
   try {
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
+
     const { estado, supplierId } = req.query;
-    const filter = {};
+    const filter = await buildWarehouseScopeFilter(warehouseId);
 
     if (estado) {
       filter.estado = estado;
@@ -52,12 +55,6 @@ export const getPurchaseOrders = async (req, res, next) => {
         return errorResponse(res, 400, 'ID de proveedor inválido', 'INVALID_ID');
       }
       filter.supplierId = supplierId;
-    }
-
-    const warehouseId = resolveWarehouseId(req);
-    if (warehouseId) {
-      const scopeFilter = await buildWarehouseScopeFilter(warehouseId);
-      Object.assign(filter, scopeFilter);
     }
 
     const orders = await PurchaseOrder.find(filter)
@@ -112,10 +109,10 @@ export const createPurchaseOrder = async (req, res, next) => {
       return errorResponse(res, 400, 'ID de proveedor inválido', 'INVALID_ID');
     }
 
-    const supplier = await Supplier.findById(supplierId);
+    const supplier = await Supplier.findOne({ _id: supplierId, warehouseId });
 
     if (!supplier) {
-      return errorResponse(res, 404, 'Proveedor no encontrado', 'SUPPLIER_NOT_FOUND');
+      return errorResponse(res, 404, 'Proveedor no encontrado en esta bodega', 'SUPPLIER_NOT_FOUND');
     }
 
     const itemError = await validateItems(items);
@@ -183,10 +180,10 @@ export const updatePurchaseOrder = async (req, res, next) => {
         return errorResponse(res, 400, 'ID de proveedor inválido', 'INVALID_ID');
       }
 
-      const supplier = await Supplier.findById(req.body.supplierId);
+      const supplier = await Supplier.findOne({ _id: req.body.supplierId, warehouseId: order.warehouseId });
 
       if (!supplier) {
-        return errorResponse(res, 404, 'Proveedor no encontrado', 'SUPPLIER_NOT_FOUND');
+        return errorResponse(res, 404, 'Proveedor no encontrado en esta bodega', 'SUPPLIER_NOT_FOUND');
       }
 
       order.supplierId = req.body.supplierId;

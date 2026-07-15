@@ -1,14 +1,33 @@
 import mongoose from 'mongoose';
 import Supplier from '../models/Supplier.js';
 import PurchaseOrder from '../models/PurchaseOrder.js';
+import {
+  buildWarehouseScopeFilter,
+  ensureWarehouseExists,
+  rejectCentralWrite,
+  requireWarehouseId,
+} from '../helpers/warehouseContext.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+async function findSupplierInScope(id, warehouseId) {
+  const scopeFilter = await buildWarehouseScopeFilter(warehouseId);
+  return Supplier.findOne({ _id: id, ...scopeFilter });
+}
+
 export const getSuppliers = async (req, res, next) => {
   try {
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
+
+    const warehouse = await ensureWarehouseExists(warehouseId);
+    if (!warehouse) {
+      return errorResponse(res, 404, 'Bodega no encontrada', 'WAREHOUSE_NOT_FOUND');
+    }
+
     const { q, activo } = req.query;
-    const filter = {};
+    const filter = await buildWarehouseScopeFilter(warehouseId);
 
     if (q) {
       filter.nombre = { $regex: q.trim(), $options: 'i' };
@@ -32,12 +51,14 @@ export const getSuppliers = async (req, res, next) => {
 export const getSupplierById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
 
     if (!isValidObjectId(id)) {
       return errorResponse(res, 400, 'ID de proveedor inválido', 'INVALID_ID');
     }
 
-    const supplier = await Supplier.findById(id);
+    const supplier = await findSupplierInScope(id, warehouseId);
 
     if (!supplier) {
       return errorResponse(res, 404, 'Proveedor no encontrado', 'SUPPLIER_NOT_FOUND');
@@ -51,7 +72,22 @@ export const getSupplierById = async (req, res, next) => {
 
 export const createSupplier = async (req, res, next) => {
   try {
-    const supplier = await Supplier.create(req.body);
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
+
+    const warehouse = await ensureWarehouseExists(warehouseId);
+    if (!warehouse) {
+      return errorResponse(res, 404, 'Bodega no encontrada', 'WAREHOUSE_NOT_FOUND');
+    }
+
+    if (await rejectCentralWrite(warehouseId, res)) {
+      return;
+    }
+
+    const supplier = await Supplier.create({
+      ...req.body,
+      warehouseId,
+    });
 
     return successResponse(res, 201, 'Proveedor creado correctamente', { supplier });
   } catch (error) {
@@ -62,19 +98,26 @@ export const createSupplier = async (req, res, next) => {
 export const updateSupplier = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
 
     if (!isValidObjectId(id)) {
       return errorResponse(res, 400, 'ID de proveedor inválido', 'INVALID_ID');
     }
 
-    const supplier = await Supplier.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    if (await rejectCentralWrite(warehouseId, res)) {
+      return;
+    }
+
+    const supplier = await findSupplierInScope(id, warehouseId);
 
     if (!supplier) {
       return errorResponse(res, 404, 'Proveedor no encontrado', 'SUPPLIER_NOT_FOUND');
     }
+
+    const { warehouseId: _ignored, ...updates } = req.body;
+    Object.assign(supplier, updates);
+    await supplier.save();
 
     return successResponse(res, 200, 'Proveedor actualizado correctamente', { supplier });
   } catch (error) {
@@ -85,14 +128,28 @@ export const updateSupplier = async (req, res, next) => {
 export const deleteSupplier = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
 
     if (!isValidObjectId(id)) {
       return errorResponse(res, 400, 'ID de proveedor inválido', 'INVALID_ID');
     }
 
+    if (await rejectCentralWrite(warehouseId, res)) {
+      return;
+    }
+
+    const supplier = await findSupplierInScope(id, warehouseId);
+
+    if (!supplier) {
+      return errorResponse(res, 404, 'Proveedor no encontrado', 'SUPPLIER_NOT_FOUND');
+    }
+
+    const scopeFilter = await buildWarehouseScopeFilter(warehouseId);
     const openOrders = await PurchaseOrder.countDocuments({
       supplierId: id,
       estado: { $in: ['borrador', 'enviada'] },
+      ...scopeFilter,
     });
 
     if (openOrders > 0) {
@@ -104,11 +161,7 @@ export const deleteSupplier = async (req, res, next) => {
       );
     }
 
-    const supplier = await Supplier.findByIdAndDelete(id);
-
-    if (!supplier) {
-      return errorResponse(res, 404, 'Proveedor no encontrado', 'SUPPLIER_NOT_FOUND');
-    }
+    await supplier.deleteOne();
 
     return successResponse(res, 200, 'Proveedor eliminado correctamente', { supplier });
   } catch (error) {

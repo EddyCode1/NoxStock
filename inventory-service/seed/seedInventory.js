@@ -69,27 +69,36 @@ const WAREHOUSE_CATALOGS = [
 
 const ALL_CATALOG_PRODUCTS = WAREHOUSE_CATALOGS.flatMap((catalog) => catalog.products);
 
-const SUPPLIERS = [
+const WAREHOUSE_SUPPLIERS = [
   {
-    nombre: 'TechSupply Guatemala',
-    contacto: 'Carlos Mendez',
-    email: 'ventas@techsupply.gt',
-    telefono: '502-555-0101',
-    categorias: ['Computadoras', 'Accesorios PC'],
+    warehouseName: 'Sucursal Zona 10',
+    supplier: {
+      nombre: 'TechSupply Guatemala',
+      contacto: 'Carlos Mendez',
+      email: 'ventas@techsupply.gt',
+      telefono: '502-555-0101',
+      categorias: ['Computadoras', 'Accesorios PC'],
+    },
   },
   {
-    nombre: 'Lacteos del Valle',
-    contacto: 'Ana Recinos',
-    email: 'pedidos@lacteosvalle.gt',
-    telefono: '502-555-0202',
-    categorias: ['Lacteos'],
+    warehouseName: 'Sucursal Mixco',
+    supplier: {
+      nombre: 'Lacteos del Valle',
+      contacto: 'Ana Recinos',
+      email: 'pedidos@lacteosvalle.gt',
+      telefono: '502-555-0202',
+      categorias: ['Lacteos'],
+    },
   },
   {
-    nombre: 'Ferreteria El Constructor',
-    contacto: 'Jorge Ruiz',
-    email: 'ventas@constructor.gt',
-    telefono: '502-555-0303',
-    categorias: ['Alambres', 'Ferreteria'],
+    warehouseName: 'Sucursal Antigua',
+    supplier: {
+      nombre: 'Ferreteria El Constructor',
+      contacto: 'Jorge Ruiz',
+      email: 'ventas@constructor.gt',
+      telefono: '502-555-0303',
+      categorias: ['Alambres', 'Ferreteria'],
+    },
   },
 ];
 
@@ -126,24 +135,33 @@ const PURCHASE_ORDERS = [
   },
 ];
 
-const CUSTOMERS = [
+const WAREHOUSE_CUSTOMERS = [
   {
-    nombre: 'Comercial El Faro',
-    email: 'compras@elfaro.gt',
-    telefono: '502-555-1101',
-    nit: '1234567-8',
+    warehouseName: 'Sucursal Zona 10',
+    customer: {
+      nombre: 'Comercial El Faro',
+      email: 'compras@elfaro.gt',
+      telefono: '502-555-1101',
+      nit: '1234567-8',
+    },
   },
   {
-    nombre: 'Distribuidora Norte',
-    email: 'ventas@norte.gt',
-    telefono: '502-555-1102',
-    nit: '8765432-1',
+    warehouseName: 'Sucursal Mixco',
+    customer: {
+      nombre: 'Distribuidora Norte',
+      email: 'ventas@norte.gt',
+      telefono: '502-555-1102',
+      nit: '8765432-1',
+    },
   },
   {
-    nombre: 'Tienda Express',
-    email: 'pedidos@express.gt',
-    telefono: '502-555-1103',
-    nit: '5566778-9',
+    warehouseName: 'Sucursal Antigua',
+    customer: {
+      nombre: 'Tienda Express',
+      email: 'pedidos@express.gt',
+      telefono: '502-555-1103',
+      nit: '5566778-9',
+    },
   },
 ];
 
@@ -307,14 +325,34 @@ async function seedWarehouseMovements() {
 async function seedSuppliers() {
   let created = 0;
 
-  for (const supplierData of SUPPLIERS) {
-    const exists = await Supplier.findOne({ nombre: supplierData.nombre });
+  await Supplier.deleteMany({
+    $or: [{ warehouseId: { $exists: false } }, { warehouseId: null }],
+  });
+
+  for (const entry of WAREHOUSE_SUPPLIERS) {
+    const warehouse = await Warehouse.findOne({
+      nombre: entry.warehouseName,
+      esCentral: { $ne: true },
+    });
+
+    if (!warehouse) {
+      console.warn(`[inventory-service] Bodega no encontrada para proveedor: ${entry.warehouseName}`);
+      continue;
+    }
+
+    const exists = await Supplier.findOne({
+      nombre: entry.supplier.nombre,
+      warehouseId: warehouse._id,
+    });
 
     if (exists) {
       continue;
     }
 
-    await Supplier.create(supplierData);
+    await Supplier.create({
+      ...entry.supplier,
+      warehouseId: warehouse._id,
+    });
     created += 1;
   }
 
@@ -331,16 +369,20 @@ async function seedPurchaseOrders() {
       continue;
     }
 
-    const supplier = await Supplier.findOne({ nombre: orderData.supplierName });
-    const warehouse = await Warehouse.findOne({ nombre: orderData.warehouseName || 'Bodega Central Zona 10' });
-
-    if (!supplier) {
-      console.warn(`[inventory-service] Proveedor no encontrado para OC: ${orderData.supplierName}`);
-      continue;
-    }
+    const warehouse = await Warehouse.findOne({ nombre: orderData.warehouseName || 'Sucursal Zona 10' });
 
     if (!warehouse) {
       console.warn(`[inventory-service] Bodega no encontrada para OC: ${orderData.warehouseName}`);
+      continue;
+    }
+
+    const supplier = await Supplier.findOne({
+      nombre: orderData.supplierName,
+      warehouseId: warehouse._id,
+    });
+
+    if (!supplier) {
+      console.warn(`[inventory-service] Proveedor no encontrado para OC: ${orderData.supplierName}`);
       continue;
     }
 
@@ -383,14 +425,34 @@ async function seedPurchaseOrders() {
 async function seedCustomers() {
   let created = 0;
 
-  for (const customerData of CUSTOMERS) {
-    const exists = await Customer.findOne({ nombre: customerData.nombre });
+  await Customer.deleteMany({
+    $or: [{ warehouseId: { $exists: false } }, { warehouseId: null }],
+  });
+
+  for (const entry of WAREHOUSE_CUSTOMERS) {
+    const warehouse = await Warehouse.findOne({
+      nombre: entry.warehouseName,
+      esCentral: { $ne: true },
+    });
+
+    if (!warehouse) {
+      console.warn(`[inventory-service] Bodega no encontrada para cliente: ${entry.warehouseName}`);
+      continue;
+    }
+
+    const exists = await Customer.findOne({
+      nombre: entry.customer.nombre,
+      warehouseId: warehouse._id,
+    });
 
     if (exists) {
       continue;
     }
 
-    await Customer.create(customerData);
+    await Customer.create({
+      ...entry.customer,
+      warehouseId: warehouse._id,
+    });
     created += 1;
   }
 
@@ -407,16 +469,20 @@ async function seedSales() {
       continue;
     }
 
-    const customer = await Customer.findOne({ nombre: saleData.customerName });
     const warehouse = await Warehouse.findOne({ nombre: saleData.warehouseName || 'Sucursal Mixco' });
-
-    if (!customer) {
-      console.warn(`[inventory-service] Cliente no encontrado para venta: ${saleData.customerName}`);
-      continue;
-    }
 
     if (!warehouse) {
       console.warn(`[inventory-service] Bodega no encontrada para venta: ${saleData.warehouseName}`);
+      continue;
+    }
+
+    const customer = await Customer.findOne({
+      nombre: saleData.customerName,
+      warehouseId: warehouse._id,
+    });
+
+    if (!customer) {
+      console.warn(`[inventory-service] Cliente no encontrado para venta: ${saleData.customerName}`);
       continue;
     }
 
@@ -470,11 +536,32 @@ async function seedWarehouses() {
     const exists = await Warehouse.findOne({ nombre: warehouseData.nombre });
 
     if (exists) {
+      let changed = false;
+
       if (warehouseData.esCentral && !exists.esCentral) {
         exists.esCentral = true;
+        changed = true;
+      }
+
+      if (exists.direccion !== warehouseData.direccion) {
         exists.direccion = warehouseData.direccion;
+        changed = true;
+      }
+
+      if (exists.lat !== warehouseData.lat) {
+        exists.lat = warehouseData.lat;
+        changed = true;
+      }
+
+      if (exists.lng !== warehouseData.lng) {
+        exists.lng = warehouseData.lng;
+        changed = true;
+      }
+
+      if (changed) {
         await exists.save();
       }
+
       continue;
     }
 
@@ -570,12 +657,12 @@ export const seedInventory = async () => {
 
   const productsCreated = await seedProducts();
   const stockMinimoUpdated = await seedStockMinimo();
-  const suppliersCreated = await seedSuppliers();
   const warehousesCreated = await seedWarehouses();
+  const suppliersCreated = await seedSuppliers();
   const warehouseStockSynced = await seedWarehouseStock();
   const movementsCreated = await seedWarehouseMovements();
-  const purchaseOrdersCreated = await seedPurchaseOrders();
   const customersCreated = await seedCustomers();
+  const purchaseOrdersCreated = await seedPurchaseOrders();
   const salesCreated = await seedSales();
 
   const [products, entries, outputs, suppliers, purchaseOrders, customers, sales, warehouses] = await Promise.all([

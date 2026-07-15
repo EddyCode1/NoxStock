@@ -1,6 +1,9 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
+import { useWarehouse } from '../../../shared/hooks/useWarehouse';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
+import { sortWarehousesForDisplay } from '../utils/warehouseMapUtils';
 
 const LocationPickerMap = lazy(() => import('../components/LocationPickerMap'));
 
@@ -16,6 +19,8 @@ function MapLoader() {
 }
 
 export default function WarehousesPage() {
+  const { selectedWarehouseId, setSelectedWarehouseId } = useWarehouse();
+  const setWarehousesStore = useWarehouseStore((state) => state.setWarehouses);
   const [warehouses, setWarehouses] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [position, setPosition] = useState(null);
@@ -28,13 +33,15 @@ export default function WarehousesPage() {
     setError('');
     try {
       const data = await inventoryService.getWarehouses();
-      setWarehouses(data.warehouses || []);
+      const list = data.warehouses || [];
+      setWarehouses(list);
+      setWarehousesStore(list);
     } catch (err) {
       setError(err.response?.data?.message || 'Error al cargar bodegas');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setWarehousesStore]);
 
   useEffect(() => {
     loadWarehouses();
@@ -135,18 +142,35 @@ export default function WarehousesPage() {
               <th className="px-3 py-2 text-left">Nombre</th>
               <th className="px-3 py-2 text-left">Dirección</th>
               <th className="px-3 py-2 text-left">Coordenadas</th>
+              <th className="px-3 py-2 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {warehouses.map((warehouse) => (
-              <tr key={warehouse._id} className="border-t">
-                <td className="px-3 py-2">{warehouse.nombre}</td>
+            {sortWarehousesForDisplay(warehouses).map((warehouse) => {
+              const isActive = warehouse._id === selectedWarehouseId;
+
+              return (
+              <tr key={warehouse._id} className={`border-t ${isActive ? 'bg-green-50' : ''}`}>
+                <td className="px-3 py-2">
+                  {warehouse.esCentral ? `★ ${warehouse.nombre}` : warehouse.nombre}
+                </td>
                 <td className="px-3 py-2">{warehouse.direccion || '-'}</td>
                 <td className="px-3 py-2">
                   {Number(warehouse.lat).toFixed(5)}, {Number(warehouse.lng).toFixed(5)}
                 </td>
+                <td className="px-3 py-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedWarehouseId(warehouse._id)}
+                    disabled={isActive}
+                    className="rounded bg-blue-900 px-3 py-1 text-xs text-white disabled:bg-green-700"
+                  >
+                    {isActive ? 'Activa' : 'Seleccionar'}
+                  </button>
+                </td>
               </tr>
-            ))}
+            );
+            })}
           </tbody>
         </table>
       </div>

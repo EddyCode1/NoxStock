@@ -49,6 +49,7 @@ export default function SalesPage() {
 
   useEffect(() => {
     setSales([]);
+    setCustomers([]);
     setProducts([]);
     setMessage('');
     setError('');
