@@ -109,7 +109,7 @@ Crear un archivo `.env` en la raíz del servicio:
 ```
 PORT=3001
 MONGODB_URI=mongodb://localhost:27017/noxstock-auth
-JWT_SECRET=your_jwt_secret_key_here
+JWT_SECRET=noxstock_jwt_secret_dev_2026
 JWT_EXPIRE=24h
 NODE_ENV=development
 
@@ -130,17 +130,12 @@ VERIFICATION_EMAIL_EXPIRY_HOURS=24
 PASSWORD_RESET_EXPIRY_HOURS=1
 ```
 
-## Instalación y Ejecución
+## Instalación
 
 ```bash
-# Instalar dependencias
 pnpm install
-
-# Desarrollo
-pnpm dev
-
-# Producción
-pnpm start
+pnpm dev   # desarrollo
+pnpm start # producción
 ```
 
 ## Estructura del Proyecto

@@ -4,10 +4,11 @@ export const env = {
     jwtSecret: process.env.JWT_SECRET ?? 'noxstock_jwt_secret_dev_2026',
     inventoryServiceUrl: (process.env.INVENTORY_SERVICE_URL ?? 'http://localhost:3002').replace(/\/$/, ''),
     lowStockThreshold: Number(process.env.LOW_STOCK_THRESHOLD ?? 5),
+    reportMovementDays: Number(process.env.REPORT_MOVEMENT_DAYS ?? 30),
     corsOrigin: process.env.CORS_ORIGIN ?? '*',
     requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 8000),
     useMockInventory: process.env.USE_MOCK_INVENTORY === 'true',
-    allowMockFallback: process.env.ALLOW_MOCK_FALLBACK !== 'false',
+    allowMockFallback: process.env.ALLOW_MOCK_FALLBACK === 'true',
     allowDevToken: process.env.ALLOW_DEV_TOKEN === 'true',
 };
 

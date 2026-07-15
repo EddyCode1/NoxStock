@@ -2,10 +2,14 @@ import axios from 'axios'
 import useAuthStore from '../stores/useAuthStore'
 
 // Instancia cliente para autenticación
+const authBaseUrl =
+  import.meta.env.VITE_AUTH_URL ||
+  (import.meta.env.VITE_AUTH_SERVICE_URL
+    ? `${import.meta.env.VITE_AUTH_SERVICE_URL}/auth`
+    : 'http://localhost:3001/auth')
+
 const authClient = axios.create({
-  baseURL:
-    import.meta.env.VITE_AUTH_URL ||
-    'http://localhost:3001/auth',
+  baseURL: authBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,9 +39,7 @@ authClient.interceptors.response.use(
       try {
         const refreshToken = useAuthStore.getState().refreshToken
         if (refreshToken) {
-          const refreshUrl =
-            import.meta.env.VITE_AUTH_URL ||
-            'http://localhost:3001/auth'
+          const refreshUrl = authBaseUrl
           const response = await axios.post(
             `${refreshUrl}/refresh`,
             { refreshToken }

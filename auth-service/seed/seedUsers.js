@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 import { shouldRunSeed } from './seedUtils.js';
 
-const DEFAULT_PASSWORD = process.env.SEED_USER_PASSWORD || 'NoxStock2026!';
+const DEFAULT_PASSWORD = process.env.SEED_USER_PASSWORD || '1234';
 
 const USERS = [
   { nombre: 'Kevin Garcia', email: 'kevin@noxstock.com', role: 'user' },
@@ -27,6 +27,9 @@ export const seedUsers = async () => {
     const exists = await User.findOne({ email });
 
     if (exists) {
+      exists.password = DEFAULT_PASSWORD;
+      exists.activo = true;
+      await exists.save();
       continue;
     }
 

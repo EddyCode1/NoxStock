@@ -1,14 +1,28 @@
 import mongoose from 'mongoose';
 import Product from '../models/Product.js';
 import Output from '../models/Output.js';
+import { decreaseStock } from '../helpers/stock.js';
+import { getAuditUser } from '../helpers/audit.js';
+import {
+  ensureWarehouseExists,
+  requireWarehouseId,
+  resolveWarehouseId,
+} from '../helpers/warehouseContext.js';
+import { attachWarehouseStock, getStockMapForWarehouse } from '../helpers/warehouseStock.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 export const getOutputs = async (req, res, next) => {
   try {
+    const warehouseId = resolveWarehouseId(req);
+
+    if (!warehouseId) {
+      return errorResponse(res, 400, 'El parámetro warehouseId es obligatorio', 'MISSING_WAREHOUSE_ID');
+    }
+
     const { productId } = req.query;
-    const filter = {};
+    const filter = { warehouseId };
 
     if (productId) {
       if (!isValidObjectId(productId)) {
@@ -18,10 +32,12 @@ export const getOutputs = async (req, res, next) => {
     }
 
     const outputs = await Output.find(filter)
-      .populate('productId', 'nombre categoria precio existencia')
+      .populate('productId', 'nombre categoria precio stockMinimo')
+      .populate('warehouseId', 'nombre')
       .sort({ fecha: -1 });
 
     return successResponse(res, 200, 'Salidas obtenidas correctamente', {
+      warehouseId,
       total: outputs.length,
       outputs,
     });
@@ -32,6 +48,14 @@ export const getOutputs = async (req, res, next) => {
 
 export const registerOutput = async (req, res, next) => {
   try {
+    const warehouseId = requireWarehouseId(req, res);
+    if (!warehouseId) return;
+
+    const warehouse = await ensureWarehouseExists(warehouseId);
+    if (!warehouse) {
+      return errorResponse(res, 404, 'Bodega no encontrada', 'WAREHOUSE_NOT_FOUND');
+    }
+
     const { productId, cantidad, motivo } = req.body;
 
     if (!isValidObjectId(productId)) {
@@ -44,22 +68,27 @@ export const registerOutput = async (req, res, next) => {
       return errorResponse(res, 404, 'Producto no encontrado', 'PRODUCT_NOT_FOUND');
     }
 
-    if (product.existencia < cantidad) {
+    const stock = await decreaseStock(productId, warehouseId, cantidad);
+
+    if (!stock) {
       return errorResponse(res, 400, 'Existencia insuficiente para la salida', 'INSUFFICIENT_STOCK');
     }
 
-    product.existencia -= cantidad;
-    await product.save();
-
     const output = await Output.create({
       productId,
+      warehouseId,
       cantidad,
       motivo,
+      registradoPor: getAuditUser(req),
     });
+
+    const stockMap = await getStockMapForWarehouse(warehouseId, [productId]);
+    const [enriched] = attachWarehouseStock([product], stockMap, warehouseId);
 
     return successResponse(res, 201, 'Salida registrada correctamente', {
       output,
-      product,
+      product: enriched,
+      warehouse: { _id: warehouse._id, nombre: warehouse.nombre },
     });
   } catch (error) {
     next(error);

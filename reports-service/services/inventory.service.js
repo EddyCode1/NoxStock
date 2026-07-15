@@ -85,9 +85,10 @@ function readCategory(raw) {
     return 'Sin categoría';
 }
 
-export function normalizeProduct(raw = {}) {
+export function normalizeProduct(raw = {}, defaultMinStock = 5) {
     const stock = toNumber(raw.existencia ?? raw.stock ?? raw.quantity ?? raw.currentStock, 0);
     const price = toNumber(raw.precio ?? raw.price ?? raw.unitPrice ?? raw.cost ?? raw.valor, 0);
+    const minStock = toNumber(raw.stockMinimo ?? raw.minStock, defaultMinStock);
 
     return {
         id: raw._id ?? raw.id ?? raw.productId ?? raw.sku ?? null,
@@ -95,6 +96,7 @@ export function normalizeProduct(raw = {}) {
         category: readCategory(raw),
         stock,
         price,
+        minStock,
         raw,
     };
 }
@@ -113,13 +115,28 @@ export function normalizeOutput(raw = {}) {
     };
 }
 
-async function requestCollection(candidatePaths, preferredKeys, authHeader) {
+export function normalizeEntry(raw = {}) {
+    const quantity = toNumber(raw.cantidad ?? raw.quantity ?? raw.units ?? raw.amount, 0);
+    const productId = raw.productId?._id ?? raw.productId ?? raw.product?._id ?? raw.product?.id ?? null;
+
+    return {
+        id: raw._id ?? raw.id ?? null,
+        productId,
+        productName: raw.productName ?? raw.productId?.nombre ?? raw.product?.nombre ?? raw.product?.name ?? 'Producto',
+        quantity,
+        date: raw.fecha ?? raw.createdAt ?? raw.date ?? null,
+        raw,
+    };
+}
+
+async function requestCollection(candidatePaths, preferredKeys, authHeader, warehouseId) {
     let lastError = null;
     const headers = buildAuthHeaders(authHeader);
+    const params = warehouseId ? { warehouseId } : undefined;
 
     for (const path of candidatePaths) {
         try {
-            const response = await http.get(path, { headers });
+            const response = await http.get(path, { headers, params });
             return response.data;
         } catch (error) {
             lastError = error;
@@ -135,21 +152,21 @@ async function requestCollection(candidatePaths, preferredKeys, authHeader) {
 }
 
 function getMockProducts() {
-    return normalizeCollection(mockProducts, normalizeProduct);
+    return normalizeCollection(mockProducts, (raw) => normalizeProduct(raw, env.lowStockThreshold));
 }
 
 function getMockOutputs() {
     return normalizeCollection(mockOutputs, normalizeOutput);
 }
 
-export async function getProductsFromInventory(authHeader) {
+export async function getProductsFromInventory(authHeader, warehouseId) {
     if (env.useMockInventory) {
         return getMockProducts();
     }
 
     try {
-        const payload = await requestCollection(['/products'], ['products'], authHeader);
-        return extractCollection(payload, ['products']).map(normalizeProduct);
+        const payload = await requestCollection(['/products'], ['products'], authHeader, warehouseId);
+        return extractCollection(payload, ['products']).map((raw) => normalizeProduct(raw, env.lowStockThreshold));
     } catch (error) {
         if (env.allowMockFallback) {
             console.warn('[reports-service] Usando productos mock por fallo en inventory-service');
@@ -160,18 +177,36 @@ export async function getProductsFromInventory(authHeader) {
     }
 }
 
-export async function getOutputsFromInventory(authHeader) {
+export async function getOutputsFromInventory(authHeader, warehouseId) {
     if (env.useMockInventory) {
         return getMockOutputs();
     }
 
     try {
-        const payload = await requestCollection(['/outputs', '/movements/outputs', '/inventory/outputs'], ['outputs'], authHeader);
+        const payload = await requestCollection(['/outputs', '/movements/outputs', '/inventory/outputs'], ['outputs'], authHeader, warehouseId);
         return extractCollection(payload, ['outputs']).map(normalizeOutput);
     } catch (error) {
         if (env.allowMockFallback) {
             console.warn('[reports-service] Usando salidas mock por fallo en inventory-service');
             return getMockOutputs();
+        }
+
+        throw error;
+    }
+}
+
+export async function getEntriesFromInventory(authHeader, warehouseId) {
+    if (env.useMockInventory) {
+        return [];
+    }
+
+    try {
+        const payload = await requestCollection(['/entries', '/movements/entries', '/inventory/entries'], ['entries'], authHeader, warehouseId);
+        return extractCollection(payload, ['entries']).map(normalizeEntry);
+    } catch (error) {
+        if (env.allowMockFallback) {
+            console.warn('[reports-service] Entradas no disponibles, usando lista vacía');
+            return [];
         }
 
         throw error;

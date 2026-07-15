@@ -27,6 +27,16 @@ export const noxReportsService = {
     const response = await reportsClient.get('/reports/summary');
     return response.data;
   },
+
+  getRotationReport: async (params = {}) => {
+    const response = await reportsClient.get('/reports/rotation', { params });
+    return response.data;
+  },
+
+  getNoMovementReport: async (params = {}) => {
+    const response = await reportsClient.get('/reports/no-movement', { params });
+    return response.data;
+  },
 };
 
 export default noxReportsService;

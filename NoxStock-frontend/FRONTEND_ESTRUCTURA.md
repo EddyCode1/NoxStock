@@ -57,7 +57,7 @@ src/
 ## Credenciales de prueba
 
 ```
-admin@noxstock.com / NoxStock2026!
+admin@noxstock.com / 1234
 ```
 
 ## Nota sobre ft/zeta

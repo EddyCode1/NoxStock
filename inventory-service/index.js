@@ -3,17 +3,26 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { connectDB } from './config/db.js';
 import productRoutes from './routes/products.js';
 import categoryRoutes from './routes/categories.js';
 import entryRoutes from './routes/entries.js';
 import outputRoutes from './routes/outputs.js';
+import supplierRoutes from './routes/suppliers.js';
+import purchaseOrderRoutes from './routes/purchaseOrders.js';
+import customerRoutes from './routes/customers.js';
+import saleRoutes from './routes/sales.js';
+import warehouseRoutes from './routes/warehouses.js';
 import { notFoundHandler, errorHandler } from './middlewares/errorHandler.js';
 import { successResponse } from './helpers/response.js';
 import { seedInventory } from './seed/seedInventory.js';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -35,6 +44,11 @@ app.use('/products', productRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/entries', entryRoutes);
 app.use('/outputs', outputRoutes);
+app.use('/suppliers', supplierRoutes);
+app.use('/purchase-orders', purchaseOrderRoutes);
+app.use('/customers', customerRoutes);
+app.use('/sales', saleRoutes);
+app.use('/warehouses', warehouseRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

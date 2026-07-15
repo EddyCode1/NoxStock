@@ -1,4 +1,4 @@
-import backgroundImage from '../../shared/assets/img/img-login.png'
+import backgroundImage from '../../shared/assets/img/fondo_logon.avif'
 
 const AuthLayout = ({ children }) => {
   return (

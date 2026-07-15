@@ -30,7 +30,20 @@ cp reports-service/.env.example reports-service/.env
 
 **Importante:** los 3 servicios deben compartir el mismo `JWT_SECRET`.
 
-### 3. Instalar y levantar (3 terminales)
+### 3. Instalar y levantar todo (1 comando)
+
+Desde la raíz del monorepo:
+
+```bash
+cd NoxStock
+pnpm install
+pnpm setup:env
+pnpm start:all
+```
+
+Esto levanta auth (3001), inventario (3002), reportes (3003) y frontend (5173).
+
+### 3b. Instalar y levantar por separado (4 terminales)
 
 ```bash
 cd auth-service && pnpm install && pnpm dev
@@ -45,7 +58,7 @@ Al iniciar `auth-service` se crea automáticamente un usuario admin si no existe
 | Campo | Valor |
 |-------|-------|
 | Email | `admin@noxstock.com` |
-| Password | `NoxStock2026!` |
+| Password | `1234` |
 | Rol | `admin` |
 
 Variables opcionales en `auth-service/.env`:
@@ -53,8 +66,8 @@ Variables opcionales en `auth-service/.env`:
 ```env
 SEED_DATA=true
 MASTER_EMAIL=admin@noxstock.com
-MASTER_PASSWORD=NoxStock2026!
-SEED_USER_PASSWORD=NoxStock2026!
+MASTER_PASSWORD=1234
+SEED_USER_PASSWORD=1234
 ```
 
 ## Datos de prueba automáticos (seed)
@@ -69,21 +82,26 @@ Los datos viven en el repositorio (`auth-service/seed/` e `inventory-service/see
 | inventory-service | products | 10 productos |
 | inventory-service | entries | 10 entradas |
 | inventory-service | outputs | 10 salidas |
+| inventory-service | suppliers | 3 proveedores |
+| inventory-service | purchaseorders | 1 OC en borrador |
+| inventory-service | customers | 3 clientes |
+| inventory-service | sales | 1 venta en borrador |
+| inventory-service | warehouses | 3 bodegas con coordenadas |
 
 ### Usuarios de prueba
 
 | Email | Password | Rol |
 |-------|----------|-----|
-| admin@noxstock.com | NoxStock2026! | admin |
-| kevin@noxstock.com | NoxStock2026! | user |
-| eddy@noxstock.com | NoxStock2026! | user |
-| sajche@noxstock.com | NoxStock2026! | user |
-| ana@noxstock.com | NoxStock2026! | user |
-| luis@noxstock.com | NoxStock2026! | user |
-| maria@noxstock.com | NoxStock2026! | user |
-| carlos@noxstock.com | NoxStock2026! | user |
-| sofia@noxstock.com | NoxStock2026! | user |
-| pedro@noxstock.com | NoxStock2026! | user |
+| admin@noxstock.com | 1234 | admin |
+| kevin@noxstock.com | 1234 | user |
+| eddy@noxstock.com | 1234 | user |
+| sajche@noxstock.com | 1234 | user |
+| ana@noxstock.com | 1234 | user |
+| luis@noxstock.com | 1234 | user |
+| maria@noxstock.com | 1234 | user |
+| carlos@noxstock.com | 1234 | user |
+| sofia@noxstock.com | 1234 | user |
+| pedro@noxstock.com | 1234 | user |
 
 El seed es **idempotente**: si los datos ya existen, no los duplica.
 
@@ -94,7 +112,7 @@ El seed es **idempotente**: si los datos ya existen, no los duplica.
 ```bash
 curl -X POST http://localhost:3001/auth/login \
   -H "Content-Type: application/json" \
-  -d "{\"email\":\"admin@noxstock.com\",\"password\":\"NoxStock2026!\"}"
+  -d "{\"email\":\"admin@noxstock.com\",\"password\":\"1234\"}"
 ```
 
 Guarda el `token` de la respuesta.
@@ -168,3 +186,30 @@ Debe ser idéntico en `auth-service`, `inventory-service` y `reports-service`.
 - `GET /reports/top-products`
 - `GET /reports/categories`
 - `GET /reports/summary`
+- `GET /reports/rotation?days=30`
+- `GET /reports/no-movement?days=30`
+
+## Estado del backend (listo para lab)
+
+| Servicio | Estado | Notas |
+|----------|--------|-------|
+| auth-service | Listo | Login, register, JWT, seeds, rate limit |
+| inventory-service | Listo | CRUD, movimientos, proveedores, OC de compra, stock atómico `$inc` |
+| reports-service | Listo | Consume inventory por HTTP, mocks desactivados por defecto |
+
+### Smoke test rápido
+
+Ver `BACKEND_SMOKE.md` para probar el flujo completo en PowerShell.
+
+### Reglas de negocio inventory
+
+- Stock atómico con `$inc` en entradas/salidas
+- `DELETE /products/:id` bloqueado si hay movimientos (`409 PRODUCT_HAS_MOVEMENTS`)
+- `PUT /products/:id` no modifica `existencia` directamente
+- Proveedores: CRUD en `/suppliers`; no se elimina si tiene OC abiertas
+- Órdenes de compra: `/purchase-orders` con flujo `borrador → enviada → recibida`; al recibir se crean entradas automáticas
+- Auditoría: entradas/salidas registran `registradoPor` con el email del JWT
+- Clientes y ventas: `/customers` y `/sales` con flujo `borrador → confirmada`
+- Bodegas/sucursales: `/warehouses` con coordenadas para mapa Leaflet
+- **Stock por bodega**: modelo `WarehouseStock` (`productId` + `warehouseId` + `existencia`). Productos, entradas, salidas, ventas y OC requieren `warehouseId`. El total en `Product.existencia` es la suma de todas las bodegas.
+- **Reports-service**: alertas y reportes aceptan `?warehouseId=` para filtrar por sucursal.

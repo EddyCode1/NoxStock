@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useInventory } from '../hooks/useInventory';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 export default function MovementsPage() {
   const { products, entries, outputs, loadMovements, inventoryService } = useInventory();
+  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
   const [form, setForm] = useState({
     type: 'entry',
     productId: '',
@@ -49,7 +51,9 @@ export default function MovementsPage() {
     <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">Movimientos de inventario</h1>
-        <p className="text-sm text-gray-500">Entradas y salidas conectadas al backend</p>
+        <p className="text-sm text-gray-500">
+          Entradas y salidas en {selectedWarehouse?.nombre || 'la bodega activa'}
+        </p>
       </header>
 
       <form onSubmit={handleSubmit} className="grid max-w-2xl gap-3 rounded border p-4 md:grid-cols-2">
@@ -81,6 +85,7 @@ export default function MovementsPage() {
             {entries.map((entry) => (
               <li key={entry._id}>
                 {entry.productId?.nombre || 'Producto'} +{entry.cantidad}
+                {entry.registradoPor ? ` · ${entry.registradoPor}` : ''}
               </li>
             ))}
           </ul>
@@ -91,6 +96,7 @@ export default function MovementsPage() {
             {outputs.map((output) => (
               <li key={output._id}>
                 {output.productId?.nombre || 'Producto'} -{output.cantidad}
+                {output.registradoPor ? ` · ${output.registradoPor}` : ''}
               </li>
             ))}
           </ul>

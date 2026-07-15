@@ -1,19 +1,25 @@
 import Product from '../models/Product.js';
 import Entry from '../models/Entry.js';
 import Output from '../models/Output.js';
+import Supplier from '../models/Supplier.js';
+import PurchaseOrder from '../models/PurchaseOrder.js';
+import Customer from '../models/Customer.js';
+import Sale from '../models/Sale.js';
+import Warehouse from '../models/Warehouse.js';
+import WarehouseStock from '../models/WarehouseStock.js';
 import { shouldRunSeed } from './seedUtils.js';
 
 const PRODUCTS = [
-  { nombre: 'Laptop Dell Inspiron', categoria: 'Electronica', precio: 800, existencia: 15 },
-  { nombre: 'Mouse Logitech M185', categoria: 'Electronica', precio: 25, existencia: 50 },
-  { nombre: 'Teclado Mecanico RGB', categoria: 'Electronica', precio: 65, existencia: 30 },
-  { nombre: 'Monitor Samsung 24"', categoria: 'Electronica', precio: 220, existencia: 8 },
-  { nombre: 'Escritorio Ergonomico', categoria: 'Muebles', precio: 180, existencia: 5 },
-  { nombre: 'Silla de Oficina', categoria: 'Muebles', precio: 120, existencia: 12 },
-  { nombre: 'Cuaderno A4 100 hojas', categoria: 'Papeleria', precio: 3, existencia: 100 },
-  { nombre: 'Pack Boligrafos x12', categoria: 'Papeleria', precio: 5, existencia: 200 },
-  { nombre: 'Toner HP 85A', categoria: 'Consumibles', precio: 45, existencia: 6 },
-  { nombre: 'Cable HDMI 2m', categoria: 'Accesorios', precio: 12, existencia: 40 },
+  { nombre: 'Laptop Dell Inspiron', categoria: 'Electronica', precio: 800, existencia: 15, stockMinimo: 5 },
+  { nombre: 'Mouse Logitech M185', categoria: 'Electronica', precio: 25, existencia: 50, stockMinimo: 10 },
+  { nombre: 'Teclado Mecanico RGB', categoria: 'Electronica', precio: 65, existencia: 30, stockMinimo: 8 },
+  { nombre: 'Monitor Samsung 24"', categoria: 'Electronica', precio: 220, existencia: 8, stockMinimo: 10 },
+  { nombre: 'Escritorio Ergonomico', categoria: 'Muebles', precio: 180, existencia: 5, stockMinimo: 3 },
+  { nombre: 'Silla de Oficina', categoria: 'Muebles', precio: 120, existencia: 12, stockMinimo: 4 },
+  { nombre: 'Cuaderno A4 100 hojas', categoria: 'Papeleria', precio: 3, existencia: 100, stockMinimo: 20 },
+  { nombre: 'Pack Boligrafos x12', categoria: 'Papeleria', precio: 5, existencia: 200, stockMinimo: 30 },
+  { nombre: 'Toner HP 85A', categoria: 'Consumibles', precio: 45, existencia: 6, stockMinimo: 8 },
+  { nombre: 'Cable HDMI 2m', categoria: 'Accesorios', precio: 12, existencia: 40, stockMinimo: 15 },
 ];
 
 const ENTRIES = [
@@ -41,6 +47,114 @@ const OUTPUTS = [
   { productName: 'Toner HP 85A', cantidad: 2, motivo: 'SEED-OUTPUT-09 Venta servicio' },
   { productName: 'Cable HDMI 2m', cantidad: 8, motivo: 'SEED-OUTPUT-10 Venta accesorios' },
 ];
+
+const SUPPLIERS = [
+  {
+    nombre: 'TechSupply Guatemala',
+    contacto: 'Carlos Mendez',
+    email: 'ventas@techsupply.gt',
+    telefono: '502-555-0101',
+    categorias: ['Electronica', 'Accesorios'],
+  },
+  {
+    nombre: 'Papeleria Central',
+    contacto: 'Maria Lopez',
+    email: 'pedidos@papeleria-central.gt',
+    telefono: '502-555-0202',
+    categorias: ['Papeleria'],
+  },
+  {
+    nombre: 'Muebles Pro',
+    contacto: 'Jorge Ruiz',
+    email: 'compras@mueblespro.gt',
+    telefono: '502-555-0303',
+    categorias: ['Muebles'],
+  },
+];
+
+const PURCHASE_ORDERS = [
+  {
+    supplierName: 'TechSupply Guatemala',
+    warehouseName: 'Bodega Central Zona 10',
+    notas: 'SEED-OC-01 Pedido electronica Q3',
+    estado: 'borrador',
+    items: [
+      { productName: 'Mouse Logitech M185', cantidad: 15, precioUnitario: 18 },
+      { productName: 'Cable HDMI 2m', cantidad: 20, precioUnitario: 8 },
+    ],
+  },
+];
+
+const CUSTOMERS = [
+  {
+    nombre: 'Comercial El Faro',
+    email: 'compras@elfaro.gt',
+    telefono: '502-555-1101',
+    nit: '1234567-8',
+  },
+  {
+    nombre: 'Distribuidora Norte',
+    email: 'ventas@norte.gt',
+    telefono: '502-555-1102',
+    nit: '8765432-1',
+  },
+  {
+    nombre: 'Tienda Express',
+    email: 'pedidos@express.gt',
+    telefono: '502-555-1103',
+    nit: '5566778-9',
+  },
+];
+
+const SALES = [
+  {
+    customerName: 'Comercial El Faro',
+    warehouseName: 'Sucursal Mixco',
+    notas: 'SEED-VENTA-01 Pedido mostrador',
+    estado: 'borrador',
+    items: [{ productName: 'Pack Boligrafos x12', cantidad: 5, precioUnitario: 4.5 }],
+  },
+];
+
+const WAREHOUSES = [
+  {
+    nombre: 'Bodega Central Zona 10',
+    direccion: 'Zona 10, Ciudad de Guatemala',
+    lat: 14.6019,
+    lng: -90.5069,
+  },
+  {
+    nombre: 'Sucursal Mixco',
+    direccion: 'Mixco, Guatemala',
+    lat: 14.6333,
+    lng: -90.6064,
+  },
+  {
+    nombre: 'Sucursal Antigua',
+    direccion: 'Antigua Guatemala, Sacatepéquez',
+    lat: 14.5586,
+    lng: -90.7335,
+  },
+];
+
+async function seedStockMinimo() {
+  const defaultsByName = Object.fromEntries(PRODUCTS.map((p) => [p.nombre, p.stockMinimo ?? 5]));
+  const products = await Product.find({ nombre: { $in: Object.keys(defaultsByName) } });
+
+  let updated = 0;
+
+  for (const product of products) {
+    const targetMin = defaultsByName[product.nombre] ?? 5;
+
+    if (product.stockMinimo !== targetMin) {
+      product.stockMinimo = targetMin;
+      await product.save();
+      updated += 1;
+    }
+  }
+
+  return updated;
+}
 
 async function seedProducts() {
   let created = 0;
@@ -128,32 +242,273 @@ async function seedOutputs() {
   return created;
 }
 
+async function seedSuppliers() {
+  let created = 0;
+
+  for (const supplierData of SUPPLIERS) {
+    const exists = await Supplier.findOne({ nombre: supplierData.nombre });
+
+    if (exists) {
+      continue;
+    }
+
+    await Supplier.create(supplierData);
+    created += 1;
+  }
+
+  return created;
+}
+
+async function seedPurchaseOrders() {
+  let created = 0;
+
+  for (const orderData of PURCHASE_ORDERS) {
+    const exists = await PurchaseOrder.findOne({ notas: orderData.notas });
+
+    if (exists) {
+      continue;
+    }
+
+    const supplier = await Supplier.findOne({ nombre: orderData.supplierName });
+    const warehouse = await Warehouse.findOne({ nombre: orderData.warehouseName || 'Bodega Central Zona 10' });
+
+    if (!supplier) {
+      console.warn(`[inventory-service] Proveedor no encontrado para OC: ${orderData.supplierName}`);
+      continue;
+    }
+
+    if (!warehouse) {
+      console.warn(`[inventory-service] Bodega no encontrada para OC: ${orderData.warehouseName}`);
+      continue;
+    }
+
+    const items = [];
+
+    for (const itemData of orderData.items) {
+      const product = await Product.findOne({ nombre: itemData.productName });
+
+      if (!product) {
+        console.warn(`[inventory-service] Producto no encontrado para OC: ${itemData.productName}`);
+        continue;
+      }
+
+      items.push({
+        productId: product._id,
+        cantidad: itemData.cantidad,
+        precioUnitario: itemData.precioUnitario,
+      });
+    }
+
+    if (items.length === 0) {
+      continue;
+    }
+
+    await PurchaseOrder.create({
+      supplierId: supplier._id,
+      warehouseId: warehouse._id,
+      items,
+      notas: orderData.notas,
+      estado: orderData.estado,
+      creadoPor: 'seed',
+    });
+
+    created += 1;
+  }
+
+  return created;
+}
+
+async function seedCustomers() {
+  let created = 0;
+
+  for (const customerData of CUSTOMERS) {
+    const exists = await Customer.findOne({ nombre: customerData.nombre });
+
+    if (exists) {
+      continue;
+    }
+
+    await Customer.create(customerData);
+    created += 1;
+  }
+
+  return created;
+}
+
+async function seedSales() {
+  let created = 0;
+
+  for (const saleData of SALES) {
+    const exists = await Sale.findOne({ notas: saleData.notas });
+
+    if (exists) {
+      continue;
+    }
+
+    const customer = await Customer.findOne({ nombre: saleData.customerName });
+    const warehouse = await Warehouse.findOne({ nombre: saleData.warehouseName || 'Sucursal Mixco' });
+
+    if (!customer) {
+      console.warn(`[inventory-service] Cliente no encontrado para venta: ${saleData.customerName}`);
+      continue;
+    }
+
+    if (!warehouse) {
+      console.warn(`[inventory-service] Bodega no encontrada para venta: ${saleData.warehouseName}`);
+      continue;
+    }
+
+    const items = [];
+
+    for (const itemData of saleData.items) {
+      const product = await Product.findOne({ nombre: itemData.productName });
+
+      if (!product) {
+        console.warn(`[inventory-service] Producto no encontrado para venta: ${itemData.productName}`);
+        continue;
+      }
+
+      items.push({
+        productId: product._id,
+        cantidad: itemData.cantidad,
+        precioUnitario: itemData.precioUnitario,
+      });
+    }
+
+    if (items.length === 0) {
+      continue;
+    }
+
+    await Sale.create({
+      customerId: customer._id,
+      warehouseId: warehouse._id,
+      items,
+      notas: saleData.notas,
+      estado: saleData.estado,
+      creadoPor: 'seed',
+    });
+
+    created += 1;
+  }
+
+  return created;
+}
+
+async function seedWarehouses() {
+  let created = 0;
+
+  for (const warehouseData of WAREHOUSES) {
+    const exists = await Warehouse.findOne({ nombre: warehouseData.nombre });
+
+    if (exists) {
+      continue;
+    }
+
+    await Warehouse.create(warehouseData);
+    created += 1;
+  }
+
+  return created;
+}
+
+async function seedWarehouseStock() {
+  const warehouses = await Warehouse.find().sort({ nombre: 1 });
+
+  if (warehouses.length === 0) {
+    return 0;
+  }
+
+  const products = await Product.find();
+  const splits = [0.5, 0.3, 0.2];
+  let updated = 0;
+  const defaultWarehouseId = warehouses[0]._id;
+
+  for (const product of products) {
+    let assigned = 0;
+
+    for (let index = 0; index < warehouses.length; index += 1) {
+      const isLast = index === warehouses.length - 1;
+      const portion = isLast
+        ? Math.max(product.existencia - assigned, 0)
+        : Math.floor(product.existencia * (splits[index] || 0.1));
+
+      await WarehouseStock.findOneAndUpdate(
+        { productId: product._id, warehouseId: warehouses[index]._id },
+        { existencia: portion },
+        { upsert: true, new: true, runValidators: true }
+      );
+
+      assigned += portion;
+      updated += 1;
+    }
+  }
+
+  await Entry.updateMany({ warehouseId: { $exists: false } }, { warehouseId: defaultWarehouseId });
+  await Output.updateMany({ warehouseId: { $exists: false } }, { warehouseId: defaultWarehouseId });
+  await PurchaseOrder.updateMany({ warehouseId: { $exists: false } }, { warehouseId: defaultWarehouseId });
+  await Sale.updateMany(
+    { warehouseId: { $exists: false } },
+    { warehouseId: warehouses[1]?._id || defaultWarehouseId }
+  );
+
+  return updated;
+}
+
 export const seedInventory = async () => {
   if (!shouldRunSeed()) {
     return { skipped: true };
   }
 
   const productsCreated = await seedProducts();
+  const stockMinimoUpdated = await seedStockMinimo();
   const entriesCreated = await seedEntries();
   const outputsCreated = await seedOutputs();
+  const suppliersCreated = await seedSuppliers();
+  const purchaseOrdersCreated = await seedPurchaseOrders();
+  const customersCreated = await seedCustomers();
+  const salesCreated = await seedSales();
+  const warehousesCreated = await seedWarehouses();
+  const warehouseStockSynced = await seedWarehouseStock();
 
-  const [products, entries, outputs] = await Promise.all([
+  const [products, entries, outputs, suppliers, purchaseOrders, customers, sales, warehouses] = await Promise.all([
     Product.countDocuments(),
     Entry.countDocuments(),
     Output.countDocuments(),
+    Supplier.countDocuments(),
+    PurchaseOrder.countDocuments(),
+    Customer.countDocuments(),
+    Sale.countDocuments(),
+    Warehouse.countDocuments(),
   ]);
 
-  console.log(`[inventory-service] Productos: ${products} (nuevos: ${productsCreated})`);
+  console.log(`[inventory-service] Productos: ${products} (nuevos: ${productsCreated}, stockMinimo sync: ${stockMinimoUpdated})`);
   console.log(`[inventory-service] Entradas: ${entries} (nuevas: ${entriesCreated})`);
   console.log(`[inventory-service] Salidas: ${outputs} (nuevas: ${outputsCreated})`);
+  console.log(`[inventory-service] Proveedores: ${suppliers} (nuevos: ${suppliersCreated})`);
+  console.log(`[inventory-service] Ordenes de compra: ${purchaseOrders} (nuevas: ${purchaseOrdersCreated})`);
+  console.log(`[inventory-service] Clientes: ${customers} (nuevos: ${customersCreated})`);
+  console.log(`[inventory-service] Ventas: ${sales} (nuevas: ${salesCreated})`);
+  console.log(`[inventory-service] Bodegas: ${warehouses} (nuevas: ${warehousesCreated}, stock sync: ${warehouseStockSynced})`);
 
   return {
     products,
     entries,
     outputs,
+    suppliers,
+    purchaseOrders,
+    customers,
+    sales,
+    warehouses,
     productsCreated,
+    stockMinimoUpdated,
     entriesCreated,
     outputsCreated,
+    suppliersCreated,
+    purchaseOrdersCreated,
+    customersCreated,
+    salesCreated,
+    warehousesCreated,
+    warehouseStockSynced,
   };
 };
 

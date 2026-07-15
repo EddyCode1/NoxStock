@@ -7,6 +7,11 @@ const entrySchema = new mongoose.Schema(
       ref: 'Product',
       required: [true, 'El producto es obligatorio'],
     },
+    warehouseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Warehouse',
+      required: [true, 'La bodega es obligatoria'],
+    },
     cantidad: {
       type: Number,
       required: [true, 'La cantidad es obligatoria'],
@@ -16,6 +21,11 @@ const entrySchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: [200, 'El motivo no puede superar 200 caracteres'],
+      default: '',
+    },
+    registradoPor: {
+      type: String,
+      trim: true,
       default: '',
     },
     fecha: {
@@ -30,6 +40,7 @@ const entrySchema = new mongoose.Schema(
 );
 
 entrySchema.index({ productId: 1, fecha: -1 });
+entrySchema.index({ warehouseId: 1, fecha: -1 });
 
 const Entry = mongoose.model('Entry', entrySchema);
 

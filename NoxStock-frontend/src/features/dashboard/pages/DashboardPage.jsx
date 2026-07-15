@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import noxReportsService from '../../../shared/api/services/noxReportsService';
+import useWarehouseStore from '../../../shared/stores/useWarehouseStore';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -9,8 +10,14 @@ export default function DashboardPage() {
     lowStock: 0,
     outOfStock: 0,
   });
+  const selectedWarehouseId = useWarehouseStore((state) => state.selectedWarehouseId);
+  const selectedWarehouse = useWarehouseStore((state) => state.getSelectedWarehouse());
 
   useEffect(() => {
+    if (!selectedWarehouseId) {
+      return;
+    }
+
     const loadStats = async () => {
       try {
         const [productsData, lowStockData, outOfStockData] = await Promise.all([
@@ -30,13 +37,15 @@ export default function DashboardPage() {
     };
 
     loadStats();
-  }, []);
+  }, [selectedWarehouseId]);
 
   return (
     <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">Dashboard NoxStock</h1>
-        <p className="text-sm text-gray-500">Resumen parcial conectado a los microservicios</p>
+        <p className="text-sm text-gray-500">
+          Resumen de {selectedWarehouse?.nombre || 'la bodega seleccionada'}
+        </p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">
