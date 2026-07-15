@@ -9,52 +9,24 @@ export const authService = {
       // TEMP LOG: inspeccionar respuesta del backend en la consola del cliente
       console.debug('authService.login response.data:', response?.data)
       const data = response.data || {}
-      const token = data.token || data.accessToken || data.access_token
-      const userDetails =
-        data.data ||
-        data.userDetails ||
-        data.user ||
-        data.usuario ||
-        data.data?.user ||
-        data.data?.usuario ||
-        {}
+      
+      // El auth-service retorna { success, message, token, usuario }
+      const token = data.token
+      const userDetails = data.usuario || {}
 
       if (!token) {
         throw new Error('El backend no devolvió un token de autenticación')
       }
 
-      const userId =
-        userDetails.id ||
-        userDetails._id ||
-        userDetails.usuario_id ||
-        userDetails.user_id ||
-        null
+      const userId = userDetails._id || userDetails.id || null
 
       const user = {
         id: userId,
         _id: userId,
-        nombre: userDetails.nombre || userDetails.name || userDetails.username || '',
-        username: userDetails.username || userDetails.nombre || '',
+        nombre: userDetails.nombre || '',
         email: userDetails.email || '',
-        telefono:
-          userDetails.telefono || userDetails.phone || userDetails.contact_phone_number || '',
-        profilePicture: userDetails.profilePicture || null,
-        rol: userDetails.role || userDetails.rol || 'USER_ROLE',
-        // Normalize assigned restaurant: prefer object/string fields, fallback to helper
-        restauranteAsignado:
-          userDetails.restauranteAsignado ||
-          userDetails.restaurantAsignado ||
-          userDetails.restaurant_id ||
-          userDetails.restaurantId ||
-          // accept explicit id fields if backend sends them
-          userDetails.restauranteAsignadoId ||
-          userDetails.restaurante_asignado_id ||
-          null ||
-          getAssignedRestaurantId(userDetails),
-        restauranteAsignadoId: getAssignedRestaurantId(userDetails) ||
-          (typeof (userDetails.restauranteAsignado || userDetails.restaurantAsignado) === 'string'
-            ? (userDetails.restauranteAsignado || userDetails.restaurantAsignado)
-            : null),
+        rol: userDetails.role || 'USER',
+        activo: userDetails.activo !== false,
       }
 
       // TEMP LOG: inspeccionar usuario normalizado antes de devolverlo
@@ -78,9 +50,43 @@ export const authService = {
 
   register: async (userData) => {
     try {
-      const response = await authClient.post('/register', userData)
-      return { success: true, user: response.data }
+      // El backend solo necesita nombre, email y password
+      const response = await authClient.post('/register', {
+        nombre: userData.nombre,
+        email: userData.email,
+        password: userData.password,
+      })
+      console.debug('authService.register response.data:', response?.data)
+      const data = response.data || {}
+      
+      // El auth-service retorna { success, message, token, usuario }
+      const token = data.token
+      const userDetails = data.usuario || {}
+
+      if (!token) {
+        throw new Error('El backend no devolvió un token de autenticación')
+      }
+
+      const userId = userDetails._id || userDetails.id || null
+
+      const user = {
+        id: userId,
+        _id: userId,
+        nombre: userDetails.nombre || '',
+        email: userDetails.email || '',
+        rol: userDetails.role || 'USER',
+        activo: userDetails.activo !== false,
+      }
+
+      toast.success('Cuenta creada exitosamente')
+
+      return {
+        success: true,
+        token,
+        user,
+      }
     } catch (error) {
+      console.error('Register error:', error)
       toast.error(error.response?.data?.message || 'Error al registrar usuario')
       return { success: false, error: error.response?.data?.message || error.message }
     }
@@ -88,8 +94,8 @@ export const authService = {
 
   getCurrentUser: async (token) => {
     try {
-      const response = await authClient.get('/me', { headers: { Authorization: `Bearer ${token}` } })
-      return { success: true, user: response.data }
+      const response = await authClient.get('/perfil', { headers: { Authorization: `Bearer ${token}` } })
+      return { success: true, user: response.data.usuario }
     } catch (error) {
       return { success: false, error: 'Token inválido' }
     }
