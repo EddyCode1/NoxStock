@@ -10,6 +10,16 @@ const http = axios.create({
     },
 });
 
+function buildAuthHeaders(authHeader) {
+    if (!authHeader) {
+        return {};
+    }
+
+    return {
+        Authorization: authHeader.startsWith('Bearer ') ? authHeader : `Bearer ${authHeader}`,
+    };
+}
+
 function extractCollection(data, preferredKeys = []) {
     if (Array.isArray(data)) {
         return data;
@@ -19,15 +29,23 @@ function extractCollection(data, preferredKeys = []) {
         return [];
     }
 
-    for (const key of preferredKeys) {
-        if (Array.isArray(data[key])) {
-            return data[key];
-        }
+    const containers = [data];
+
+    if (data.data && typeof data.data === 'object') {
+        containers.push(data.data);
     }
 
-    for (const key of ['data', 'items', 'results', 'products', 'outputs', 'movements']) {
-        if (Array.isArray(data[key])) {
-            return data[key];
+    for (const container of containers) {
+        for (const key of preferredKeys) {
+            if (Array.isArray(container[key])) {
+                return container[key];
+            }
+        }
+
+        for (const key of ['products', 'outputs', 'entries', 'movements', 'items', 'results']) {
+            if (Array.isArray(container[key])) {
+                return container[key];
+            }
         }
     }
 
@@ -83,24 +101,25 @@ export function normalizeProduct(raw = {}) {
 
 export function normalizeOutput(raw = {}) {
     const quantity = toNumber(raw.cantidad ?? raw.quantity ?? raw.units ?? raw.amount, 0);
-    const productId = raw.productId ?? raw.product?._id ?? raw.product?.id ?? null;
+    const productId = raw.productId?._id ?? raw.productId ?? raw.product?._id ?? raw.product?.id ?? null;
 
     return {
         id: raw._id ?? raw.id ?? null,
         productId,
-        productName: raw.productName ?? raw.product?.nombre ?? raw.product?.name ?? 'Producto',
+        productName: raw.productName ?? raw.productId?.nombre ?? raw.product?.nombre ?? raw.product?.name ?? 'Producto',
         quantity,
         date: raw.fecha ?? raw.createdAt ?? raw.date ?? null,
         raw,
     };
 }
 
-async function requestCollection(candidatePaths) {
+async function requestCollection(candidatePaths, preferredKeys, authHeader) {
     let lastError = null;
+    const headers = buildAuthHeaders(authHeader);
 
     for (const path of candidatePaths) {
         try {
-            const response = await http.get(path);
+            const response = await http.get(path, { headers });
             return response.data;
         } catch (error) {
             lastError = error;
@@ -123,16 +142,17 @@ function getMockOutputs() {
     return normalizeCollection(mockOutputs, normalizeOutput);
 }
 
-export async function getProductsFromInventory() {
+export async function getProductsFromInventory(authHeader) {
     if (env.useMockInventory) {
         return getMockProducts();
     }
 
     try {
-        const payload = await requestCollection(['/products']);
+        const payload = await requestCollection(['/products'], ['products'], authHeader);
         return extractCollection(payload, ['products']).map(normalizeProduct);
     } catch (error) {
         if (env.allowMockFallback) {
+            console.warn('[reports-service] Usando productos mock por fallo en inventory-service');
             return getMockProducts();
         }
 
@@ -140,16 +160,17 @@ export async function getProductsFromInventory() {
     }
 }
 
-export async function getOutputsFromInventory() {
+export async function getOutputsFromInventory(authHeader) {
     if (env.useMockInventory) {
         return getMockOutputs();
     }
 
     try {
-        const payload = await requestCollection(['/outputs', '/movements/outputs', '/inventory/outputs']);
-        return extractCollection(payload, ['outputs', 'movements']).map(normalizeOutput);
+        const payload = await requestCollection(['/outputs', '/movements/outputs', '/inventory/outputs'], ['outputs'], authHeader);
+        return extractCollection(payload, ['outputs']).map(normalizeOutput);
     } catch (error) {
         if (env.allowMockFallback) {
+            console.warn('[reports-service] Usando salidas mock por fallo en inventory-service');
             return getMockOutputs();
         }
 

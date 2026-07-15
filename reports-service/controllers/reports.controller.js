@@ -9,9 +9,10 @@ import {
 
 export async function getTopProductsReport(req, res, next) {
     try {
+        const authHeader = req.headers.authorization;
         const [products, outputs] = await Promise.all([
-            getProductsFromInventory(),
-            getOutputsFromInventory(),
+            getProductsFromInventory(authHeader),
+            getOutputsFromInventory(authHeader),
         ]);
 
         const productLookup = buildProductLookup(products);
@@ -29,13 +30,12 @@ export async function getTopProductsReport(req, res, next) {
 
 export async function getCategoriesReport(req, res, next) {
     try {
-        const products = await getProductsFromInventory();
-        const categories = groupProductsByCategory(products);
+        const products = await getProductsFromInventory(req.headers.authorization);
 
         return res.status(200).json({
             success: true,
-            totalCategories: categories.length,
-            data: categories,
+            totalCategories: groupProductsByCategory(products).length,
+            data: groupProductsByCategory(products),
         });
     } catch (error) {
         return next(error);
@@ -44,9 +44,10 @@ export async function getCategoriesReport(req, res, next) {
 
 export async function getSummaryReport(req, res, next) {
     try {
+        const authHeader = req.headers.authorization;
         const [products, outputs] = await Promise.all([
-            getProductsFromInventory(),
-            getOutputsFromInventory(),
+            getProductsFromInventory(authHeader),
+            getOutputsFromInventory(authHeader),
         ]);
 
         const categories = groupProductsByCategory(products);

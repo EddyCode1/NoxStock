@@ -7,7 +7,7 @@ export async function getLowStockAlerts(req, res, next) {
             ? Number(req.query.threshold)
             : env.lowStockThreshold;
 
-        const products = await getProductsFromInventory();
+        const products = await getProductsFromInventory(req.headers.authorization);
         const lowStockProducts = products.filter((product) => product.stock > 0 && product.stock <= threshold);
 
         return res.status(200).json({
@@ -23,7 +23,7 @@ export async function getLowStockAlerts(req, res, next) {
 
 export async function getOutOfStockAlerts(req, res, next) {
     try {
-        const products = await getProductsFromInventory();
+        const products = await getProductsFromInventory(req.headers.authorization);
         const outOfStockProducts = products.filter((product) => product.stock === 0);
 
         return res.status(200).json({
