@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import noxReportsService from '../../shared/api/services/noxReportsService';
+import noxReportsService from '../../../shared/api/services/noxReportsService';
 
 export default function ReportsPage() {
   const [summary, setSummary] = useState(null);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import inventoryService from '../../shared/api/services/inventoryService';
-import noxReportsService from '../../shared/api/services/noxReportsService';
+import inventoryService from '../../../shared/api/services/inventoryService';
+import noxReportsService from '../../../shared/api/services/noxReportsService';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
