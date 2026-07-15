@@ -34,7 +34,9 @@ Este es el servicio responsable de la administración de productos y movimientos
 - `GET /categories` - Obtener todas las categorías
 
 ### Movimientos de Inventario
+- `GET /entries` - Obtener historial de entradas
 - `POST /entries` - Registrar entrada de inventario
+- `GET /outputs` - Obtener historial de salidas
 - `POST /outputs` - Registrar salida de inventario
 
 ## Variables de Entorno
@@ -101,3 +103,4 @@ inventory-service/
 - Endpoints activos: `/health`, `/products`, `/categories`, `/entries`, `/outputs`
 - Búsqueda disponible en `GET /products?q=nombre&categoria=valor`
 - Movimientos de inventario con validación de stock y transacciones MongoDB
+- Guía para frontend: ver `API_FRONTEND.md`
