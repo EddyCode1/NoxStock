@@ -10,8 +10,8 @@ import LoginPage from '../../features/auth/pages/LoginPage';
 import RegisterPage from '../../features/auth/pages/RegisterPage';
 import NotFoundPage from '../../features/common/pages/NotFoundPage';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
-import { ProductsPage, ProductFormPage, MovementsPage, SuppliersPage, PurchaseOrdersPage } from '../../features/inventory';
-import { ReportsPage, AlertsPage } from '../../features/reports';
+import { ProductsPage, ProductFormPage, MovementsPage, SuppliersPage, PurchaseOrdersPage, CustomersPage, SalesPage } from '../../features/inventory';
+import { ReportsPage, AlertsPage, InventoryInsightsPage } from '../../features/reports';
 
 const router = createBrowserRouter([
   {
@@ -50,7 +50,10 @@ const router = createBrowserRouter([
       { path: 'inventory/movements', element: <MovementsPage /> },
       { path: 'inventory/suppliers', element: <SuppliersPage /> },
       { path: 'inventory/purchase-orders', element: <PurchaseOrdersPage /> },
+      { path: 'inventory/customers', element: <CustomersPage /> },
+      { path: 'inventory/sales', element: <SalesPage /> },
       { path: 'reports', element: <ReportsPage /> },
+      { path: 'reports/insights', element: <InventoryInsightsPage /> },
       { path: 'alerts', element: <AlertsPage /> },
     ],
   },

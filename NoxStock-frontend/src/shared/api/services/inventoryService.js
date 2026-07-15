@@ -87,6 +87,36 @@ export const inventoryService = {
     const response = await inventoryClient.post(`/purchase-orders/${id}/cancel`);
     return unwrap(response);
   },
+
+  getCustomers: async (params = {}) => {
+    const response = await inventoryClient.get('/customers', { params });
+    return unwrap(response);
+  },
+
+  createCustomer: async (payload) => {
+    const response = await inventoryClient.post('/customers', payload);
+    return unwrap(response);
+  },
+
+  getSales: async (params = {}) => {
+    const response = await inventoryClient.get('/sales', { params });
+    return unwrap(response);
+  },
+
+  createSale: async (payload) => {
+    const response = await inventoryClient.post('/sales', payload);
+    return unwrap(response);
+  },
+
+  confirmSale: async (id) => {
+    const response = await inventoryClient.post(`/sales/${id}/confirm`);
+    return unwrap(response);
+  },
+
+  cancelSale: async (id) => {
+    const response = await inventoryClient.post(`/sales/${id}/cancel`);
+    return unwrap(response);
+  },
 };
 
 export default inventoryService;

@@ -55,6 +55,22 @@ Invoke-RestMethod -Uri "http://localhost:3002/purchase-orders/$orderId/send" -Me
 Invoke-RestMethod -Uri "http://localhost:3002/purchase-orders/$orderId/receive" -Method POST -Headers $headers
 ```
 
+## 7. Clientes y venta
+
+```powershell
+$customers = Invoke-RestMethod -Uri "http://localhost:3002/customers" -Headers $headers
+$sales = Invoke-RestMethod -Uri "http://localhost:3002/sales" -Headers $headers
+$saleId = $sales.data.sales[0]._id
+Invoke-RestMethod -Uri "http://localhost:3002/sales/$saleId/confirm" -Method POST -Headers $headers
+```
+
+## 8. Reportes rotación y sin movimiento
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:3003/reports/rotation?days=30" -Headers $headers
+Invoke-RestMethod -Uri "http://localhost:3003/reports/no-movement?days=30" -Headers $headers
+```
+
 ## Criterio de éxito
 
 - Login devuelve `token`
@@ -64,3 +80,5 @@ Invoke-RestMethod -Uri "http://localhost:3002/purchase-orders/$orderId/receive" 
 - Si inventory-service está apagado y `ALLOW_MOCK_FALLBACK=false`, reports debe fallar con error explícito
 - `/suppliers` devuelve al menos 1 proveedor con seeds activos
 - Flujo OC `send` + `receive` devuelve `estado: recibida` y crea entradas
+- `/customers` devuelve al menos 1 cliente; venta `confirm` devuelve `estado: confirmada`
+- `/reports/rotation` y `/reports/no-movement` devuelven `success: true`

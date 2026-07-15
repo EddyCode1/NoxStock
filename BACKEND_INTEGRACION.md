@@ -84,6 +84,8 @@ Los datos viven en el repositorio (`auth-service/seed/` e `inventory-service/see
 | inventory-service | outputs | 10 salidas |
 | inventory-service | suppliers | 3 proveedores |
 | inventory-service | purchaseorders | 1 OC en borrador |
+| inventory-service | customers | 3 clientes |
+| inventory-service | sales | 1 venta en borrador |
 
 ### Usuarios de prueba
 
@@ -183,6 +185,8 @@ Debe ser idéntico en `auth-service`, `inventory-service` y `reports-service`.
 - `GET /reports/top-products`
 - `GET /reports/categories`
 - `GET /reports/summary`
+- `GET /reports/rotation?days=30`
+- `GET /reports/no-movement?days=30`
 
 ## Estado del backend (listo para lab)
 
@@ -204,3 +208,4 @@ Ver `BACKEND_SMOKE.md` para probar el flujo completo en PowerShell.
 - Proveedores: CRUD en `/suppliers`; no se elimina si tiene OC abiertas
 - Órdenes de compra: `/purchase-orders` con flujo `borrador → enviada → recibida`; al recibir se crean entradas automáticas
 - Auditoría: entradas/salidas registran `registradoPor` con el email del JWT
+- Clientes y ventas: `/customers` y `/sales` con flujo `borrador → confirmada`

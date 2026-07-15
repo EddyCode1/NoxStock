@@ -1,8 +1,10 @@
 import { env } from '../config/env.js';
-import { getOutputsFromInventory, getProductsFromInventory } from '../services/inventory.service.js';
+import { getEntriesFromInventory, getOutputsFromInventory, getProductsFromInventory } from '../services/inventory.service.js';
 import {
     buildProductLookup,
     buildTopProductsFromOutputs,
+    buildRotationReport,
+    buildNoMovementReport,
     groupProductsByCategory,
     isLowStock,
     sumBy,
@@ -81,6 +83,57 @@ export async function getSummaryReport(req, res, next) {
                 categories: categories.slice(0, 10),
                 topProducts,
             },
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export async function getRotationReport(req, res, next) {
+    try {
+        const days = Number.isFinite(Number(req.query.days))
+            ? Number(req.query.days)
+            : env.reportMovementDays;
+        const authHeader = req.headers.authorization;
+
+        const [products, entries, outputs] = await Promise.all([
+            getProductsFromInventory(authHeader),
+            getEntriesFromInventory(authHeader),
+            getOutputsFromInventory(authHeader),
+        ]);
+
+        const data = buildRotationReport(products, entries, outputs, days);
+
+        return res.status(200).json({
+            success: true,
+            days,
+            count: data.length,
+            data,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export async function getNoMovementReport(req, res, next) {
+    try {
+        const days = Number.isFinite(Number(req.query.days))
+            ? Number(req.query.days)
+            : env.reportMovementDays;
+        const authHeader = req.headers.authorization;
+
+        const [products, outputs] = await Promise.all([
+            getProductsFromInventory(authHeader),
+            getOutputsFromInventory(authHeader),
+        ]);
+
+        const data = buildNoMovementReport(products, outputs, days);
+
+        return res.status(200).json({
+            success: true,
+            days,
+            count: data.length,
+            data,
         });
     } catch (error) {
         return next(error);

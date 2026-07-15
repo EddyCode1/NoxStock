@@ -115,6 +115,20 @@ export function normalizeOutput(raw = {}) {
     };
 }
 
+export function normalizeEntry(raw = {}) {
+    const quantity = toNumber(raw.cantidad ?? raw.quantity ?? raw.units ?? raw.amount, 0);
+    const productId = raw.productId?._id ?? raw.productId ?? raw.product?._id ?? raw.product?.id ?? null;
+
+    return {
+        id: raw._id ?? raw.id ?? null,
+        productId,
+        productName: raw.productName ?? raw.productId?.nombre ?? raw.product?.nombre ?? raw.product?.name ?? 'Producto',
+        quantity,
+        date: raw.fecha ?? raw.createdAt ?? raw.date ?? null,
+        raw,
+    };
+}
+
 async function requestCollection(candidatePaths, preferredKeys, authHeader) {
     let lastError = null;
     const headers = buildAuthHeaders(authHeader);
@@ -174,6 +188,24 @@ export async function getOutputsFromInventory(authHeader) {
         if (env.allowMockFallback) {
             console.warn('[reports-service] Usando salidas mock por fallo en inventory-service');
             return getMockOutputs();
+        }
+
+        throw error;
+    }
+}
+
+export async function getEntriesFromInventory(authHeader) {
+    if (env.useMockInventory) {
+        return [];
+    }
+
+    try {
+        const payload = await requestCollection(['/entries', '/movements/entries', '/inventory/entries'], ['entries'], authHeader);
+        return extractCollection(payload, ['entries']).map(normalizeEntry);
+    } catch (error) {
+        if (env.allowMockFallback) {
+            console.warn('[reports-service] Entradas no disponibles, usando lista vacía');
+            return [];
         }
 
         throw error;

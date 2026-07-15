@@ -3,6 +3,8 @@ import Entry from '../models/Entry.js';
 import Output from '../models/Output.js';
 import Supplier from '../models/Supplier.js';
 import PurchaseOrder from '../models/PurchaseOrder.js';
+import Customer from '../models/Customer.js';
+import Sale from '../models/Sale.js';
 import { shouldRunSeed } from './seedUtils.js';
 
 const PRODUCTS = [
@@ -77,6 +79,36 @@ const PURCHASE_ORDERS = [
       { productName: 'Mouse Logitech M185', cantidad: 15, precioUnitario: 18 },
       { productName: 'Cable HDMI 2m', cantidad: 20, precioUnitario: 8 },
     ],
+  },
+];
+
+const CUSTOMERS = [
+  {
+    nombre: 'Comercial El Faro',
+    email: 'compras@elfaro.gt',
+    telefono: '502-555-1101',
+    nit: '1234567-8',
+  },
+  {
+    nombre: 'Distribuidora Norte',
+    email: 'ventas@norte.gt',
+    telefono: '502-555-1102',
+    nit: '8765432-1',
+  },
+  {
+    nombre: 'Tienda Express',
+    email: 'pedidos@express.gt',
+    telefono: '502-555-1103',
+    nit: '5566778-9',
+  },
+];
+
+const SALES = [
+  {
+    customerName: 'Comercial El Faro',
+    notas: 'SEED-VENTA-01 Pedido mostrador',
+    estado: 'borrador',
+    items: [{ productName: 'Pack Boligrafos x12', cantidad: 5, precioUnitario: 4.5 }],
   },
 ];
 
@@ -254,6 +286,75 @@ async function seedPurchaseOrders() {
   return created;
 }
 
+async function seedCustomers() {
+  let created = 0;
+
+  for (const customerData of CUSTOMERS) {
+    const exists = await Customer.findOne({ nombre: customerData.nombre });
+
+    if (exists) {
+      continue;
+    }
+
+    await Customer.create(customerData);
+    created += 1;
+  }
+
+  return created;
+}
+
+async function seedSales() {
+  let created = 0;
+
+  for (const saleData of SALES) {
+    const exists = await Sale.findOne({ notas: saleData.notas });
+
+    if (exists) {
+      continue;
+    }
+
+    const customer = await Customer.findOne({ nombre: saleData.customerName });
+
+    if (!customer) {
+      console.warn(`[inventory-service] Cliente no encontrado para venta: ${saleData.customerName}`);
+      continue;
+    }
+
+    const items = [];
+
+    for (const itemData of saleData.items) {
+      const product = await Product.findOne({ nombre: itemData.productName });
+
+      if (!product) {
+        console.warn(`[inventory-service] Producto no encontrado para venta: ${itemData.productName}`);
+        continue;
+      }
+
+      items.push({
+        productId: product._id,
+        cantidad: itemData.cantidad,
+        precioUnitario: itemData.precioUnitario,
+      });
+    }
+
+    if (items.length === 0) {
+      continue;
+    }
+
+    await Sale.create({
+      customerId: customer._id,
+      items,
+      notas: saleData.notas,
+      estado: saleData.estado,
+      creadoPor: 'seed',
+    });
+
+    created += 1;
+  }
+
+  return created;
+}
+
 export const seedInventory = async () => {
   if (!shouldRunSeed()) {
     return { skipped: true };
@@ -265,13 +366,17 @@ export const seedInventory = async () => {
   const outputsCreated = await seedOutputs();
   const suppliersCreated = await seedSuppliers();
   const purchaseOrdersCreated = await seedPurchaseOrders();
+  const customersCreated = await seedCustomers();
+  const salesCreated = await seedSales();
 
-  const [products, entries, outputs, suppliers, purchaseOrders] = await Promise.all([
+  const [products, entries, outputs, suppliers, purchaseOrders, customers, sales] = await Promise.all([
     Product.countDocuments(),
     Entry.countDocuments(),
     Output.countDocuments(),
     Supplier.countDocuments(),
     PurchaseOrder.countDocuments(),
+    Customer.countDocuments(),
+    Sale.countDocuments(),
   ]);
 
   console.log(`[inventory-service] Productos: ${products} (nuevos: ${productsCreated}, stockMinimo sync: ${stockMinimoUpdated})`);
@@ -279,6 +384,8 @@ export const seedInventory = async () => {
   console.log(`[inventory-service] Salidas: ${outputs} (nuevas: ${outputsCreated})`);
   console.log(`[inventory-service] Proveedores: ${suppliers} (nuevos: ${suppliersCreated})`);
   console.log(`[inventory-service] Ordenes de compra: ${purchaseOrders} (nuevas: ${purchaseOrdersCreated})`);
+  console.log(`[inventory-service] Clientes: ${customers} (nuevos: ${customersCreated})`);
+  console.log(`[inventory-service] Ventas: ${sales} (nuevas: ${salesCreated})`);
 
   return {
     products,
@@ -286,12 +393,16 @@ export const seedInventory = async () => {
     outputs,
     suppliers,
     purchaseOrders,
+    customers,
+    sales,
     productsCreated,
     stockMinimoUpdated,
     entriesCreated,
     outputsCreated,
     suppliersCreated,
     purchaseOrdersCreated,
+    customersCreated,
+    salesCreated,
   };
 };
 

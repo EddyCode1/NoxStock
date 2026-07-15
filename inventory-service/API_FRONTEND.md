@@ -39,10 +39,12 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
 | **Filtro de categorías** | `GET /categories` | Dropdown/select en la lista |
 | **Proveedores** | `GET/POST/PUT/DELETE /suppliers` | CRUD de proveedores |
 | **Órdenes de compra** | `GET/POST/PUT /purchase-orders` + acciones | Flujo OC: borrador → enviada → recibida |
+| **Clientes** | `GET/POST/PUT/DELETE /customers` | CRUD de clientes |
+| **Ventas / pedidos** | `GET/POST/PUT /sales` + acciones | Flujo venta: borrador → confirmada |
 
 ---
 
-## Endpoints completos (22)
+## Endpoints completos (32)
 
 | Método | Ruta | Auth | Body / Query |
 |--------|------|------|--------------|
@@ -69,6 +71,17 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
 | `POST` | `/purchase-orders/:id/send` | Sí | borrador → enviada |
 | `POST` | `/purchase-orders/:id/receive` | Sí | enviada → recibida (crea entradas + stock) |
 | `POST` | `/purchase-orders/:id/cancel` | Sí | borrador o enviada → cancelada |
+| `GET` | `/customers` | Sí | `?q=nombre&activo=true|false` |
+| `GET` | `/customers/:id` | Sí | — |
+| `POST` | `/customers` | Sí | `{ nombre, email?, telefono?, nit?, activo? }` |
+| `PUT` | `/customers/:id` | Sí | campos opcionales del cliente |
+| `DELETE` | `/customers/:id` | Sí | — (409 si tiene ventas en borrador) |
+| `GET` | `/sales` | Sí | `?estado=borrador|confirmada|cancelada&customerId=` |
+| `GET` | `/sales/:id` | Sí | — |
+| `POST` | `/sales` | Sí | `{ customerId, items[{productId, cantidad, precioUnitario}], notas? }` |
+| `PUT` | `/sales/:id` | Sí | solo en estado `borrador` |
+| `POST` | `/sales/:id/confirm` | Sí | borrador → confirmada (crea salidas + stock) |
+| `POST` | `/sales/:id/cancel` | Sí | borrador → cancelada |
 
 ---
 
@@ -123,6 +136,7 @@ Error:
 7. Órdenes de compra: solo `borrador` es editable; `receive` genera entradas automáticas con motivo `OC-{id} recepción {proveedor}`.
 8. Cada producto tiene `stockMinimo` (default `5`). `GET /products?bajoStock=true` filtra por umbral individual.
 9. Entradas y salidas guardan `registradoPor` (email del usuario JWT) para auditoría.
+10. Ventas: solo `borrador` es editable; `confirm` genera salidas automáticas con motivo `VENTA-{id} {cliente}`.
 
 ---
 

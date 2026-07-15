@@ -11,6 +11,8 @@ En desarrollo integrado consume `inventory-service` en tiempo real. Los mocks so
 - Mostrar los productos más vendidos (según las salidas registradas)
 - Mostrar un resumen del inventario por categoría
 - Generar un reporte general del inventario
+- Reporte de rotación de productos (entradas + salidas por periodo)
+- Reporte de productos sin movimiento reciente
 
 ## Endpoints Mínimos
 
@@ -22,6 +24,8 @@ En desarrollo integrado consume `inventory-service` en tiempo real. Los mocks so
 - `GET /reports/top-products` - Productos más vendidos
 - `GET /reports/categories` - Resumen por categoría
 - `GET /reports/summary` - Reporte general del inventario
+- `GET /reports/rotation?days=30` - Rotación por producto
+- `GET /reports/no-movement?days=30` - Productos sin salidas recientes
 
 ## Variables de Entorno
 
@@ -33,6 +37,7 @@ JWT_SECRET=noxstock_jwt_secret_dev_2026
 NODE_ENV=development
 INVENTORY_SERVICE_URL=http://localhost:3002
 LOW_STOCK_THRESHOLD=5
+REPORT_MOVEMENT_DAYS=30
 CORS_ORIGIN=*
 REQUEST_TIMEOUT_MS=8000
 USE_MOCK_INVENTORY=false
