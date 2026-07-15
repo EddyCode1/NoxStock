@@ -41,10 +41,11 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
 | **Órdenes de compra** | `GET/POST/PUT /purchase-orders` + acciones | Flujo OC: borrador → enviada → recibida |
 | **Clientes** | `GET/POST/PUT/DELETE /customers` | CRUD de clientes |
 | **Ventas / pedidos** | `GET/POST/PUT /sales` + acciones | Flujo venta: borrador → confirmada |
+| **Bodegas / sucursales** | `GET/POST/PUT/DELETE /warehouses` | Ubicación con lat/lng en mapa |
 
 ---
 
-## Endpoints completos (32)
+## Endpoints completos (38)
 
 | Método | Ruta | Auth | Body / Query |
 |--------|------|------|--------------|
@@ -82,6 +83,11 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
 | `PUT` | `/sales/:id` | Sí | solo en estado `borrador` |
 | `POST` | `/sales/:id/confirm` | Sí | borrador → confirmada (crea salidas + stock) |
 | `POST` | `/sales/:id/cancel` | Sí | borrador → cancelada |
+| `GET` | `/warehouses` | Sí | `?q=nombre&activo=true|false` |
+| `GET` | `/warehouses/:id` | Sí | — |
+| `POST` | `/warehouses` | Sí | `{ nombre, direccion?, lat, lng, activo? }` |
+| `PUT` | `/warehouses/:id` | Sí | campos opcionales |
+| `DELETE` | `/warehouses/:id` | Sí | — |
 
 ---
 
@@ -137,6 +143,7 @@ Error:
 8. Cada producto tiene `stockMinimo` (default `5`). `GET /products?bajoStock=true` filtra por umbral individual.
 9. Entradas y salidas guardan `registradoPor` (email del usuario JWT) para auditoría.
 10. Ventas: solo `borrador` es editable; `confirm` genera salidas automáticas con motivo `VENTA-{id} {cliente}`.
+11. Bodegas requieren `lat` y `lng`; el frontend usa Leaflet + OpenStreetMap (sin API key).
 
 ---
 

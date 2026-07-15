@@ -9,6 +9,8 @@ const links = [
   { to: '/loby/inventory/purchase-orders', label: 'Órdenes de compra' },
   { to: '/loby/inventory/customers', label: 'Clientes' },
   { to: '/loby/inventory/sales', label: 'Ventas' },
+  { to: '/loby/inventory/warehouses', label: 'Bodegas' },
+  { to: '/loby/inventory/warehouses/map', label: 'Mapa bodegas' },
   { to: '/loby/reports', label: 'Reportes' },
   { to: '/loby/reports/insights', label: 'Análisis inventario' },
   { to: '/loby/alerts', label: 'Alertas' },

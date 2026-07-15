@@ -117,6 +117,16 @@ export const inventoryService = {
     const response = await inventoryClient.post(`/sales/${id}/cancel`);
     return unwrap(response);
   },
+
+  getWarehouses: async (params = {}) => {
+    const response = await inventoryClient.get('/warehouses', { params });
+    return unwrap(response);
+  },
+
+  createWarehouse: async (payload) => {
+    const response = await inventoryClient.post('/warehouses', payload);
+    return unwrap(response);
+  },
 };
 
 export default inventoryService;

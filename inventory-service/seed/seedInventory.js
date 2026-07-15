@@ -5,6 +5,7 @@ import Supplier from '../models/Supplier.js';
 import PurchaseOrder from '../models/PurchaseOrder.js';
 import Customer from '../models/Customer.js';
 import Sale from '../models/Sale.js';
+import Warehouse from '../models/Warehouse.js';
 import { shouldRunSeed } from './seedUtils.js';
 
 const PRODUCTS = [
@@ -109,6 +110,27 @@ const SALES = [
     notas: 'SEED-VENTA-01 Pedido mostrador',
     estado: 'borrador',
     items: [{ productName: 'Pack Boligrafos x12', cantidad: 5, precioUnitario: 4.5 }],
+  },
+];
+
+const WAREHOUSES = [
+  {
+    nombre: 'Bodega Central Zona 10',
+    direccion: 'Zona 10, Ciudad de Guatemala',
+    lat: 14.6019,
+    lng: -90.5069,
+  },
+  {
+    nombre: 'Sucursal Mixco',
+    direccion: 'Mixco, Guatemala',
+    lat: 14.6333,
+    lng: -90.6064,
+  },
+  {
+    nombre: 'Sucursal Antigua',
+    direccion: 'Antigua Guatemala, Sacatepéquez',
+    lat: 14.5586,
+    lng: -90.7335,
   },
 ];
 
@@ -355,6 +377,23 @@ async function seedSales() {
   return created;
 }
 
+async function seedWarehouses() {
+  let created = 0;
+
+  for (const warehouseData of WAREHOUSES) {
+    const exists = await Warehouse.findOne({ nombre: warehouseData.nombre });
+
+    if (exists) {
+      continue;
+    }
+
+    await Warehouse.create(warehouseData);
+    created += 1;
+  }
+
+  return created;
+}
+
 export const seedInventory = async () => {
   if (!shouldRunSeed()) {
     return { skipped: true };
@@ -368,8 +407,9 @@ export const seedInventory = async () => {
   const purchaseOrdersCreated = await seedPurchaseOrders();
   const customersCreated = await seedCustomers();
   const salesCreated = await seedSales();
+  const warehousesCreated = await seedWarehouses();
 
-  const [products, entries, outputs, suppliers, purchaseOrders, customers, sales] = await Promise.all([
+  const [products, entries, outputs, suppliers, purchaseOrders, customers, sales, warehouses] = await Promise.all([
     Product.countDocuments(),
     Entry.countDocuments(),
     Output.countDocuments(),
@@ -377,6 +417,7 @@ export const seedInventory = async () => {
     PurchaseOrder.countDocuments(),
     Customer.countDocuments(),
     Sale.countDocuments(),
+    Warehouse.countDocuments(),
   ]);
 
   console.log(`[inventory-service] Productos: ${products} (nuevos: ${productsCreated}, stockMinimo sync: ${stockMinimoUpdated})`);
@@ -386,6 +427,7 @@ export const seedInventory = async () => {
   console.log(`[inventory-service] Ordenes de compra: ${purchaseOrders} (nuevas: ${purchaseOrdersCreated})`);
   console.log(`[inventory-service] Clientes: ${customers} (nuevos: ${customersCreated})`);
   console.log(`[inventory-service] Ventas: ${sales} (nuevas: ${salesCreated})`);
+  console.log(`[inventory-service] Bodegas: ${warehouses} (nuevas: ${warehousesCreated})`);
 
   return {
     products,
@@ -395,6 +437,7 @@ export const seedInventory = async () => {
     purchaseOrders,
     customers,
     sales,
+    warehouses,
     productsCreated,
     stockMinimoUpdated,
     entriesCreated,
@@ -403,6 +446,7 @@ export const seedInventory = async () => {
     purchaseOrdersCreated,
     customersCreated,
     salesCreated,
+    warehousesCreated,
   };
 };
 

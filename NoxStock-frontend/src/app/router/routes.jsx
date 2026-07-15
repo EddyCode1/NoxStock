@@ -11,6 +11,7 @@ import RegisterPage from '../../features/auth/pages/RegisterPage';
 import NotFoundPage from '../../features/common/pages/NotFoundPage';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
 import { ProductsPage, ProductFormPage, MovementsPage, SuppliersPage, PurchaseOrdersPage, CustomersPage, SalesPage } from '../../features/inventory';
+import { WarehousesPage, WarehouseMapPage } from '../../features/warehouses';
 import { ReportsPage, AlertsPage, InventoryInsightsPage } from '../../features/reports';
 
 const router = createBrowserRouter([
@@ -52,6 +53,8 @@ const router = createBrowserRouter([
       { path: 'inventory/purchase-orders', element: <PurchaseOrdersPage /> },
       { path: 'inventory/customers', element: <CustomersPage /> },
       { path: 'inventory/sales', element: <SalesPage /> },
+      { path: 'inventory/warehouses', element: <WarehousesPage /> },
+      { path: 'inventory/warehouses/map', element: <WarehouseMapPage /> },
       { path: 'reports', element: <ReportsPage /> },
       { path: 'reports/insights', element: <InventoryInsightsPage /> },
       { path: 'alerts', element: <AlertsPage /> },

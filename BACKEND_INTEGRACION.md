@@ -86,6 +86,7 @@ Los datos viven en el repositorio (`auth-service/seed/` e `inventory-service/see
 | inventory-service | purchaseorders | 1 OC en borrador |
 | inventory-service | customers | 3 clientes |
 | inventory-service | sales | 1 venta en borrador |
+| inventory-service | warehouses | 3 bodegas con coordenadas |
 
 ### Usuarios de prueba
 
@@ -209,3 +210,4 @@ Ver `BACKEND_SMOKE.md` para probar el flujo completo en PowerShell.
 - Órdenes de compra: `/purchase-orders` con flujo `borrador → enviada → recibida`; al recibir se crean entradas automáticas
 - Auditoría: entradas/salidas registran `registradoPor` con el email del JWT
 - Clientes y ventas: `/customers` y `/sales` con flujo `borrador → confirmada`
+- Bodegas/sucursales: `/warehouses` con coordenadas para mapa Leaflet
