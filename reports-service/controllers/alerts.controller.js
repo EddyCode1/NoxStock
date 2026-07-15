@@ -1,18 +1,21 @@
 import { env } from '../config/env.js';
 import { getProductsFromInventory } from '../services/inventory.service.js';
 
+import { isLowStock } from '../utils/report.utils.js';
+
 export async function getLowStockAlerts(req, res, next) {
     try {
-        const threshold = Number.isFinite(Number(req.query.threshold))
+        const defaultThreshold = Number.isFinite(Number(req.query.threshold))
             ? Number(req.query.threshold)
             : env.lowStockThreshold;
 
         const products = await getProductsFromInventory(req.headers.authorization);
-        const lowStockProducts = products.filter((product) => product.stock > 0 && product.stock <= threshold);
+        const lowStockProducts = products.filter((product) => isLowStock(product, defaultThreshold));
 
         return res.status(200).json({
             success: true,
-            threshold,
+            threshold: defaultThreshold,
+            usesPerProductMinStock: true,
             count: lowStockProducts.length,
             data: lowStockProducts,
         });

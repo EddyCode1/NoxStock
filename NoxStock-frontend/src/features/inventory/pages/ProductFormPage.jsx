@@ -7,6 +7,7 @@ const emptyForm = {
   categoria: '',
   precio: '',
   existencia: '',
+  stockMinimo: '5',
 };
 
 export default function ProductFormPage() {
@@ -30,6 +31,7 @@ export default function ProductFormPage() {
           categoria: product.categoria,
           precio: String(product.precio),
           existencia: String(product.existencia),
+          stockMinimo: String(product.stockMinimo ?? 5),
         });
       } catch (err) {
         setError(err.response?.data?.message || 'No se pudo cargar el producto');
@@ -55,6 +57,7 @@ export default function ProductFormPage() {
       nombre: form.nombre,
       categoria: form.categoria,
       precio: Number(form.precio),
+      stockMinimo: Number(form.stockMinimo || 5),
     };
 
     if (!isEdit) {
@@ -87,6 +90,7 @@ export default function ProductFormPage() {
         <input name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre" className="w-full rounded border px-3 py-2" required />
         <input name="categoria" value={form.categoria} onChange={handleChange} placeholder="Categoría" className="w-full rounded border px-3 py-2" required />
         <input name="precio" type="number" value={form.precio} onChange={handleChange} placeholder="Precio" className="w-full rounded border px-3 py-2" required />
+        <input name="stockMinimo" type="number" value={form.stockMinimo} onChange={handleChange} placeholder="Stock mínimo" className="w-full rounded border px-3 py-2" min="0" />
         {!isEdit && (
           <input name="existencia" type="number" value={form.existencia} onChange={handleChange} placeholder="Existencia inicial" className="w-full rounded border px-3 py-2" />
         )}

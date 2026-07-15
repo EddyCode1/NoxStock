@@ -25,6 +25,11 @@ const productSchema = new mongoose.Schema(
       min: [0, 'La existencia no puede ser negativa'],
       default: 0,
     },
+    stockMinimo: {
+      type: Number,
+      min: [0, 'El stock mínimo no puede ser negativo'],
+      default: 5,
+    },
   },
   {
     timestamps: true,

@@ -4,6 +4,7 @@ import {
     buildProductLookup,
     buildTopProductsFromOutputs,
     groupProductsByCategory,
+    isLowStock,
     sumBy,
 } from '../utils/report.utils.js';
 
@@ -58,7 +59,7 @@ export async function getSummaryReport(req, res, next) {
         const totalCategories = categories.length;
         const totalUnitsInStock = sumBy(products, (product) => product.stock);
         const totalEstimatedValue = sumBy(products, (product) => product.stock * product.price);
-        const lowStockProducts = products.filter((product) => product.stock > 0 && product.stock <= env.lowStockThreshold);
+        const lowStockProducts = products.filter((product) => isLowStock(product, env.lowStockThreshold));
         const outOfStockProducts = products.filter((product) => product.stock === 0);
         const soldUnits = sumBy(outputs, (output) => output.quantity);
 

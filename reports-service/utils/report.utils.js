@@ -71,3 +71,8 @@ export function buildProductLookup(products) {
 export function sumBy(items, selector) {
     return items.reduce((total, item) => total + Number(selector(item) ?? 0), 0);
 }
+
+export function isLowStock(product, fallbackThreshold = 5) {
+    const minStock = Number.isFinite(product.minStock) ? product.minStock : fallbackThreshold;
+    return product.stock > 0 && product.stock <= minStock;
+}

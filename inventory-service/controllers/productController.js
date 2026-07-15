@@ -19,6 +19,19 @@ export const getProducts = async (req, res, next) => {
       filter.categoria = { $regex: categoria.trim(), $options: 'i' };
     }
 
+    if (req.query.bajoStock === 'true') {
+      const products = await Product.find(filter).sort({ createdAt: -1 });
+      const lowStockProducts = products.filter((product) => {
+        const minStock = product.stockMinimo ?? 5;
+        return product.existencia > 0 && product.existencia <= minStock;
+      });
+
+      return successResponse(res, 200, 'Productos con bajo stock obtenidos correctamente', {
+        total: lowStockProducts.length,
+        products: lowStockProducts,
+      });
+    }
+
     const products = await Product.find(filter).sort({ createdAt: -1 });
 
     return successResponse(res, 200, 'Productos obtenidos correctamente', {
@@ -52,13 +65,14 @@ export const getProductById = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   try {
-    const { nombre, categoria, precio, existencia } = req.body;
+    const { nombre, categoria, precio, existencia, stockMinimo } = req.body;
 
     const product = await Product.create({
       nombre,
       categoria,
       precio,
       existencia: existencia ?? 0,
+      stockMinimo: stockMinimo ?? 5,
     });
 
     return successResponse(res, 201, 'Producto creado correctamente', { product });
@@ -75,12 +89,13 @@ export const updateProduct = async (req, res, next) => {
       return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
     }
 
-    const { nombre, categoria, precio } = req.body;
+    const { nombre, categoria, precio, stockMinimo } = req.body;
     const updateData = {};
 
     if (nombre !== undefined) updateData.nombre = nombre;
     if (categoria !== undefined) updateData.categoria = categoria;
     if (precio !== undefined) updateData.precio = precio;
+    if (stockMinimo !== undefined) updateData.stockMinimo = stockMinimo;
 
     const product = await Product.findByIdAndUpdate(id, updateData, {
       new: true,

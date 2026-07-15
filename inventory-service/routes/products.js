@@ -19,6 +19,7 @@ router.get(
   [
     query('q').optional().isString().trim().isLength({ max: 120 }),
     query('categoria').optional().isString().trim().isLength({ max: 80 }),
+    query('bajoStock').optional().isIn(['true', 'false']),
     handleValidationErrors,
   ],
   getProducts
@@ -37,6 +38,7 @@ router.post(
     body('categoria').trim().notEmpty().withMessage('La categoría es obligatoria').isLength({ max: 80 }),
     body('precio').isFloat({ min: 0 }).withMessage('El precio debe ser mayor o igual a 0'),
     body('existencia').optional().isInt({ min: 0 }).withMessage('La existencia debe ser mayor o igual a 0'),
+    body('stockMinimo').optional().isInt({ min: 0 }).withMessage('El stock mínimo debe ser mayor o igual a 0'),
     handleValidationErrors,
   ],
   createProduct
@@ -49,6 +51,7 @@ router.put(
     body('nombre').optional().trim().notEmpty().isLength({ max: 120 }),
     body('categoria').optional().trim().notEmpty().isLength({ max: 80 }),
     body('precio').optional().isFloat({ min: 0 }),
+    body('stockMinimo').optional().isInt({ min: 0 }),
     handleValidationErrors,
   ],
   updateProduct

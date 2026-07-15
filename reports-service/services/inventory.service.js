@@ -85,9 +85,10 @@ function readCategory(raw) {
     return 'Sin categoría';
 }
 
-export function normalizeProduct(raw = {}) {
+export function normalizeProduct(raw = {}, defaultMinStock = 5) {
     const stock = toNumber(raw.existencia ?? raw.stock ?? raw.quantity ?? raw.currentStock, 0);
     const price = toNumber(raw.precio ?? raw.price ?? raw.unitPrice ?? raw.cost ?? raw.valor, 0);
+    const minStock = toNumber(raw.stockMinimo ?? raw.minStock, defaultMinStock);
 
     return {
         id: raw._id ?? raw.id ?? raw.productId ?? raw.sku ?? null,
@@ -95,6 +96,7 @@ export function normalizeProduct(raw = {}) {
         category: readCategory(raw),
         stock,
         price,
+        minStock,
         raw,
     };
 }
@@ -135,7 +137,7 @@ async function requestCollection(candidatePaths, preferredKeys, authHeader) {
 }
 
 function getMockProducts() {
-    return normalizeCollection(mockProducts, normalizeProduct);
+    return normalizeCollection(mockProducts, (raw) => normalizeProduct(raw, env.lowStockThreshold));
 }
 
 function getMockOutputs() {
@@ -149,7 +151,7 @@ export async function getProductsFromInventory(authHeader) {
 
     try {
         const payload = await requestCollection(['/products'], ['products'], authHeader);
-        return extractCollection(payload, ['products']).map(normalizeProduct);
+        return extractCollection(payload, ['products']).map((raw) => normalizeProduct(raw, env.lowStockThreshold));
     } catch (error) {
         if (env.allowMockFallback) {
             console.warn('[reports-service] Usando productos mock por fallo en inventory-service');
