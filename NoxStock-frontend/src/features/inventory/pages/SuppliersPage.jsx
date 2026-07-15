@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import inventoryService from '../../../shared/api/services/inventoryService';
+import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 
 const emptyForm = {
   nombre: '',
@@ -14,8 +15,13 @@ export default function SuppliersPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const { selectedWarehouseId, selectedWarehouse, version, isReady, isCentral } = useWarehouse();
 
   const loadSuppliers = useCallback(async () => {
+    if (!isReady || !selectedWarehouseId) {
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -26,7 +32,14 @@ export default function SuppliersPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isReady, selectedWarehouseId, version]);
+
+  useEffect(() => {
+    setSuppliers([]);
+    setForm(emptyForm);
+    setMessage('');
+    setError('');
+  }, [selectedWarehouseId, version]);
 
   useEffect(() => {
     loadSuppliers();
@@ -53,27 +66,47 @@ export default function SuppliersPage() {
   };
 
   return (
-    <section className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold">Proveedores</h1>
-        <p className="text-sm text-gray-500">CRUD simple conectado a /suppliers</p>
+    <section className="space-y-6 rounded-lg bg-gray-50 p-6">
+      <header className="border-b-2 border-blue-900 pb-4">
+        <h1 className="text-3xl font-bold text-blue-900">Proveedores</h1>
+        <p className="mt-1 text-sm text-gray-600">
+          {isCentral
+            ? 'Proveedores de todas las sucursales (solo lectura)'
+            : `Proveedores de ${selectedWarehouse?.nombre || 'la bodega activa'}`}
+        </p>
       </header>
 
-      <form onSubmit={handleSubmit} className="grid max-w-3xl gap-3 rounded border p-4 md:grid-cols-2">
-        <input name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre *" className="rounded border px-3 py-2" required />
-        <input name="contacto" value={form.contacto} onChange={handleChange} placeholder="Contacto" className="rounded border px-3 py-2" />
-        <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="rounded border px-3 py-2" />
-        <input name="telefono" value={form.telefono} onChange={handleChange} placeholder="Teléfono" className="rounded border px-3 py-2" />
-        <button type="submit" className="rounded bg-black px-4 py-2 text-white md:col-span-2">
-          Agregar proveedor
-        </button>
-      </form>
+      {isCentral && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          En Central ves el consolidado. Para registrar proveedores, selecciona una sucursal operativa.
+        </p>
+      )}
+
+      {!isCentral && (
+        <form onSubmit={handleSubmit} className="grid max-w-3xl gap-3 rounded-lg border border-gray-200 bg-white p-4 md:grid-cols-2">
+          <input name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre *" className="rounded border px-3 py-2" required />
+          <input name="contacto" value={form.contacto} onChange={handleChange} placeholder="Contacto" className="rounded border px-3 py-2" />
+          <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="rounded border px-3 py-2" />
+          <input name="telefono" value={form.telefono} onChange={handleChange} placeholder="Teléfono" className="rounded border px-3 py-2" />
+          <button type="submit" className="rounded bg-blue-900 px-4 py-2 text-white md:col-span-2">
+            Agregar proveedor
+          </button>
+        </form>
+      )}
 
       {message && <p className="text-green-700">{message}</p>}
       {error && <p className="text-red-600">{error}</p>}
-      {loading && <p>Cargando...</p>}
+      {loading && <p className="text-sm text-gray-500">Cargando proveedores...</p>}
 
-      <div className="overflow-x-auto rounded border">
+      {!loading && !error && suppliers.length === 0 && (
+        <p className="text-sm text-gray-500">
+          {isCentral
+            ? 'No hay proveedores registrados en las sucursales.'
+            : 'Esta sucursal aún no tiene proveedores.'}
+        </p>
+      )}
+
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100">
             <tr>

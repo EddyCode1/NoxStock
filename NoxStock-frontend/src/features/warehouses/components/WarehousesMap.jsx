@@ -1,41 +1,73 @@
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import {
+  createWarehouseMarkerIcon,
+  DEFAULT_MAP_CENTER,
+  DEFAULT_MAP_ZOOM,
+  normalizeWarehouseLocation,
+} from '../utils/warehouseMapUtils';
 
-const DEFAULT_ICON = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+function MapBoundsFitter({ positions }) {
+  const map = useMap();
 
-L.Marker.prototype.options.icon = DEFAULT_ICON;
+  useEffect(() => {
+    if (positions.length === 0) {
+      map.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+      return;
+    }
 
-const DEFAULT_CENTER = [14.6349, -90.5069];
-const DEFAULT_ZOOM = 12;
+    if (positions.length === 1) {
+      map.setView(positions[0], 13);
+      return;
+    }
 
-export default function WarehousesMap({ warehouses = [] }) {
-  const ubicadas = warehouses
-    .map((w) => {
-      const lat = Number(w.lat);
-      const lng = Number(w.lng);
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-      return { ...w, lat, lng };
-    })
-    .filter(Boolean);
+    const bounds = L.latLngBounds(positions);
+    map.fitBounds(bounds, { padding: [48, 48], maxZoom: 13 });
+  }, [map, positions]);
 
-  const center = ubicadas.length > 0 ? [ubicadas[0].lat, ubicadas[0].lng] : DEFAULT_CENTER;
+  return null;
+}
+
+function MapFocusController({ focusPosition }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!focusPosition) return;
+    map.flyTo(focusPosition, Math.max(map.getZoom(), 14), { duration: 0.7 });
+  }, [map, focusPosition]);
+
+  return null;
+}
+
+MapBoundsFitter.propTypes = {
+  positions: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
+};
+
+MapFocusController.propTypes = {
+  focusPosition: PropTypes.arrayOf(PropTypes.number),
+};
+
+export default function WarehousesMap({
+  warehouses = [],
+  selectedWarehouseId = null,
+  focusWarehouseId = null,
+  onSelectWarehouse,
+}) {
+  const ubicadas = warehouses.map(normalizeWarehouseLocation).filter(Boolean);
+  const positions = ubicadas.map((warehouse) => [warehouse.lat, warehouse.lng]);
+  const focusWarehouse = ubicadas.find((warehouse) => warehouse._id === focusWarehouseId);
+  const focusPosition = focusWarehouse ? [focusWarehouse.lat, focusWarehouse.lng] : null;
+  const center = positions.length > 0 ? positions[0] : DEFAULT_MAP_CENTER;
 
   return (
     <MapContainer
       center={center}
-      zoom={DEFAULT_ZOOM}
-      className="h-full w-full rounded border"
-      style={{ minHeight: '420px' }}
+      zoom={DEFAULT_MAP_ZOOM}
+      className="h-full w-full rounded-lg border border-gray-200 shadow-sm"
+      style={{ minHeight: '480px' }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -43,23 +75,69 @@ export default function WarehousesMap({ warehouses = [] }) {
         maxZoom={19}
       />
 
-      {ubicadas.map((warehouse) => (
-        <Marker key={warehouse._id} position={[warehouse.lat, warehouse.lng]}>
-          <Popup>
-            <div className="text-sm">
-              <p className="font-semibold">{warehouse.nombre}</p>
-              {warehouse.direccion && <p>{warehouse.direccion}</p>}
-              <p className="text-gray-600">
-                {warehouse.lat.toFixed(5)}, {warehouse.lng.toFixed(5)}
-              </p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      <MapBoundsFitter positions={positions} />
+      <MapFocusController focusPosition={focusPosition} />
+
+      {ubicadas.map((warehouse) => {
+        const isSelected = warehouse._id === selectedWarehouseId;
+
+        return (
+          <Marker
+            key={warehouse._id}
+            position={[warehouse.lat, warehouse.lng]}
+            icon={createWarehouseMarkerIcon({
+              isCentral: warehouse.esCentral,
+              isSelected,
+            })}
+          >
+            <Popup minWidth={240} className="noxstock-warehouse-popup">
+              <div className="space-y-3 text-sm text-gray-800">
+                <div>
+                  <p className="text-base font-bold text-blue-900">{warehouse.nombre}</p>
+                  <span
+                    className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      warehouse.esCentral
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {warehouse.esCentral ? 'Vista consolidada' : 'Sucursal operativa'}
+                  </span>
+                </div>
+
+                {warehouse.direccion && (
+                  <p className="text-gray-600">{warehouse.direccion}</p>
+                )}
+
+                <p className="font-mono text-xs text-gray-500">
+                  {warehouse.lat.toFixed(5)}, {warehouse.lng.toFixed(5)}
+                </p>
+
+                {isSelected ? (
+                  <p className="rounded border border-green-200 bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
+                    Bodega activa en el sistema
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onSelectWarehouse?.(warehouse._id)}
+                    className="w-full rounded bg-blue-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-800"
+                  >
+                    {warehouse.esCentral ? 'Ver todas las sucursales' : 'Trabajar en esta sucursal'}
+                  </button>
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
     </MapContainer>
   );
 }
 
 WarehousesMap.propTypes = {
   warehouses: PropTypes.arrayOf(PropTypes.object),
+  selectedWarehouseId: PropTypes.string,
+  focusWarehouseId: PropTypes.string,
+  onSelectWarehouse: PropTypes.func,
 };
