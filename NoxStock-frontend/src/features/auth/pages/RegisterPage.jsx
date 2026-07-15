@@ -103,8 +103,12 @@ const RegisterPage = () => {
           <label className="block text-sm font-medium text-zinc-700">Contraseña</label>
           <input
             type="password"
-            placeholder="••••••••"
-            {...register('password', { required: 'Contraseña requerida' })}
+            placeholder="1234"
+            {...register('password', {
+              required: 'Contraseña requerida',
+              minLength: { value: 4, message: 'Mínimo 4 caracteres' },
+              maxLength: { value: 5, message: 'Máximo 5 caracteres' },
+            })}
             className={fieldClass}
           />
           {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
@@ -114,7 +118,7 @@ const RegisterPage = () => {
           <label className="block text-sm font-medium text-zinc-700">Confirmar contraseña</label>
           <input
             type="password"
-            placeholder="••••••••"
+            placeholder="1234"
             {...register('confirmPassword', {
               required: 'Confirmar contraseña',
               validate: (value) => value === password || 'Las contraseñas no coinciden',

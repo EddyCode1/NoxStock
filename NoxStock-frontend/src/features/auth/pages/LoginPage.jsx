@@ -24,6 +24,8 @@ const LoginPage = () => {
         login(result.token, result.user, result.refreshToken)
         toast.success('Sesión iniciada correctamente')
         navigate('/loby')
+      } else {
+        toast.error(result.error || 'Credenciales inválidas')
       }
     } catch (err) {
       console.error(err)
@@ -40,7 +42,7 @@ const LoginPage = () => {
       ))}
 
       <div className="login-box">
-        <h2>Omakase</h2>
+        <h2>NoxStock</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="input-box">
             <input
