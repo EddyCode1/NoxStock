@@ -31,8 +31,14 @@ const RegisterPage = () => {
       })
 
       if (res.success) {
-        toast.success('Cuenta creada exitosamente')
-        navigate('/login')
+        navigate('/login', {
+          state: {
+            registeredEmail: data.email,
+            infoMessage:
+              res.message ||
+              'Cuenta creada exitosamente. Revisa tu correo electrónico para verificar tu cuenta antes de iniciar sesión.',
+          },
+        })
       }
     } catch (err) {
       console.error(err)

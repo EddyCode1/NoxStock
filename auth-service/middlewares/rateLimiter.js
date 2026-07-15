@@ -15,4 +15,20 @@ export const authLimiter = rateLimit({
   },
 });
 
+/**
+ * Limitador más restrictivo para endpoints que disparan envío de correos
+ * (resend-verification, forgot-password), para evitar abuso/spam.
+ */
+export const emailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // máximo 5 solicitudes por IP en la ventana de tiempo
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message:
+      'Demasiadas solicitudes de correo. Por favor intenta nuevamente en unos minutos.',
+  },
+});
+
 export default authLimiter;

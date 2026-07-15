@@ -36,6 +36,37 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    // Marca usuarios creados por los seeds (admin maestro / usuarios de prueba).
+    // Estos usuarios pueden iniciar sesión sin verificar su correo electrónico.
+    esUsuarioPorDefecto: {
+      type: Boolean,
+      default: false,
+    },
+
+    // ---- Verificación de correo electrónico ----
+    emailVerificado: {
+      type: Boolean,
+      default: false,
+    },
+    tokenVerificacionEmail: {
+      type: String,
+      default: null,
+    },
+    tokenVerificacionEmailExpira: {
+      type: Date,
+      default: null,
+    },
+
+    // ---- Recuperación de contraseña ----
+    tokenResetPassword: {
+      type: String,
+      default: null,
+    },
+    tokenResetPasswordExpira: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true, // createdAt, updatedAt
@@ -68,6 +99,7 @@ userSchema.methods.toPublicJSON = function () {
     email: this.email,
     role: this.role,
     activo: this.activo,
+    emailVerificado: this.emailVerificado,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };
