@@ -9,11 +9,11 @@ const palette = {
   border: '#3F4245',
 }
 
-export default function ReportFilter({ active = 'day', onChange = () => {} }) {
+export default function ReportFilter({ active = 'summary', onChange = () => {} }) {
   const tabs = [
-    { key: 'day', label: 'Día' },
-    { key: 'week', label: 'Semana' },
-    { key: 'month', label: 'Mes' },
+    { key: 'summary', label: 'Resumen' },
+    { key: 'categories', label: 'Categorías' },
+    { key: 'top', label: 'Top ventas' },
   ]
 
   return (
