@@ -58,7 +58,7 @@ Al iniciar `auth-service` se crea automáticamente un usuario admin si no existe
 | Campo | Valor |
 |-------|-------|
 | Email | `admin@noxstock.com` |
-| Password | `NoxStock2026!` |
+| Password | `1234` |
 | Rol | `admin` |
 
 Variables opcionales en `auth-service/.env`:
@@ -66,8 +66,8 @@ Variables opcionales en `auth-service/.env`:
 ```env
 SEED_DATA=true
 MASTER_EMAIL=admin@noxstock.com
-MASTER_PASSWORD=NoxStock2026!
-SEED_USER_PASSWORD=NoxStock2026!
+MASTER_PASSWORD=1234
+SEED_USER_PASSWORD=1234
 ```
 
 ## Datos de prueba automáticos (seed)
@@ -87,16 +87,16 @@ Los datos viven en el repositorio (`auth-service/seed/` e `inventory-service/see
 
 | Email | Password | Rol |
 |-------|----------|-----|
-| admin@noxstock.com | NoxStock2026! | admin |
-| kevin@noxstock.com | NoxStock2026! | user |
-| eddy@noxstock.com | NoxStock2026! | user |
-| sajche@noxstock.com | NoxStock2026! | user |
-| ana@noxstock.com | NoxStock2026! | user |
-| luis@noxstock.com | NoxStock2026! | user |
-| maria@noxstock.com | NoxStock2026! | user |
-| carlos@noxstock.com | NoxStock2026! | user |
-| sofia@noxstock.com | NoxStock2026! | user |
-| pedro@noxstock.com | NoxStock2026! | user |
+| admin@noxstock.com | 1234 | admin |
+| kevin@noxstock.com | 1234 | user |
+| eddy@noxstock.com | 1234 | user |
+| sajche@noxstock.com | 1234 | user |
+| ana@noxstock.com | 1234 | user |
+| luis@noxstock.com | 1234 | user |
+| maria@noxstock.com | 1234 | user |
+| carlos@noxstock.com | 1234 | user |
+| sofia@noxstock.com | 1234 | user |
+| pedro@noxstock.com | 1234 | user |
 
 El seed es **idempotente**: si los datos ya existen, no los duplica.
 
@@ -107,7 +107,7 @@ El seed es **idempotente**: si los datos ya existen, no los duplica.
 ```bash
 curl -X POST http://localhost:3001/auth/login \
   -H "Content-Type: application/json" \
-  -d "{\"email\":\"admin@noxstock.com\",\"password\":\"NoxStock2026!\"}"
+  -d "{\"email\":\"admin@noxstock.com\",\"password\":\"1234\"}"
 ```
 
 Guarda el `token` de la respuesta.

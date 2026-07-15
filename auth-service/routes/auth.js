@@ -24,10 +24,8 @@ const validacionesRegistro = [
   body('password')
     .notEmpty()
     .withMessage('La contraseña es obligatoria.')
-    .isLength({ min: 8 })
-    .withMessage('La contraseña debe tener al menos 8 caracteres.')
-    .matches(/\d/)
-    .withMessage('La contraseña debe contener al menos un número.'),
+    .isLength({ min: 4, max: 5 })
+    .withMessage('La contraseña debe tener entre 4 y 5 caracteres.'),
 ];
 
 // Validaciones para el login

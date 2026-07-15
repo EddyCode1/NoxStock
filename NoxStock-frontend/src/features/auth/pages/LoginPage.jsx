@@ -24,6 +24,8 @@ const LoginPage = () => {
         login(result.token, result.user, result.refreshToken)
         toast.success('Sesión iniciada correctamente')
         navigate('/loby')
+      } else {
+        toast.error(result.error || 'Credenciales inválidas')
       }
     } catch (err) {
       console.error(err)
