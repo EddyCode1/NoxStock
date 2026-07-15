@@ -1,0 +1,17 @@
+{
+  "name": "noxstock-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NoxStock - Monorepo de microservicios y frontend",
+  "packageManager": "pnpm@10.29.3",
+  "scripts": {
+    "install:all": "pnpm install -r",
+    "setup:env": "node scripts/setup-env.mjs",
+    "start:all": "concurrently -k -n AUTH,INV,REP,WEB -c blue,green,yellow,magenta \"pnpm --filter noxstock-auth-service dev\" \"pnpm --filter noxstock-inventory-service dev\" \"pnpm --filter noxstock-reports-service dev\" \"pnpm --filter noxstock-frontend dev\"",
+    "dev:all": "pnpm start:all",
+    "start:backend": "concurrently -k -n AUTH,INV,REP -c blue,green,yellow \"pnpm --filter noxstock-auth-service dev\" \"pnpm --filter noxstock-inventory-service dev\" \"pnpm --filter noxstock-reports-service dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

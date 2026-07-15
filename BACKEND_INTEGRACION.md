@@ -30,7 +30,20 @@ cp reports-service/.env.example reports-service/.env
 
 **Importante:** los 3 servicios deben compartir el mismo `JWT_SECRET`.
 
-### 3. Instalar y levantar (3 terminales)
+### 3. Instalar y levantar todo (1 comando)
+
+Desde la raíz del monorepo:
+
+```bash
+cd NoxStock
+pnpm install
+pnpm setup:env
+pnpm start:all
+```
+
+Esto levanta auth (3001), inventario (3002), reportes (3003) y frontend (5173).
+
+### 3b. Instalar y levantar por separado (4 terminales)
 
 ```bash
 cd auth-service && pnpm install && pnpm dev
