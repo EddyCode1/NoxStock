@@ -25,6 +25,12 @@ const productSchema = new mongoose.Schema(
       min: [0, 'La existencia no puede ser negativa'],
       default: 0,
     },
+    lowStockThreshold: {
+      type: Number,
+      min: [0, 'El umbral no puede ser negativo'],
+      default: null,
+      description: 'Umbral personalizado de bajo stock. Si es null, usa el valor global.',
+    },
   },
   {
     timestamps: true,

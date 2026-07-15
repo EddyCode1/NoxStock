@@ -33,6 +33,7 @@ export default function ProductsPage() {
               <th className="px-3 py-2 text-left">Categoría</th>
               <th className="px-3 py-2 text-right">Precio</th>
               <th className="px-3 py-2 text-right">Existencia</th>
+              <th className="px-3 py-2 text-right">Umbral Alerta</th>
               <th className="px-3 py-2 text-center">Acciones</th>
             </tr>
           </thead>
@@ -43,6 +44,13 @@ export default function ProductsPage() {
                 <td className="px-3 py-2">{product.categoria}</td>
                 <td className="px-3 py-2 text-right">Q{product.precio}</td>
                 <td className="px-3 py-2 text-right">{product.existencia}</td>
+                <td className="px-3 py-2 text-right">
+                  {product.lowStockThreshold ? (
+                    <span className="font-semibold text-yellow-600">{product.lowStockThreshold}</span>
+                  ) : (
+                    <span className="text-gray-400">(global)</span>
+                  )}
+                </td>
                 <td className="px-3 py-2 text-center">
                   <Link to={`/loby/inventory/${product._id}/edit`} className="underline">
                     Editar

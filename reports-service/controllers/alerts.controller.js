@@ -3,16 +3,25 @@ import { getProductsFromInventory } from '../services/inventory.service.js';
 
 export async function getLowStockAlerts(req, res, next) {
     try {
-        const threshold = Number.isFinite(Number(req.query.threshold))
+        // Umbral global por defecto
+        const globalThreshold = Number.isFinite(Number(req.query.threshold))
             ? Number(req.query.threshold)
             : env.lowStockThreshold;
 
         const products = await getProductsFromInventory(req.headers.authorization);
-        const lowStockProducts = products.filter((product) => product.stock > 0 && product.stock <= threshold);
+        
+        // Filtra productos con bajo stock usando su umbral personalizado o el global
+        const lowStockProducts = products.filter((product) => {
+            const threshold = product.lowStockThreshold !== null && product.lowStockThreshold !== undefined
+                ? product.lowStockThreshold
+                : globalThreshold;
+            
+            return product.stock > 0 && product.stock <= threshold;
+        });
 
         return res.status(200).json({
             success: true,
-            threshold,
+            globalThreshold,
             count: lowStockProducts.length,
             data: lowStockProducts,
         });

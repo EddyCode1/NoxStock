@@ -88,6 +88,7 @@ function readCategory(raw) {
 export function normalizeProduct(raw = {}) {
     const stock = toNumber(raw.existencia ?? raw.stock ?? raw.quantity ?? raw.currentStock, 0);
     const price = toNumber(raw.precio ?? raw.price ?? raw.unitPrice ?? raw.cost ?? raw.valor, 0);
+    const lowStockThreshold = raw.lowStockThreshold ?? null;
 
     return {
         id: raw._id ?? raw.id ?? raw.productId ?? raw.sku ?? null,
@@ -95,6 +96,7 @@ export function normalizeProduct(raw = {}) {
         category: readCategory(raw),
         stock,
         price,
+        lowStockThreshold,
         raw,
     };
 }

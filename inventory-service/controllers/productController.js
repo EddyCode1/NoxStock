@@ -50,13 +50,14 @@ export const getProductById = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   try {
-    const { nombre, categoria, precio, existencia } = req.body;
+    const { nombre, categoria, precio, existencia, lowStockThreshold } = req.body;
 
     const product = await Product.create({
       nombre,
       categoria,
       precio,
       existencia: existencia ?? 0,
+      lowStockThreshold: lowStockThreshold ?? null,
     });
 
     return successResponse(res, 201, 'Producto creado correctamente', { product });
@@ -73,12 +74,13 @@ export const updateProduct = async (req, res, next) => {
       return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
     }
 
-    const { nombre, categoria, precio } = req.body;
+    const { nombre, categoria, precio, lowStockThreshold } = req.body;
     const updateData = {};
 
     if (nombre !== undefined) updateData.nombre = nombre;
     if (categoria !== undefined) updateData.categoria = categoria;
     if (precio !== undefined) updateData.precio = precio;
+    if (lowStockThreshold !== undefined) updateData.lowStockThreshold = lowStockThreshold;
 
     const product = await Product.findByIdAndUpdate(id, updateData, {
       new: true,

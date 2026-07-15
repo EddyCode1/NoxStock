@@ -7,6 +7,7 @@ const emptyForm = {
   categoria: '',
   precio: '',
   existencia: '',
+  lowStockThreshold: '',
 };
 
 export default function ProductFormPage() {
@@ -30,6 +31,7 @@ export default function ProductFormPage() {
           categoria: product.categoria,
           precio: String(product.precio),
           existencia: String(product.existencia),
+          lowStockThreshold: product.lowStockThreshold ? String(product.lowStockThreshold) : '',
         });
       } catch (err) {
         setError(err.response?.data?.message || 'No se pudo cargar el producto');
@@ -61,6 +63,13 @@ export default function ProductFormPage() {
       payload.existencia = Number(form.existencia || 0);
     }
 
+    // Siempre incluir lowStockThreshold: null si está vacío, number si tiene valor
+    if (isEdit) {
+      payload.lowStockThreshold = form.lowStockThreshold ? Number(form.lowStockThreshold) : null;
+    } else if (form.lowStockThreshold) {
+      payload.lowStockThreshold = Number(form.lowStockThreshold);
+    }
+
     try {
       if (isEdit) {
         await inventoryService.updateProduct(id, payload);
@@ -90,6 +99,7 @@ export default function ProductFormPage() {
         {!isEdit && (
           <input name="existencia" type="number" value={form.existencia} onChange={handleChange} placeholder="Existencia inicial" className="w-full rounded border px-3 py-2" />
         )}
+        <input name="lowStockThreshold" type="number" value={form.lowStockThreshold} onChange={handleChange} placeholder="Umbral de alerta (opcional, dejar vacío para usar global)" className="w-full rounded border px-3 py-2" min="0" />
 
         {error && <p className="text-red-600">{error}</p>}
 
