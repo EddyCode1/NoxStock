@@ -103,6 +103,7 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
 | `POST` | `/warehouses` | Sí | `{ nombre, direccion?, lat, lng, activo? }` |
 | `PUT` | `/warehouses/:id` | Sí | campos opcionales |
 | `DELETE` | `/warehouses/:id` | Sí | — |
+| `GET` | `/statistics` | Sí | — Estadísticas agregadas para el dashboard |
 
 ---
 

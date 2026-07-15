@@ -1,63 +1,58 @@
-import { Link } from 'react-router-dom'
+import useAuthStore from '../../shared/stores/useAuthStore'
 import WarehouseSelector from './WarehouseSelector'
 
-// Datos del Menú Principal
-const menuItems = [
-    { id: 1, label: 'Dashboard', path: '/loby', specialClass: 'font-bold text-lg' },
-    { id: 2, label: 'Productos', path: '/loby/inventory' },
-    { id: 3, label: 'Movimientos', path: '/loby/inventory/movements' },
-    { id: 4, label: 'Reportes', path: '/loby/reports', specialClass: 'italic' },
-    { id: 5, label: 'Alertas', path: '/loby/alerts', specialClass: 'italic' },
-]
-
-// Texto fijo del navbar
-const NAVBAR_TITLE = 'Panel de inventario NoxStock'
-
+const palette = {
+  background: '#1E2022',
+  surface: '#2B2D30',
+  border: '#3F4245',
+  textPrimary: '#F5F6F8',
+  textSecondary: '#8A8F98',
+  accent: '#8B1E1E',
+}
 
 /**
- * Componente NavbarBlack - Barra de navegación negra
+ * Componente NavbarBlack - Cabecera minimalista del lobby
  */
 const NavbarBlack = ({ isSidebarOpen = true, onToggleSidebar }) => {
+    const user = useAuthStore((state) => state.user)
+    const displayName = user?.nombre || user?.name || 'Usuario'
+
     return (
-        <header className="border-b border-gray-800 py-6 px-6 bg-black">
-            <nav className="flex flex-col gap-6">
-                {/* Botón toggle y título superior */}
-                <div className="flex items-center justify-center px-0 relative">
+        <header
+            className="py-6 px-6"
+            style={{ background: palette.background, borderBottom: `1px solid ${palette.border}` }}
+        >
+            <div className="flex items-center justify-between gap-4">
+                <div>
+                    <p style={{ color: palette.textSecondary }} className="text-sm uppercase tracking-[0.3em]">
+                        Hola {displayName}
+                    </p>
+                    <h1 style={{ color: palette.textPrimary }} className="text-2xl font-semibold leading-tight tracking-[0.02em]">
+                        Bienvenido al lobby
+                    </h1>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    <div className="hidden md:flex">
+                        <WarehouseSelector />
+                    </div>
+
                     <button
                         type="button"
                         onClick={onToggleSidebar}
-                        className="absolute left-0 z-50 inline-flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-400 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:border-gray-300 hover:text-white transition-all duration-300 font-bold text-lg"
-                        style={{
-                            marginLeft: isSidebarOpen ? '288px' : '0px'
-                        }}
                         aria-label={isSidebarOpen ? 'Ocultar menú lateral' : 'Mostrar menú lateral'}
                         title={isSidebarOpen ? 'Ocultar menú' : 'Mostrar menú'}
+                        style={{
+                            borderColor: palette.border,
+                            background: palette.surface,
+                            color: palette.textPrimary,
+                        }}
+                        className="inline-flex h-12 w-12 items-center justify-center rounded-full border text-lg transition hover:bg-[#3C3F45]"
                     >
                         {isSidebarOpen ? '⟨' : '⟩'}
                     </button>
-
-                    <span className="text-gray-400 text-xs uppercase ">
-                        {NAVBAR_TITLE}
-                    </span>
                 </div>
-
-                <div className="flex justify-center">
-                    <WarehouseSelector />
-                </div>
-
-                {/* Fila de Menús */}
-                <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-                    {menuItems.map((item) => (
-                        <Link
-                            key={item.id}
-                            to={item.path}
-                            className={`text-gray-200 hover:text-white transition-colors duration-200 ${item.specialClass || 'text-sm'}`}
-                        >
-                            <span className="tracking-wider uppercase">{item.label}</span>
-                        </Link>
-                    ))}
-                </div>
-            </nav>
+            </div>
         </header>
     )
 }
