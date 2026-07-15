@@ -39,9 +39,9 @@ const Sidebar = ({ isOpen = true }) => {
     <aside
       className={`
 
-        fixed left-0 top-0 h-full overflow-hidden bg-black text-white flex flex-col z-40
+        fixed left-0 top-0 h-full overflow-hidden bg-[#0b0e14] text-white flex flex-col z-40
         transition-all duration-300 ease-in-out
-        ${isOpen ? 'w-72 border-r border-white/10 opacity-100 translate-x-0' : 'w-72 opacity-0 -translate-x-full'}
+        ${isOpen ? 'w-72 border-r border-[#1e3a6d] opacity-100 translate-x-0' : 'w-72 opacity-0 -translate-x-full'}
       `}
     >
       <div className="p-6">
@@ -62,7 +62,7 @@ const Sidebar = ({ isOpen = true }) => {
       <nav className="min-h-0 flex-1 overflow-y-auto px-6 pb-6 space-y-3">
         <Link
           to="/loby"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#0f1c3f] hover:text-white transition"
         >
           <FiHome size={17} aria-hidden="true" />
           <span className="font-medium">Menú Principal</span>
@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen = true }) => {
  
         <Link
           to="/loby/restaurants"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#0f1c3f] hover:text-white transition"
         >
           <FiGrid size={17} aria-hidden="true" />
           <span>Restaurantes</span>
@@ -78,7 +78,7 @@ const Sidebar = ({ isOpen = true }) => {
  
         <Link
           to="/loby/tables"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#0f1c3f] hover:text-white transition"
         >
           <FiPieChart size={17} aria-hidden="true" />
           <span>Mesas</span>
@@ -86,7 +86,7 @@ const Sidebar = ({ isOpen = true }) => {
  
         <Link
           to="/loby/menu"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#0f1c3f] hover:text-white transition"
         >
           <FiMenu size={17} aria-hidden="true" />
           <span>Menú</span>
@@ -94,7 +94,7 @@ const Sidebar = ({ isOpen = true }) => {
  
         <Link
           to="/loby/recipes"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiFileText size={17} aria-hidden="true" />
           <span>Recetas</span>
@@ -102,7 +102,7 @@ const Sidebar = ({ isOpen = true }) => {
 
         <Link
           to="/loby/orders"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiShoppingCart size={17} aria-hidden="true" />
           <span>Órdenes</span>
@@ -110,7 +110,7 @@ const Sidebar = ({ isOpen = true }) => {
 
         <Link
           to="/loby/inventory"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiArchive size={17} aria-hidden="true" />
           <span>Inventario</span>
@@ -118,7 +118,7 @@ const Sidebar = ({ isOpen = true }) => {
 
         <Link
           to="/loby/detallePedidos"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiClipboard size={17} aria-hidden="true" />
           <span>Detalles Pedidos</span>
@@ -126,7 +126,7 @@ const Sidebar = ({ isOpen = true }) => {
 
         <Link
           to="/loby/events"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiCalendar size={17} aria-hidden="true" />
           <span>Eventos</span>
@@ -134,7 +134,7 @@ const Sidebar = ({ isOpen = true }) => {
 
         <Link
           to="/loby/information"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#0f1c3f] hover:text-white transition"
         >
           <FiInfo size={17} aria-hidden="true" />
           <span>Información</span>
@@ -142,7 +142,7 @@ const Sidebar = ({ isOpen = true }) => {
 
         <Link
           to="/loby/reviews"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiMessageSquare size={17} aria-hidden="true" />
           <span>Reseñas</span>
@@ -150,7 +150,7 @@ const Sidebar = ({ isOpen = true }) => {
 
         <Link
           to="/loby/coupons"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiTag size={17} aria-hidden="true" />
           <span>Cupones</span>
@@ -158,7 +158,7 @@ const Sidebar = ({ isOpen = true }) => {
  
         <Link
           to="/loby/mapa-de-sedes"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiMapPin size={17} aria-hidden="true" />
           <span>Mapa de Sedes</span>
@@ -166,21 +166,21 @@ const Sidebar = ({ isOpen = true }) => {
 
         <Link
           to="/loby/profile"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#0f1c3f] hover:text-white transition"
         >
           <FiUser size={17} aria-hidden="true" />
           <span>Mi Perfil</span>
         </Link>
         <Link
           to="/loby/reservations"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiCalendar size={17} aria-hidden="true" />
           <span>Reservaciones</span>
         </Link>
         <Link
           to="/loby/notifications"
-          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+          className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#1e3a6d]/30 transition"
         >
           <FiBell size={17} aria-hidden="true" />
           <span>Notificaciones</span>
@@ -189,14 +189,14 @@ const Sidebar = ({ isOpen = true }) => {
           <>
             <Link
               to="/loby/users"
-              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
+              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#0f1c3f] hover:text-white transition"
             >
               <FiBook size={17} aria-hidden="true" />
               <span>Contactos</span>
             </Link>
             <Link
               to="/loby/reports"
-              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
+              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#0f1c3f] hover:text-white transition"
             >
               <FiBarChart2 size={17} aria-hidden="true" />
               <span>Reportes</span>
@@ -206,13 +206,13 @@ const Sidebar = ({ isOpen = true }) => {
       </nav>
  
       <div className="px-6 pb-6">
-        <div className="rounded-2xl bg-[var(--bg)] p-4 border border-[var(--accent-soft)]">
-          <p className="text-xs text-[var(--muted)]">Usuario conectado</p>
-          <p className="mt-2 font-semibold text-[var(--text)] truncate">{user?.nombre || user?.email}</p>
+        <div className="rounded-2xl bg-[#111827] p-4 border border-[#1e3a6d]">
+          <p className="text-xs text-gray-400">Usuario conectado</p>
+          <p className="mt-2 font-semibold text-white truncate">{user?.nombre || user?.email}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="mt-4 w-full px-4 py-2 bg-[var(--accent)] text-[var(--surface)] rounded-xl hover:bg-[#4b5563] transition"
+          className="mt-4 w-full px-4 py-2 bg-[#0f1c3f] text-white rounded-xl hover:bg-[#1e3a6d] transition"
         >
           Cerrar Sesión
         </button>
@@ -222,5 +222,4 @@ const Sidebar = ({ isOpen = true }) => {
 }
  
 export default Sidebar
- 
  

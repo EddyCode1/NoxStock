@@ -6,13 +6,21 @@
   --font-body: 'Roboto', 'Segoe UI', sans-serif;
   --font-accent: 'Raleway', 'Segoe UI', sans-serif;
 
+  /* Paleta: Gris, Azul marino y Negro */
+  --navy: #0f1c3f;
+  --navy-dark: #0a1329;
+  --navy-light: #1e3a6d;
+  --black: #0b0e14;
+
   --bg: #f3f4f6;
   --surface: #ffffff;
-  --surface-dark: #111111;
-  --primary: #111111;
-  --accent: #6b7280;
+  --surface-dark: #0b0e14;
+  --primary: #0f1c3f;
+  --primary-dark: #0a1329;
+  --primary-soft: #e2e6f0;
+  --accent: #4b5563;
   --accent-soft: #d1d5db;
-  --text: #111111;
+  --text: #111827;
   --muted: #6b7280;
   --danger: #b02a2a;
 
@@ -26,6 +34,7 @@
   --theme-button-font-size: 13px;
   --theme-button-letter-spacing: 0.03em;
 }
+
 
 /* Estilos globales personalizados */
 
@@ -111,13 +120,14 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #6b7280;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #0f1c3f;
 }
+
 
 /* Animaciones */
 @keyframes fadeIn {
@@ -152,6 +162,66 @@ html {
   animation: lobbyPan 24s linear infinite;
 }
 
+/* ------------------------------------------------------------------ */
+/* Transiciones de vista (estilo navegación iOS: fade + slide)          */
+/* ------------------------------------------------------------------ */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-18px) scale(0.99);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-exit {
+  animation: pageExit 0.16s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Reveal: aparición escalonada (stagger) de elementos internos         */
+/* ------------------------------------------------------------------ */
+@keyframes revealItem {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-item {
+  animation: revealItem 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .page-exit,
+  .reveal-item {
+    animation: none !important;
+  }
+}
+
+
 /* Utilities personalizadas */
 .glass-morphism {
   background: rgba(255, 255, 255, 0.25);
@@ -166,8 +236,9 @@ html {
 }
 
 .btn-primary:hover {
-  background: #000000;
+  background: var(--primary-dark);
 }
+
 
 .btn-secondary {
   @apply px-4 py-2 rounded-lg font-semibold transition;
@@ -236,7 +307,7 @@ form textarea,
 form select {
   background: #ffffff !important;
   border: 1px solid #c4c8cf !important;
-  color: #111111 !important;
+  color: #111827 !important;
 }
 
 form input:not([type='checkbox']):not([type='radio'])::placeholder,
@@ -248,26 +319,28 @@ form textarea::placeholder {
 form input:not([type='checkbox']):not([type='radio']):focus,
 form textarea:focus,
 form select:focus {
-  border-color: #111111 !important;
-  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.35) !important;
+  border-color: #0f1c3f !important;
+  box-shadow: 0 0 0 3px rgba(15, 28, 63, 0.22) !important;
 }
 
 form button[type='submit'] {
-  background: #111111 !important;
-  border-color: #111111 !important;
+  background: #0f1c3f !important;
+  border-color: #0f1c3f !important;
   color: #ffffff !important;
 }
 
 form button[type='submit']:hover {
-  background: #000000 !important;
+  background: #0a1329 !important;
 }
 
 form button[type='button']:not([class*='red']):not([class*='danger']) {
   background: #e5e7eb !important;
   border-color: #c4c8cf !important;
-  color: #111111 !important;
+  color: #111827 !important;
 }
 
 form button[type='button']:not([class*='red']):not([class*='danger']):hover {
   background: #d1d5db !important;
 }
+
+

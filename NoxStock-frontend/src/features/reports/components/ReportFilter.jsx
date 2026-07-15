@@ -1,12 +1,12 @@
 import React from 'react'
 
 const palette = {
-  background: '#2B2D30',
-  tabActive: '#8B1E1E',
-  tabInactive: '#3F4245',
+  background: '#111827',
+  tabActive: '#0f1c3f',
+  tabInactive: '#1e3a6d',
   textPrimary: '#F5F6F8',
   textSecondary: '#8A8F98',
-  border: '#3F4245',
+  border: '#1e3a6d',
 }
 
 export default function ReportFilter({ active = 'summary', onChange = () => {} }) {

@@ -5,6 +5,7 @@ import NavbarBlack from '../components/NavbarBlack';
 import inventoryService from '../../shared/api/services/inventoryService';
 import { useWarehouse } from '../../shared/hooks/useWarehouse';
 import useWarehouseStore from '../../shared/stores/useWarehouseStore';
+import PageTransition from '../../shared/components/PageTransition';
 
 const MainLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -39,7 +40,9 @@ const MainLayout = () => {
 
         <main className="flex-1 overflow-auto p-4 md:p-6">
           {canRenderPages ? (
-            <Outlet key={selectedWarehouseId} />
+            <PageTransition>
+              <Outlet key={selectedWarehouseId} />
+            </PageTransition>
           ) : (
             <p className="text-sm text-gray-500">Cargando contexto de bodega...</p>
           )}

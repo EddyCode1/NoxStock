@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, NavLink } from 'react-router-dom';
 import useAuthStore from '../../shared/stores/useAuthStore';
 
 const palette = {
@@ -11,7 +11,7 @@ const palette = {
 };
 
 const links = [
-  { to: '/loby', label: 'Dashboard' },
+  { to: '/loby', label: 'Dashboard', end: true },
   { to: '/loby/inventory', label: 'Productos' },
   { to: '/loby/inventory/movements', label: 'Movimientos' },
   { to: '/loby/inventory/suppliers', label: 'Proveedores' },
@@ -37,27 +37,36 @@ export default function NoxStockSidebar({ isOpen = true }) {
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 flex h-full w-64 flex-col border-r transition-transform ${
+      className={`fixed left-0 top-0 z-40 flex h-full w-64 flex-col border-r transition-transform duration-300 ease-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
       style={{ background: palette.background, borderColor: palette.border }}
     >
       <div className="p-4" style={{ borderBottom: `1px solid ${palette.border}` }}>
-        <h1 style={{ color: palette.textPrimary }} className="text-xl font-bold tracking-[0.03em]">NoxStock</h1>
-        <p style={{ color: palette.textSecondary }} className="text-sm mt-1">Gestión clara y directa</p>
+        <h1 className="text-xl font-bold tracking-[0.03em]" style={{ color: palette.textPrimary }}>
+          NoxStock
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: palette.textSecondary }}>
+          Gestión clara y directa
+        </p>
         {user?.nombre && (
-          <p style={{ color: palette.textSecondary }} className="mt-3 text-xs uppercase tracking-[0.2em]">
+          <p className="mt-3 text-xs uppercase tracking-[0.2em]" style={{ color: palette.textSecondary }}>
             {user.nombre}
           </p>
         )}
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
         {links.map((link) => (
-          <Link
+          <NavLink
             key={link.to}
             to={link.to}
-            className="block rounded-3xl px-3 py-3 text-sm transition"
+            end={link.end}
+            className={({ isActive }) =>
+              `block rounded-2xl px-3 py-3 text-sm transition ${
+                isActive ? 'ring-1 ring-[#3f5fc4]' : ''
+              }`
+            }
             style={{
               color: palette.textPrimary,
               background: palette.surface,
@@ -65,14 +74,14 @@ export default function NoxStockSidebar({ isOpen = true }) {
             }}
           >
             {link.label}
-          </Link>
+          </NavLink>
         ))}
       </nav>
 
       <button
         type="button"
         onClick={handleLogout}
-        className="m-4 rounded-3xl px-4 py-3 text-sm font-semibold transition"
+        className="m-4 rounded-2xl px-4 py-3 text-sm font-semibold transition"
         style={{
           background: palette.accent,
           color: '#ffffff',

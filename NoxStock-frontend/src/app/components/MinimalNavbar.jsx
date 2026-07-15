@@ -7,11 +7,11 @@ const MinimalNavbar = () => {
   const navigate = useNavigate()
 
   return (
-    <header className="border-b border-gray-800 py-3 px-6 bg-black">
+    <header className="border-b border-[#1e3a6d] py-3 px-6 bg-[#0b0e14]">
       <button
         type="button"
         onClick={() => navigate('/loby')}
-        className="inline-flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-400 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:border-gray-300 hover:text-white transition-all duration-300 font-bold text-lg"
+        className="inline-flex items-center justify-center w-12 h-12 rounded-lg border-2 border-[#4b5563] bg-[#0f1c3f] text-gray-300 hover:bg-[#1e3a6d] hover:border-gray-300 hover:text-white transition-all duration-300 font-bold text-lg"
         aria-label="Volver al menú principal"
         title="Volver"
       >
