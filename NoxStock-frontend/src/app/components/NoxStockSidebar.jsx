@@ -5,6 +5,8 @@ const links = [
   { to: '/loby', label: 'Dashboard' },
   { to: '/loby/inventory', label: 'Productos' },
   { to: '/loby/inventory/movements', label: 'Movimientos' },
+  { to: '/loby/inventory/suppliers', label: 'Proveedores' },
+  { to: '/loby/inventory/purchase-orders', label: 'Órdenes de compra' },
   { to: '/loby/reports', label: 'Reportes' },
   { to: '/loby/alerts', label: 'Alertas' },
 ];

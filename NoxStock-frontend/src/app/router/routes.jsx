@@ -10,7 +10,7 @@ import LoginPage from '../../features/auth/pages/LoginPage';
 import RegisterPage from '../../features/auth/pages/RegisterPage';
 import NotFoundPage from '../../features/common/pages/NotFoundPage';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
-import { ProductsPage, ProductFormPage, MovementsPage } from '../../features/inventory';
+import { ProductsPage, ProductFormPage, MovementsPage, SuppliersPage, PurchaseOrdersPage } from '../../features/inventory';
 import { ReportsPage, AlertsPage } from '../../features/reports';
 
 const router = createBrowserRouter([
@@ -48,6 +48,8 @@ const router = createBrowserRouter([
       { path: 'inventory/new', element: <ProductFormPage /> },
       { path: 'inventory/:id/edit', element: <ProductFormPage /> },
       { path: 'inventory/movements', element: <MovementsPage /> },
+      { path: 'inventory/suppliers', element: <SuppliersPage /> },
+      { path: 'inventory/purchase-orders', element: <PurchaseOrdersPage /> },
       { path: 'reports', element: <ReportsPage /> },
       { path: 'alerts', element: <AlertsPage /> },
     ],

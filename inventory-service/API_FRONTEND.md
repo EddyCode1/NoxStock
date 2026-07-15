@@ -37,24 +37,38 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
 | **Historial de entradas** | `GET /entries` o `GET /entries?productId=` | Tabla de movimientos de entrada |
 | **Historial de salidas** | `GET /outputs` o `GET /outputs?productId=` | Tabla de movimientos de salida |
 | **Filtro de categorías** | `GET /categories` | Dropdown/select en la lista |
+| **Proveedores** | `GET/POST/PUT/DELETE /suppliers` | CRUD de proveedores |
+| **Órdenes de compra** | `GET/POST/PUT /purchase-orders` + acciones | Flujo OC: borrador → enviada → recibida |
 
 ---
 
-## Endpoints completos (11)
+## Endpoints completos (22)
 
 | Método | Ruta | Auth | Body / Query |
 |--------|------|------|--------------|
 | `GET` | `/health` | No | — |
-| `GET` | `/products` | Sí | `?q=nombre&categoria=valor` |
+| `GET` | `/products` | Sí | `?q=nombre&categoria=valor&bajoStock=true` |
 | `GET` | `/products/:id` | Sí | — |
-| `POST` | `/products` | Sí | `{ nombre, categoria, precio, existencia? }` |
-| `PUT` | `/products/:id` | Sí | `{ nombre?, categoria?, precio? }` |
+| `POST` | `/products` | Sí | `{ nombre, categoria, precio, existencia?, stockMinimo? }` |
+| `PUT` | `/products/:id` | Sí | `{ nombre?, categoria?, precio?, stockMinimo? }` |
 | `DELETE` | `/products/:id` | Sí | — |
 | `GET` | `/categories` | Sí | — |
 | `GET` | `/entries` | Sí | `?productId=opcional` |
 | `POST` | `/entries` | Sí | `{ productId, cantidad, motivo? }` |
 | `GET` | `/outputs` | Sí | `?productId=opcional` |
 | `POST` | `/outputs` | Sí | `{ productId, cantidad, motivo? }` |
+| `GET` | `/suppliers` | Sí | `?q=nombre&activo=true|false` |
+| `GET` | `/suppliers/:id` | Sí | — |
+| `POST` | `/suppliers` | Sí | `{ nombre, contacto?, email?, telefono?, categorias?, activo? }` |
+| `PUT` | `/suppliers/:id` | Sí | campos opcionales del proveedor |
+| `DELETE` | `/suppliers/:id` | Sí | — (409 si tiene OC abiertas) |
+| `GET` | `/purchase-orders` | Sí | `?estado=borrador|enviada|recibida|cancelada&supplierId=` |
+| `GET` | `/purchase-orders/:id` | Sí | — |
+| `POST` | `/purchase-orders` | Sí | `{ supplierId, items[{productId, cantidad, precioUnitario}], notas? }` |
+| `PUT` | `/purchase-orders/:id` | Sí | solo en estado `borrador` |
+| `POST` | `/purchase-orders/:id/send` | Sí | borrador → enviada |
+| `POST` | `/purchase-orders/:id/receive` | Sí | enviada → recibida (crea entradas + stock) |
+| `POST` | `/purchase-orders/:id/cancel` | Sí | borrador o enviada → cancelada |
 
 ---
 
@@ -67,6 +81,7 @@ Este servicio solo expone **API REST**. El frontend debe crear las pantallas.
   "categoria": "Electronica",
   "precio": 800,
   "existencia": 10,
+  "stockMinimo": 5,
   "createdAt": "2026-07-15T20:00:00.000Z",
   "updatedAt": "2026-07-15T20:00:00.000Z"
 }
@@ -104,6 +119,9 @@ Error:
 3. Si `cantidad > existencia` en una salida → error `400 INSUFFICIENT_STOCK`.
 4. Al crear producto, `existencia` es opcional (default `0`).
 5. No se puede `DELETE /products/:id` si tiene entradas o salidas → error `409 PRODUCT_HAS_MOVEMENTS`.
+6. No se puede `DELETE /suppliers/:id` si tiene órdenes en `borrador` o `enviada` → `409 SUPPLIER_HAS_OPEN_ORDERS`.
+7. Órdenes de compra: solo `borrador` es editable; `receive` genera entradas automáticas con motivo `OC-{id} recepción {proveedor}`.
+8. Cada producto tiene `stockMinimo` (default `5`). `GET /products?bajoStock=true` filtra por umbral individual.
 
 ---
 

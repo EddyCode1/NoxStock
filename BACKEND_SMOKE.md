@@ -39,6 +39,22 @@ Invoke-RestMethod -Uri "http://localhost:3003/reports/summary" -Headers $headers
 Invoke-RestMethod -Uri "http://localhost:3003/alerts/low-stock" -Headers $headers
 ```
 
+## 6. Proveedores y orden de compra
+
+```powershell
+# Listar proveedores (seed crea 3)
+$suppliers = Invoke-RestMethod -Uri "http://localhost:3002/suppliers" -Headers $headers
+$supplierId = $suppliers.data.suppliers[0]._id
+
+# Listar OC (seed crea 1 en borrador)
+$orders = Invoke-RestMethod -Uri "http://localhost:3002/purchase-orders" -Headers $headers
+$orderId = $orders.data.orders[0]._id
+
+# Enviar y recibir OC (actualiza stock)
+Invoke-RestMethod -Uri "http://localhost:3002/purchase-orders/$orderId/send" -Method POST -Headers $headers
+Invoke-RestMethod -Uri "http://localhost:3002/purchase-orders/$orderId/receive" -Method POST -Headers $headers
+```
+
 ## Criterio de éxito
 
 - Login devuelve `token`
@@ -46,3 +62,5 @@ Invoke-RestMethod -Uri "http://localhost:3003/alerts/low-stock" -Headers $header
 - Salida inválida devuelve `400`
 - `/reports/summary` devuelve `data.inventory.totalProducts` > 0 (con seeds activos)
 - Si inventory-service está apagado y `ALLOW_MOCK_FALLBACK=false`, reports debe fallar con error explícito
+- `/suppliers` devuelve al menos 1 proveedor con seeds activos
+- Flujo OC `send` + `receive` devuelve `estado: recibida` y crea entradas

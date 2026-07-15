@@ -82,6 +82,8 @@ Los datos viven en el repositorio (`auth-service/seed/` e `inventory-service/see
 | inventory-service | products | 10 productos |
 | inventory-service | entries | 10 entradas |
 | inventory-service | outputs | 10 salidas |
+| inventory-service | suppliers | 3 proveedores |
+| inventory-service | purchaseorders | 1 OC en borrador |
 
 ### Usuarios de prueba
 
@@ -187,7 +189,7 @@ Debe ser idéntico en `auth-service`, `inventory-service` y `reports-service`.
 | Servicio | Estado | Notas |
 |----------|--------|-------|
 | auth-service | Listo | Login, register, JWT, seeds, rate limit |
-| inventory-service | Listo | CRUD, movimientos, stock atómico `$inc`, delete con validación |
+| inventory-service | Listo | CRUD, movimientos, proveedores, OC de compra, stock atómico `$inc` |
 | reports-service | Listo | Consume inventory por HTTP, mocks desactivados por defecto |
 
 ### Smoke test rápido
@@ -199,3 +201,5 @@ Ver `BACKEND_SMOKE.md` para probar el flujo completo en PowerShell.
 - Stock atómico con `$inc` en entradas/salidas
 - `DELETE /products/:id` bloqueado si hay movimientos (`409 PRODUCT_HAS_MOVEMENTS`)
 - `PUT /products/:id` no modifica `existencia` directamente
+- Proveedores: CRUD en `/suppliers`; no se elimina si tiene OC abiertas
+- Órdenes de compra: `/purchase-orders` con flujo `borrador → enviada → recibida`; al recibir se crean entradas automáticas
