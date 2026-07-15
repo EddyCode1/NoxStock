@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useInventory } from '../hooks/useInventory';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 import useAuthStore from '../../../shared/stores/useAuthStore';
@@ -42,7 +42,7 @@ export default function MovementsPage() {
     const cantidad = Number(form.cantidad);
 
     if (!Number.isInteger(cantidad) || cantidad <= 0) {
-      setMessage('Ingrese una cantidad válida mayor a 0');
+      setMessage('Ingrese una cantidad v├ílida mayor a 0');
       return;
     }
 
@@ -146,7 +146,7 @@ export default function MovementsPage() {
                   name="motivo"
                   value={form.motivo}
                   onChange={handleChange}
-                  placeholder="Ej: Compra, Devolución, Ajuste..."
+                  placeholder="Ej: Compra, Devoluci├│n, Ajuste..."
                   className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
                 />
               </div>

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useInventory } from '../hooks/useInventory';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
@@ -24,7 +24,7 @@ export default function ProductsPage() {
           <h1 className="text-2xl font-bold">Inventario - Productos</h1>
           <p className="text-sm text-gray-500">
             {isCentral
-              ? 'Vista consolidada — stock total de todas las sucursales'
+              ? 'Vista consolidada ÔÇö stock total de todas las sucursales'
               : `Stock en ${selectedWarehouse?.nombre || 'la bodega activa'}`}
           </p>
         </div>
@@ -56,7 +56,7 @@ export default function ProductsPage() {
       {error && <p className="text-red-600">{error}</p>}
       {!loading && !error && products.length === 0 && (
         <p className="text-sm text-gray-500">
-          Esta bodega aún no tiene productos. Crea el primero con &quot;Nuevo producto&quot;.
+          Esta bodega a├║n no tiene productos. Crea el primero con &quot;Nuevo producto&quot;.
         </p>
       )}
 
@@ -65,10 +65,10 @@ export default function ProductsPage() {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-3 py-2 text-left">Nombre</th>
-              <th className="px-3 py-2 text-left">Categoría</th>
+              <th className="px-3 py-2 text-left">Categor├¡a</th>
               <th className="px-3 py-2 text-right">Precio</th>
               <th className="px-3 py-2 text-right">Existencia</th>
-              <th className="px-3 py-2 text-right">Stock mín.</th>
+              <th className="px-3 py-2 text-right">Stock m├¡n.</th>
               <th className="px-3 py-2 text-center">Estado</th>
               <th className="px-3 py-2 text-center">Acciones</th>
             </tr>

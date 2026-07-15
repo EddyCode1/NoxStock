@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import { env } from '../config/env.js';
 import { mockOutputs, mockProducts } from './mockInventory.data.js';
 
@@ -63,7 +63,7 @@ function normalizeCollection(collection, normalizer) {
 
 function readCategory(raw) {
     if (!raw) {
-        return 'Sin categoría';
+        return 'Sin categor├¡a';
     }
 
     if (typeof raw.categoria === 'string') {
@@ -82,7 +82,7 @@ function readCategory(raw) {
         return raw.categoria.nombre;
     }
 
-    return 'Sin categoría';
+    return 'Sin categor├¡a';
 }
 
 export function normalizeProduct(raw = {}, defaultMinStock = 5) {
@@ -148,7 +148,7 @@ async function requestCollection(candidatePaths, preferredKeys, authHeader, ware
         }
     }
 
-    throw lastError ?? new Error('No se pudo obtener la colección solicitada');
+    throw lastError ?? new Error('No se pudo obtener la colecci├│n solicitada');
 }
 
 function getMockProducts() {
@@ -205,7 +205,7 @@ export async function getEntriesFromInventory(authHeader, warehouseId) {
         return extractCollection(payload, ['entries']).map(normalizeEntry);
     } catch (error) {
         if (env.allowMockFallback) {
-            console.warn('[reports-service] Entradas no disponibles, usando lista vacía');
+            console.warn('[reports-service] Entradas no disponibles, usando lista vac├¡a');
             return [];
         }
 

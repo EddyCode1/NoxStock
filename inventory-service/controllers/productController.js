@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import Product from '../models/Product.js';
 import Entry from '../models/Entry.js';
 import Output from '../models/Output.js';
@@ -99,7 +99,7 @@ export const getProductById = async (req, res, next) => {
     const { id } = req.params;
 
     if (!isValidObjectId(id)) {
-      return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
+      return errorResponse(res, 400, 'ID de producto inv├ílido', 'INVALID_ID');
     }
 
     const product = await Product.findById(id);
@@ -180,7 +180,7 @@ export const updateProduct = async (req, res, next) => {
     const { id } = req.params;
 
     if (!isValidObjectId(id)) {
-      return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
+      return errorResponse(res, 400, 'ID de producto inv├ílido', 'INVALID_ID');
     }
 
     const { nombre, categoria, precio, stockMinimo } = req.body;
@@ -230,7 +230,7 @@ export const deleteProduct = async (req, res, next) => {
     const { id } = req.params;
 
     if (!isValidObjectId(id)) {
-      return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
+      return errorResponse(res, 400, 'ID de producto inv├ílido', 'INVALID_ID');
     }
 
     const product = await Product.findById(id);

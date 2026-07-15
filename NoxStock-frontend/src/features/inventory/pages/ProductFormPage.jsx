@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import inventoryService from '../../../shared/api/services/inventoryService';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
@@ -92,9 +92,9 @@ export default function ProductFormPage() {
 
       <form onSubmit={handleSubmit} className="space-y-3 rounded border p-4">
         <input name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nombre" className="w-full rounded border px-3 py-2" required />
-        <input name="categoria" value={form.categoria} onChange={handleChange} placeholder="Categoría" className="w-full rounded border px-3 py-2" required />
+        <input name="categoria" value={form.categoria} onChange={handleChange} placeholder="Categor├¡a" className="w-full rounded border px-3 py-2" required />
         <input name="precio" type="number" value={form.precio} onChange={handleChange} placeholder="Precio" className="w-full rounded border px-3 py-2" required />
-        <input name="stockMinimo" type="number" value={form.stockMinimo} onChange={handleChange} placeholder="Stock mínimo" className="w-full rounded border px-3 py-2" min="0" />
+        <input name="stockMinimo" type="number" value={form.stockMinimo} onChange={handleChange} placeholder="Stock m├¡nimo" className="w-full rounded border px-3 py-2" min="0" />
         {!isEdit && (
           <input name="existencia" type="number" value={form.existencia} onChange={handleChange} placeholder="Existencia inicial" className="w-full rounded border px-3 py-2" />
         )}

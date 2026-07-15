@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema(
   {
@@ -10,9 +10,9 @@ const productSchema = new mongoose.Schema(
     },
     categoria: {
       type: String,
-      required: [true, 'La categoría es obligatoria'],
+      required: [true, 'La categor├¡a es obligatoria'],
       trim: true,
-      maxlength: [80, 'La categoría no puede superar 80 caracteres'],
+      maxlength: [80, 'La categor├¡a no puede superar 80 caracteres'],
     },
     precio: {
       type: Number,
@@ -27,7 +27,7 @@ const productSchema = new mongoose.Schema(
     },
     stockMinimo: {
       type: Number,
-      min: [0, 'El stock mínimo no puede ser negativo'],
+      min: [0, 'El stock m├¡nimo no puede ser negativo'],
       default: 5,
     },
   },

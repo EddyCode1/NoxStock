@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import noxReportsService from '../../../shared/api/services/noxReportsService';
 import { useWarehouse } from '../../../shared/hooks/useWarehouse';
 
@@ -96,7 +96,7 @@ export default function AlertsPage() {
                           <div className="mt-1 text-xs text-gray-500">{item.category}</div>
                         )}
                       </div>
-                      <div className="text-2xl">⚠️</div>
+                      <div className="text-2xl">ÔÜá´©Å</div>
                     </div>
                   </li>
                 ))}
@@ -136,7 +136,7 @@ export default function AlertsPage() {
                           <div className="mt-1 text-xs text-gray-500">{item.category}</div>
                         )}
                       </div>
-                      <div className="text-2xl">🚫</div>
+                      <div className="text-2xl">­ƒÜ½</div>
                     </div>
                   </li>
                 ))}
@@ -155,7 +155,7 @@ export default function AlertsPage() {
           </div>
           <div className="rounded-lg border border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 p-4">
             <div className="text-sm text-gray-900">
-              <span className="font-semibold">Bodega activa:</span> {selectedWarehouse?.nombre || '—'}
+              <span className="font-semibold">Bodega activa:</span> {selectedWarehouse?.nombre || 'ÔÇö'}
             </div>
           </div>
         </div>

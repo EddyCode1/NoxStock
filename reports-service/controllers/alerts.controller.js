@@ -1,4 +1,4 @@
-import { env } from '../config/env.js';
+﻿import { env } from '../config/env.js';
 import { getProductsFromInventory } from '../services/inventory.service.js';
 
 import { isLowStock } from '../utils/report.utils.js';
