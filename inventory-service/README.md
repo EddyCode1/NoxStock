@@ -46,9 +46,9 @@ Crear un archivo `.env` en la raíz del servicio:
 ```
 PORT=3002
 MONGODB_URI=mongodb://localhost:27017/noxstock-inventory
-JWT_SECRET=your_jwt_secret_key_here
+JWT_SECRET=noxstock_jwt_secret_dev_2026
 NODE_ENV=development
-AUTH_SERVICE_URL=http://localhost:3001
+SEED_DATA=true
 ```
 
 ## Instalación y Ejecución
@@ -75,7 +75,6 @@ inventory-service/
 │   └── db.js          # Configuración de base de datos
 ├── models/
 │   ├── Product.js     # Modelo de Producto
-│   ├── Category.js    # Modelo de Categoría
 │   ├── Entry.js       # Modelo de Entrada de Inventario
 │   └── Output.js      # Modelo de Salida de Inventario
 ├── routes/
@@ -89,18 +88,22 @@ inventory-service/
 │   ├── entryController.js
 │   └── outputController.js
 ├── middlewares/
-│   └── auth.js        # Middleware de autenticación
+│   ├── auth.js
+│   ├── validators.js
+│   └── errorHandler.js
 └── helpers/
-    └── validateJwt.js # Utilidades de validación JWT
+    ├── response.js
+    └── stock.js       # Actualización atómica de existencia ($inc)
 ```
 
 ## Notas
 - Todos los endpoints requieren un JWT válido excepto los que el equipo decida mantener públicos
-- La existencia de los productos se actualiza automáticamente al registrar entradas y salidas
+- La existencia se actualiza de forma atómica con `$inc` al registrar entradas y salidas
+- No se puede eliminar un producto que tenga movimientos (`PRODUCT_HAS_MOVEMENTS`)
 
 ## Estado de implementación
 - Estructura completa del servicio implementada en la rama `ft/sajche`
 - Endpoints activos: `/health`, `/products`, `/categories`, `/entries`, `/outputs`
 - Búsqueda disponible en `GET /products?q=nombre&categoria=valor`
-- Movimientos de inventario con validación de stock y transacciones MongoDB
+- Movimientos con validación de stock y actualización atómica de existencia
 - Guía para frontend: ver `API_FRONTEND.md`

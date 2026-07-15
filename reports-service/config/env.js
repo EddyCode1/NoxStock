@@ -7,7 +7,7 @@ export const env = {
     corsOrigin: process.env.CORS_ORIGIN ?? '*',
     requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 8000),
     useMockInventory: process.env.USE_MOCK_INVENTORY === 'true',
-    allowMockFallback: process.env.ALLOW_MOCK_FALLBACK !== 'false',
+    allowMockFallback: process.env.ALLOW_MOCK_FALLBACK === 'true',
     allowDevToken: process.env.ALLOW_DEV_TOKEN === 'true',
 };
 

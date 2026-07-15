@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import Product from '../models/Product.js';
+import Entry from '../models/Entry.js';
+import Output from '../models/Output.js';
 import { successResponse, errorResponse } from '../helpers/response.js';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -103,11 +105,27 @@ export const deleteProduct = async (req, res, next) => {
       return errorResponse(res, 400, 'ID de producto inválido', 'INVALID_ID');
     }
 
-    const product = await Product.findByIdAndDelete(id);
+    const product = await Product.findById(id);
 
     if (!product) {
       return errorResponse(res, 404, 'Producto no encontrado', 'PRODUCT_NOT_FOUND');
     }
+
+    const [entriesCount, outputsCount] = await Promise.all([
+      Entry.countDocuments({ productId: id }),
+      Output.countDocuments({ productId: id }),
+    ]);
+
+    if (entriesCount > 0 || outputsCount > 0) {
+      return errorResponse(
+        res,
+        409,
+        'No se puede eliminar un producto con movimientos registrados',
+        'PRODUCT_HAS_MOVEMENTS'
+      );
+    }
+
+    await Product.findByIdAndDelete(id);
 
     return successResponse(res, 200, 'Producto eliminado correctamente', { product });
   } catch (error) {
