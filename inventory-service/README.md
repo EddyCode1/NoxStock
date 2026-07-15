@@ -95,3 +95,9 @@ inventory-service/
 ## Notas
 - Todos los endpoints requieren un JWT válido excepto los que el equipo decida mantener públicos
 - La existencia de los productos se actualiza automáticamente al registrar entradas y salidas
+
+## Estado de implementación
+- Estructura completa del servicio implementada en la rama `ft/sajche`
+- Endpoints activos: `/health`, `/products`, `/categories`, `/entries`, `/outputs`
+- Búsqueda disponible en `GET /products?q=nombre&categoria=valor`
+- Movimientos de inventario con validación de stock y transacciones MongoDB
